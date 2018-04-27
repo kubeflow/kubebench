@@ -33,7 +33,12 @@
       local artifactsDir = outputDir + "/artifacts";
       // Source directory where all repos should be checked out
       local srcRootDir = testDir + "/src";
-      local srcDir = srcRootDir + "/kubeflow/testing";
+      local srcDir = srcRootDir + "/kubeflow/kubebench";
+      // The directory containing the py scripts for testing
+      local srcTestPyDir = srcDir + "/test/py";
+      // The directory within the kubeflow_testing submodule containing
+      // py scripts to use.
+      local srcKubeTestPyDir = srcRootDir + "/kubeflow/testing/py";
       local image = "gcr.io/kubeflow-ci/test-worker";
       // The name of the NFS volume claim to use for test files.
       // local nfsVolumeClaim = "kubeflow-testing";
@@ -41,9 +46,6 @@
       // The name to use for the volume to use to contain test data.
       local dataVolume = "kubeflow-test-volume";
       local versionTag = name;
-      // The directory within the kubeflow_testing submodule containing
-      // py scripts to use.
-      local kubeflowPy = srcRootDir + "/kubeflow/testing/py";
 
       {
         // Build an Argo template to execute a particular command.
@@ -59,7 +61,7 @@
               {
                 // Add the source directories to the python path.
                 name: "PYTHONPATH",
-                value: kubeflowPy,
+                value: srcTestPyDir + ":" + srcKubeTestPyDir,
               },
               {
                 name: "GOOGLE_APPLICATION_CREDENTIALS",
@@ -127,22 +129,16 @@
             {
               name: "e2e",
               steps: [
-                [{
-                  name: "checkout",
-                  template: "checkout",
-                }],
+                [
+                  {
+                    name: "checkout",
+                    template: "checkout",
+                  }
+                ],
                 [
                   {
                     name: "create-pr-symlink",
                     template: "create-pr-symlink",
-                  },
-                  {
-                    name: "py-test",
-                    template: "py-test",
-                  },
-                  {
-                    name: "py-lint",
-                    template: "py-lint",
                   },
                 ],
               ],
@@ -150,10 +146,12 @@
             {
               name: "exit-handler",
               steps: [
-                [{
-                  name: "copy-artifacts",
-                  template: "copy-artifacts",
-                }],
+                [
+                  {
+                    name: "copy-artifacts",
+                    template: "copy-artifacts",
+                  }
+                ],
               ],
             },
             {
@@ -173,20 +171,6 @@
                 ],
               },
             },  // checkout
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-test", [
-              "python",
-              "-m",
-              "kubeflow.testing.test_py_checks",
-              "--artifacts_dir=" + artifactsDir,
-              "--src_dir=" + srcDir,
-            ]),  // py test
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-lint", [
-              "python",
-              "-m",
-              "kubeflow.testing.test_py_lint",
-              "--artifacts_dir=" + artifactsDir,
-              "--src_dir=" + srcDir,
-            ]),  // py lint
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", [
               "python",
               "-m",
