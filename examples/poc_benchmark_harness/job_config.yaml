@@ -1,0 +1,13 @@
+jobType: tf-job
+jobParams:
+  name: kubebench-job-example
+  namespace: default
+  image: gcr.io/xyhuang-kubeflow/benchmark-harness-tf-cpu:0.0.1
+  imageGpu: null
+  args: "--workspace=/workspace,--test-config=/runner/benchmark_config.yaml,--framework=tensorflow"
+  numMasters: 1
+  numPs: 0
+  numWorkers: 0
+  numGpus: 0
+  pvcName: kubebench-runner-pvc
+  pvcMount: "/runner"
