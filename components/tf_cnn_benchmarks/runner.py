@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-
-# Copyright 2017 The Kubeflow Authors All rights reserved.
-#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,17 +10,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A launcher suitable for invoking tf_cnn_benchmarks using TfJob.
+"""A launcher suitable for invoking tf_cnn_benchmarks using TfJob."""
 
-All the launcher does is turn TF_CONFIG environment variable
-into extra arguments to append to the command line.
-"""
 import logging
 import json
 import os
 import subprocess
 import sys
-import time
+
 
 def run_and_stream(cmd):
   logging.info("Running %s", " ".join(cmd))
