@@ -11,4 +11,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/home/yingbzha/kubebench"
+    path: "/tmp/kubebench"

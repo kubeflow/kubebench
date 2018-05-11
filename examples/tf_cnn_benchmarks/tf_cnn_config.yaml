@@ -4,10 +4,10 @@ jobParams:
   namespace: default
   image: 10.155.156.77:5000/tf-cnn
   imageGpu: null
-  args: "python,tf_cnn_benchmarks.py,--local_parameter_device=gpu,--device=cpu,--batch_size=8,--model=resnet50,--data_format=NHWC"
-  numMasters: 1
+  args: "python,tf_cnn_benchmarks.py,--local_parameter_device=gpu,--device=cpu,--batch_size=4,--model=resnet50,--data_format=NHWC,--forward_only"
+  numMasters: 0
   numPs: 1
   numWo rkers: 1
-  numGpus: 0
+  numGpus: 0ms
   pvcName: kubebench-runner-pvc
   pvcMount: "/runner"

@@ -17,7 +17,7 @@ spec:
         arguments:
           parameters:
           - name: config-file
-            value: /configurator/job_config.yaml
+            value: /configurator/tf_cnn_config.yaml
           - name: output-file
             value: /configurator/out.json
     - - name: run-benchmark
@@ -26,8 +26,6 @@ spec:
           parameters:
           - name: k8manifest
             value: "{{steps.generate-config.outputs.parameters.out-file}}"
-#    - - name: report-result
-#        template: reporter
 
   - name: configurator
     inputs:
