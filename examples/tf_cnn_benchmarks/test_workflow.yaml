@@ -33,7 +33,7 @@ spec:
       - name: config-file
       - name: output-file
     container:
-      image: 10.155.156.77:5000/configurator
+      image: localhost:5000/configurator
       args: ["--config-file={{inputs.parameters.config-file}}", "--output-file={{inputs.parameters.output-file}}"]
       volumeMounts:
       - mountPath: /configurator
