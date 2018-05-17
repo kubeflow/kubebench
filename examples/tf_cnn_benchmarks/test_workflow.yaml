@@ -54,3 +54,20 @@ spec:
       failureCondition: status.phase == Failed
       manifest: |
         {{inputs.parameters.k8manifest}}
+
+  - name: reporter
+    inputs:
+      parameters:
+      - name: log-files-dir
+      - name: output-file
+    container:
+      image: localhost:5000/reporter
+      args: ["--files-path={{inputs.parameters.log-files-dir}}", "--output-file={{inputs.parameters.output-file}}"]
+      volumeMounts:
+      - mountPath: /reporter
+        name: task-pv-storage
+    outputs:
+      parameters:
+      - name: out-file
+        valueFrom:
+          path: /reporter/result.json
