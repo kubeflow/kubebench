@@ -7,7 +7,7 @@ jobParams:
   args: "python,tf_cnn_benchmarks.py,--local_parameter_device=gpu,--device=cpu,--batch_size=4,--model=resnet50,--data_format=NHWC,--forward_only"
   numMasters: 0
   numPs: 1
-  numWo rkers: 3
+  numWorkers: 1
   numGpus: 0ms
   pvcName: kubebench-runner-pvc
   pvcMount: "/runner"

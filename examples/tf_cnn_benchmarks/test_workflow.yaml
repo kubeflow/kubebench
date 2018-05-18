@@ -70,4 +70,4 @@ spec:
       parameters:
       - name: out-file
         valueFrom:
-          path: /reporter/result.json
+          path: /reporter/result.csv

@@ -18,7 +18,7 @@ RUN apk add --update --no-cache build-base
 
 RUN mkdir /workspace
 
-COPY reporter /workspace
+# COPY reporter /workspace
 
 WORKDIR /workspace
 
