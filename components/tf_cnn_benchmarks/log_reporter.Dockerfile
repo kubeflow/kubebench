@@ -22,5 +22,5 @@ RUN mkdir /workspace
 
 WORKDIR /workspace
 
-ENTRYPOINT ["python", "report_results.py"]
+ENTRYPOINT ["python", "log_reporter.py"]
 
