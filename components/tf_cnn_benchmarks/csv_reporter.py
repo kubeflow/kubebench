@@ -7,17 +7,12 @@ import warnings
 
 """
 Class LogParser
-
 Takes path to .txt file as the first argument
 and writes simplified log to .csv file
-
-
 Sample execution: python reporter.py path_to_log.txt path_to_table.csv
-
 Path to .csv file is optional. If not given,
 creates new file in the same folder as the script
 under the name log.csv
-
 """
 
 
@@ -33,42 +28,41 @@ class LogParser:
       'Batch_size',
       'Num_batches',
       'Num_epochs',
-      'Devices',
       'Data_format',
       'Layout_optimizer',
       'Optimizer',
       'Variables',
       'Sync']
-    self.path_to_dataframe = self.parse_command_line().path_to_dataframe
-    self.path_to_file = self.parse_command_line().filename
+    self.output_file = self.parse_command_line().output_file
+    self.log_dir = self.parse_command_line().log_dir
     self.log_dict = dict(zip(self.columns, [None] * len(self.columns)))
     self.create_csv()
 
   def parse_command_line(self):
     self.parser = argparse.ArgumentParser(
-      description='Parser for filenames')
-    self.parser.add_argument('filename', type=str,
-                 help='A required path to txt log file')
+      description='Turn logs into csv.')
+    self.parser.add_argument('--log-dir', type=str,
+                 help='Directory of log files')
     # Optional positional argument
     self.parser.add_argument(
-      'path_to_dataframe',
+      '--output-file',
       type=str,
-      nargs='?',
-      default='log.csv',
-      help='An optional path to csv file')
+      help='Path to csv output file')
     return self.parser.parse_args()
 
   def create_csv(self):
-    if not os.path.isfile(self.path_to_dataframe):
+    output_dir = os.path.dirname(self.output_file)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    if not os.path.isfile(self.output_file):
       warnings.warn("Creating new csv log file")
-      with open(self.path_to_dataframe, 'w+') as csvfile:
+      with open(self.output_file, 'w+') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=self.columns)
         writer.writeheader()
 
   def extract_value(self, line):
     '''
     Args: line - string
-
     Takes line and checks wheres this line contains
     one of the keys from self.columns
     If contains, stores it and then writes it to .csv file
@@ -85,7 +79,8 @@ class LogParser:
       return None, None
 
   def read_logs(self):
-    with open(self.path_to_file, 'r') as f:
+    log_file = self.log_dir + "/worker0.log"
+    with open(log_file, 'r') as f:
       line = 'init'
       while line:
         line = f.readline()
@@ -93,8 +88,8 @@ class LogParser:
         if key in self.columns:
           self.log_dict[key] = value
 
-  def write_log(self):
-    with open(self.path_to_dataframe, 'a') as csvfile:
+  def write_csv(self):
+    with open(self.output_file, 'a') as csvfile:
       writer = csv.DictWriter(csvfile, fieldnames=self.columns)
       writer.writerow(self.log_dict)
 
@@ -102,4 +97,4 @@ class LogParser:
 if __name__ == "__main__":
   log_parser = LogParser()
   log_parser.read_logs()
-  log_parser.write_log()
+  log_parser.write_csv()
