@@ -1,0 +1,11 @@
+jobType: tf-job
+jobParams:
+  name: kubebench-job-1
+  namespace: default
+  image: gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-runner-cpu:v20180522-1
+  imageGpu: null
+  args: "--batch_size=2,--num_batches=20,--model=resnet50,--variable_update=parameter_server,--forward_only=true,--num_gpus=1,--local_parameter_device=cpu,--data_format=NHWC"
+  numMasters: 0
+  numPs: 0
+  numWorkers: 1
+  numGpus: 0

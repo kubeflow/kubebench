@@ -15,26 +15,37 @@
 import argparse
 import io
 import _jsonnet
+import os
 import yaml
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Convert benchmark configs.")
-    parser.add_argument("--config-file", help="config file")
-    parser.add_argument("--output-file", help="output file")
-    args = parser.parse_args()
+  parser = argparse.ArgumentParser(description="Convert benchmark configs.")
+  parser.add_argument("--config-file", help="config file")
+  parser.add_argument("--output-file", help="output file")
+  parser.add_argument("--runner-log-dir", help="runner log directory")
+  parser.add_argument("--pvc-name", help="PVC name")
+  parser.add_argument("--pvc-mount", help="PVC mount point")
+  args = parser.parse_args()
 
-    with io.open(args.config_file, "r") as stream:
-        params = yaml.load(stream, Loader=yaml.BaseLoader)
-    job_type = params["jobType"]
-    jsonnet_file = job_type + ".jsonnet"
+  with io.open(args.config_file, "r") as stream:
+    params = yaml.load(stream, Loader=yaml.BaseLoader)
+  job_type = params["jobType"]
+  jsonnet_file = job_type + ".jsonnet"
 
-    json_string = _jsonnet.evaluate_file(
-            jsonnet_file, ext_vars=params["jobParams"])
-    
-    with io.open(args.output_file, "w") as f:
-        f.write(json_string)
+  params["jobParams"]["pvcName"] = args.pvc_name
+  params["jobParams"]["pvcMount"] = args.pvc_mount
+  params["jobParams"]["logDir"] = args.runner_log_dir
+  json_string = _jsonnet.evaluate_file(
+      jsonnet_file, ext_vars=params["jobParams"])
+
+  output_dir = os.path.dirname(args.output_file)
+  if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+  with io.open(args.output_file, "w") as f:
+    f.write(json_string)
 
 
 if __name__ == "__main__":
-    main()
+  main()

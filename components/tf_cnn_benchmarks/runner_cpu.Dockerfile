@@ -10,10 +10,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Docker image for running examples in Tensorflow models.
-# base_image depends on whether we are running on GPUs or non
-
-FROM tensorflow/tensorflow:latest
+FROM tensorflow/tensorflow:1.7.1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
