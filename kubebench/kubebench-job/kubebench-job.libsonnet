@@ -47,6 +47,12 @@ local k = import "k.libsonnet";
               ],
               [
                 {
+                  "name": "step-report",
+                  "template": "report",
+                }
+              ],
+              [
+                {
                   "name": "step-cleanup",
                   "template": "cleanup",
                   "arguments": {
@@ -67,7 +73,12 @@ local k = import "k.libsonnet";
             "container": {
               "image": configImage,
               "imagePullPolicy": "IfNotPresent",
-              "args": configArgs,
+              "args": [
+                        "--output-file=" + pvcMount + "/output/" + name + "/manifest.json",
+                        "--runner-log-dir=" + pvcMount + "/output/" + name,
+                        "--pvc-name=" + pvcName,
+                        "--pvc-mount=" + pvcMount,
+                      ] + configArgs,
               "volumeMounts": [
                 {
                   "name": "kubebench-volume",
@@ -80,7 +91,7 @@ local k = import "k.libsonnet";
                 {
                   "name": "manifest",
                   "valueFrom": {
-                    "path": pvcMount + "/manifest.json"
+                    "path": pvcMount + "/output/" + name + "/manifest.json"
                   },
                 },
               ],
@@ -98,6 +109,22 @@ local k = import "k.libsonnet";
               "parameters": [
                 {
                   "name": "manifest",
+                },
+              ],
+            },
+          },
+          {
+            "name": "report",
+            "container": {
+              "image": reportImage,
+              "imagePullPolicy": "IfNotPresent",
+              "args": [
+                        "--log-dir=" + pvcMount + "/output/" + name,
+                      ] + reportArgs,
+              "volumeMounts": [
+                {
+                  "name": "kubebench-volume",
+                  "mountPath": pvcMount,
                 },
               ],
             },

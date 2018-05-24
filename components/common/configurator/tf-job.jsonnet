@@ -4,14 +4,6 @@ local tfJob = import "tf-job.libsonnet";
 
 local name = std.extVar("name");
 local namespace = std.extVar("namespace");
-
-local argsParam = std.extVar("args");
-local args =
-  if argsParam == "null" then
-    []
-  else
-    std.split(argsParam, ",");
-
 local image = std.extVar("image");
 local imageGpu = std.extVar("imageGpu");
 local numMasters = std.parseInt(std.extVar("numMasters"));
@@ -20,6 +12,14 @@ local numWorkers = std.parseInt(std.extVar("numWorkers"));
 local numGpus = std.parseInt(std.extVar("numGpus"));
 local pvcName = std.extVar("pvcName");
 local pvcMount = std.extVar("pvcMount");
+local logDir = std.extVar("logDir");
+local argsParam = std.extVar("args");
+local args =
+  if argsParam == "null" then
+    ["--log-dir=" + logDir]
+  else
+    std.split(argsParam, ",") + ["--log-dir=" + logDir];
+
 
 local terminationPolicy = if numMasters == 1 then
   tfJob.parts.tfJobTerminationPolicy("MASTER", 0)

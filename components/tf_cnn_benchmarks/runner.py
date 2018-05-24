@@ -30,7 +30,7 @@ def run_and_stream(cmd):
       process.stderr.flush()
     sys.stderr.flush()
     sys.stdout.flush()
-    for line in iter(process.stdout.readline, ''):
+    for line in iter(process.stdout.readline, b''):
       process.stdout.flush()
       logging.info(line.strip())
 
@@ -39,7 +39,7 @@ def run_and_stream(cmd):
   process.stdout.flush()
   if process.stderr:
     process.stderr.flush()
-  for line in iter(process.stdout.readline, ''):
+  for line in iter(process.stdout.readline, b''):
     logging.info(line.strip())
 
   if process.returncode != 0:
@@ -53,17 +53,27 @@ if __name__ == "__main__":
   job_name = tf_config_json.get('task', {}).get('type', "")
   task_index = tf_config_json.get('task', {}).get('index', "")
 
-  command = sys.argv[1:]
+  # pick out the --log-dir arg
+  # TODO(xyhuang): this is ugly, needs to be improved
+  log_dir = ""
+  args = sys.argv[1:]
+  for arg in args:
+    if arg.startswith("--log-dir="):
+      log_dir = arg.lstrip("--log-dir=")
+      args.remove(arg)
+  command = ["python", "tf_cnn_benchmarks.py"] + args
   ps_hosts = ",".join(cluster.get("ps", []))
   worker_hosts = ",".join(cluster.get("worker", []))
-  command.append("--job_name=" + job_name)
-  command.append("--ps_hosts=" + ps_hosts)
-  command.append("--worker_hosts=" + worker_hosts)
-  command.append("--task_index={0}".format(task_index))
+  if len(cluster.get("ps", [])) > 0 or len(cluster.get("worker", [])) > 1:
+    command.append("--job_name=" + job_name)
+    command.append("--ps_hosts=" + ps_hosts)
+    command.append("--worker_hosts=" + worker_hosts)
+    command.append("--task_index={0}".format(task_index))
 
   logging.getLogger().setLevel(logging.INFO)
   logging.basicConfig(level=logging.INFO,
-                      filename='/runner/'+job_name+str(task_index)+'.log',
+                      filename=log_dir + "/" + job_name + str(task_index) + '.log',
+                      filemode='w',
                       format=('%(levelname)s|%(asctime)s'
                               '|%(pathname)s|%(lineno)d| %(message)s'),
                       datefmt='%Y-%m-%dT%H:%M:%S',
@@ -71,10 +81,10 @@ if __name__ == "__main__":
   logging.info("Launcher started.")
 
   logging.info("Command to run: %s", " ".join(command))
-  with open("/opt/run_benchmarks.sh", "w") as hf:
-    hf.write("#!/bin/bash\n")
-    hf.write(" ".join(command))
-    hf.write("\n")
+  # with open("/opt/run_benchmarks.sh", "w") as hf:
+  #   hf.write("#!/bin/bash\n")
+  #   hf.write(" ".join(command))
+  #   hf.write("\n")
 
   run_and_stream(command)
   logging.info("Finished: %s", " ".join(command))

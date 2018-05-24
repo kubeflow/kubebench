@@ -7,7 +7,7 @@
 // @optionalParam config_image string null Configurator image
 // @optionalParam config_args string null Configurator's arguments
 // @optionalParam report_image string null Reporter image
-// @optionalParam report_agrs string null Reporter's arguments
+// @optionalParam report_args string null Reporter's arguments
 // @optionalParam pvc_name string null Persistent volume claim name
 // @optionalParam pvc_mount string null Persistent volume claim mount point
 
