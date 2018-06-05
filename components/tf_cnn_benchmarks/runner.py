@@ -64,7 +64,7 @@ if __name__ == "__main__":
   command = ["python", "tf_cnn_benchmarks.py"] + args
   ps_hosts = ",".join(cluster.get("ps", []))
   worker_hosts = ",".join(cluster.get("worker", []))
-  if len(cluster.get("ps", [])) > 0 or len(cluster.get("worker", [])) > 1:
+  if cluster.get("ps", []) or len(cluster.get("worker", [])) > 1:
     command.append("--job_name=" + job_name)
     command.append("--ps_hosts=" + ps_hosts)
     command.append("--worker_hosts=" + worker_hosts)
