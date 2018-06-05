@@ -14,14 +14,14 @@
 local k = import "k.libsonnet";
 local kubebench = import "kubebench/kubebench-job/kubebench-job.libsonnet";
 
+local configArgsStr = import "param://config_args";
+local configImage = import "param://config_image";
 local name = import "param://name";
 local namespace = import "param://namespace";
-local configImage = import "param://config_image";
-local configArgsStr = import "param://config_args";
-local reportImage = import "param://report_image";
-local reportArgsStr = import "param://report_args";
-local pvcName = import "param://pvc_name";
 local pvcMount = import "param://pvc_mount";
+local pvcName = import "param://pvc_name";
+local reportArgsStr = import "param://report_args";
+local reportImage = import "param://report_image";
 
 local configArgs =
   if configArgsStr == "null" then
@@ -35,6 +35,12 @@ local reportArgs =
     std.split(reportArgsStr, ",");
 
 std.prune(k.core.v1.list.new([
-  kubebench.parts.workflow(name, namespace, configImage, configArgs,
-      reportImage, reportArgs, pvcName, pvcMount),
+  kubebench.parts.workflow(name,
+                           namespace,
+                           configImage,
+                           configArgs,
+                           reportImage,
+                           reportArgs,
+                           pvcName,
+                           pvcMount),
 ]))

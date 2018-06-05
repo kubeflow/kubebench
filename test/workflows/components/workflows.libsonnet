@@ -133,7 +133,7 @@
                   {
                     name: "checkout",
                     template: "checkout",
-                  }
+                  },
                 ],
                 [
                   {
@@ -162,7 +162,7 @@
                   {
                     name: "copy-artifacts",
                     template: "copy-artifacts",
-                  }
+                  },
                 ],
               ],
             },
@@ -212,15 +212,15 @@
               "kubeflow.testing.test_py_lint",
               "--artifacts_dir=" + artifactsDir,
               "--src_dir=" + srcDir,
-            ]), // py lint
+            ]),  // py lint
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("test-jsonnet-formatting", [
               "python",
               "-m",
               "kubeflow.testing.test_jsonnet_formatting",
               "--artifacts_dir=" + artifactsDir,
               "--src_dir=" + srcDir,
-            ]), // test-jsonnet-formatting
-          ], // templates
+            ]),  // test-jsonnet-formatting
+          ],  // templates
         },
       },  // e2e
   },  // parts
