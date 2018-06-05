@@ -133,12 +133,24 @@
                   {
                     name: "checkout",
                     template: "checkout",
-                  }
+                  },
                 ],
                 [
                   {
                     name: "create-pr-symlink",
                     template: "create-pr-symlink",
+                  },
+                  {
+                    name: "py-test",
+                    template: "py-test",
+                  },
+                  {
+                    name: "py-lint",
+                    template: "py-lint",
+                  },
+                  {
+                    name: "test-jsonnet-formatting",
+                    template: "test-jsonnet-formatting",
                   },
                 ],
               ],
@@ -150,7 +162,7 @@
                   {
                     name: "copy-artifacts",
                     template: "copy-artifacts",
-                  }
+                  },
                 ],
               ],
             },
@@ -187,6 +199,27 @@
               "copy_artifacts",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-test", [
+              "python",
+              "-m",
+              "kubeflow.testing.test_py_checks",
+              "--artifacts_dir=" + artifactsDir,
+              "--src_dir=" + srcDir,
+            ]),  // py test
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-lint", [
+              "python",
+              "-m",
+              "kubeflow.testing.test_py_lint",
+              "--artifacts_dir=" + artifactsDir,
+              "--src_dir=" + srcDir,
+            ]),  // py lint
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("test-jsonnet-formatting", [
+              "python",
+              "-m",
+              "kubeflow.testing.test_jsonnet_formatting",
+              "--artifacts_dir=" + artifactsDir,
+              "--src_dir=" + srcDir,
+            ]),  // test-jsonnet-formatting
           ],  // templates
         },
       },  // e2e

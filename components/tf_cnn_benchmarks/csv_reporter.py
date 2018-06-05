@@ -5,18 +5,16 @@ import re
 import warnings
 
 
-"""
-Class LogParser
-Takes path to .txt file as the first argument
-and writes simplified log to .csv file
-Sample execution: python reporter.py path_to_log.txt path_to_table.csv
-Path to .csv file is optional. If not given,
-creates new file in the same folder as the script
-under the name log.csv
-"""
+class LogParser(object):
+  """Class LogParser
+  Takes path to .txt file as the first argument
+  and writes simplified log to .csv file
+  Sample execution: python reporter.py path_to_log.txt path_to_table.csv
+  Path to .csv file is optional. If not given,
+  creates new file in the same folder as the script
+  under the name log.csv
+  """
 
-
-class LogParser:
   def __init__(self):
     self.columns = [
       'total_images/sec',
@@ -53,14 +51,15 @@ class LogParser:
   def create_csv(self):
     output_dir = os.path.dirname(self.output_file)
     if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+      os.makedirs(output_dir)
     if not os.path.isfile(self.output_file):
       warnings.warn("Creating new csv log file")
       with open(self.output_file, 'w+') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=self.columns)
         writer.writeheader()
 
-  def extract_value(self, line):
+  @classmethod
+  def extract_value(cls, line):
     '''
     Args: line - string
     Takes line and checks wheres this line contains
@@ -73,7 +72,7 @@ class LogParser:
     found_key = key_value_pair[0].replace(' ', '_')
     try:
       value = key_value_pair[1]
-      value = value.strip('\   \\n')
+      value = value.strip(r'\   \\n')
       return found_key, value
     except IndexError:
       return None, None

@@ -3,43 +3,49 @@ local k = import "k.libsonnet";
 {
   parts:: {
 
-    workflow(name, namespace, configImage, configArgs,
-            reportImage, reportArgs, pvcName, pvcMount):: {
-      "apiVersion": "argoproj.io/v1alpha1",
-      "kind": "Workflow",
-      "metadata": {
-        "name": name,
-        "namespace": namespace,
+    workflow(name,
+             namespace,
+             configImage,
+             configArgs,
+             reportImage,
+             reportArgs,
+             pvcName,
+             pvcMount):: {
+      apiVersion: "argoproj.io/v1alpha1",
+      kind: "Workflow",
+      metadata: {
+        name: name,
+        namespace: namespace,
       },
-      "spec": {
-        "entrypoint": "kubebench-workflow",
-        "volumes": [
+      spec: {
+        entrypoint: "kubebench-workflow",
+        volumes: [
           {
-            "name": "kubebench-volume",
-            "persistentVolumeClaim": {
-              "claimName": pvcName,
+            name: "kubebench-volume",
+            persistentVolumeClaim: {
+              claimName: pvcName,
             },
           },
         ],
-        "templates": [
+        templates: [
           {
-            "name": "kubebench-workflow",
-            "steps": [
+            name: "kubebench-workflow",
+            steps: [
               [
                 {
-                  "name": "step-config",
-                  "template": "config",
+                  name: "step-config",
+                  template: "config",
                 },
               ],
               [
                 {
-                  "name": "step-run",
-                  "template": "run",
-                  "arguments": {
-                    "parameters": [
+                  name: "step-run",
+                  template: "run",
+                  arguments: {
+                    parameters: [
                       {
-                        "name": "manifest",
-                        "value": "{{steps.step-config.outputs.parameters.manifest}}",
+                        name: "manifest",
+                        value: "{{steps.step-config.outputs.parameters.manifest}}",
                       },
                     ],
                   },
@@ -47,19 +53,19 @@ local k = import "k.libsonnet";
               ],
               [
                 {
-                  "name": "step-report",
-                  "template": "report",
-                }
+                  name: "step-report",
+                  template: "report",
+                },
               ],
               [
                 {
-                  "name": "step-cleanup",
-                  "template": "cleanup",
-                  "arguments": {
-                    "parameters": [
+                  name: "step-cleanup",
+                  template: "cleanup",
+                  arguments: {
+                    parameters: [
                       {
-                        "name": "manifest",
-                        "value": "{{steps.step-config.outputs.parameters.manifest}}",
+                        name: "manifest",
+                        value: "{{steps.step-config.outputs.parameters.manifest}}",
                       },
                     ],
                   },
@@ -69,76 +75,76 @@ local k = import "k.libsonnet";
           },
 
           {
-            "name": "config",
-            "container": {
-              "image": configImage,
-              "imagePullPolicy": "IfNotPresent",
-              "args": [
-                        "--output-file=" + pvcMount + "/output/" + name + "/manifest.json",
-                        "--runner-log-dir=" + pvcMount + "/output/" + name,
-                        "--pvc-name=" + pvcName,
-                        "--pvc-mount=" + pvcMount,
-                      ] + configArgs,
-              "volumeMounts": [
+            name: "config",
+            container: {
+              image: configImage,
+              imagePullPolicy: "IfNotPresent",
+              args: [
+                "--output-file=" + pvcMount + "/output/" + name + "/manifest.json",
+                "--runner-log-dir=" + pvcMount + "/output/" + name,
+                "--pvc-name=" + pvcName,
+                "--pvc-mount=" + pvcMount,
+              ] + configArgs,
+              volumeMounts: [
                 {
-                  "name": "kubebench-volume",
-                  "mountPath": pvcMount,
+                  name: "kubebench-volume",
+                  mountPath: pvcMount,
                 },
               ],
             },
-            "outputs": {
-              "parameters": [
+            outputs: {
+              parameters: [
                 {
-                  "name": "manifest",
-                  "valueFrom": {
-                    "path": pvcMount + "/output/" + name + "/manifest.json"
+                  name: "manifest",
+                  valueFrom: {
+                    path: pvcMount + "/output/" + name + "/manifest.json",
                   },
                 },
               ],
             },
           },
           {
-            "name": "run",
-            "resource": {
-              "action": "create",
-              "successCondition": "status.phase == Done",
-              "failureCondition": "status.phase == Failed",
-              "manifest": "{{inputs.parameters.manifest}}",
+            name: "run",
+            resource: {
+              action: "create",
+              successCondition: "status.phase == Done",
+              failureCondition: "status.phase == Failed",
+              manifest: "{{inputs.parameters.manifest}}",
             },
-            "inputs": {
-              "parameters": [
+            inputs: {
+              parameters: [
                 {
-                  "name": "manifest",
+                  name: "manifest",
                 },
               ],
             },
           },
           {
-            "name": "report",
-            "container": {
-              "image": reportImage,
-              "imagePullPolicy": "IfNotPresent",
-              "args": [
-                        "--log-dir=" + pvcMount + "/output/" + name,
-                      ] + reportArgs,
-              "volumeMounts": [
+            name: "report",
+            container: {
+              image: reportImage,
+              imagePullPolicy: "IfNotPresent",
+              args: [
+                "--log-dir=" + pvcMount + "/output/" + name,
+              ] + reportArgs,
+              volumeMounts: [
                 {
-                  "name": "kubebench-volume",
-                  "mountPath": pvcMount,
+                  name: "kubebench-volume",
+                  mountPath: pvcMount,
                 },
               ],
             },
           },
           {
-            "name": "cleanup",
-            "resource": {
-              "action": "delete",
-              "manifest": "{{inputs.parameters.manifest}}",
+            name: "cleanup",
+            resource: {
+              action: "delete",
+              manifest: "{{inputs.parameters.manifest}}",
             },
-            "inputs": {
-              "parameters": [
+            inputs: {
+              parameters: [
                 {
-                  "name": "manifest",
+                  name: "manifest",
                 },
               ],
             },

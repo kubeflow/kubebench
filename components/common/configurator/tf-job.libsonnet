@@ -29,7 +29,7 @@
           {
             name: "kubebench-volume",
             mountPath: pvcMount,
-          }
+          },
         ],
       };
       if number > 0 then
