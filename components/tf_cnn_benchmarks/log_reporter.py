@@ -25,7 +25,7 @@ def save_csv(arr_results, output_file):
     wr.writerows(arr_results)
 
 
-def process_line(line, header=False):
+def process_line(line):
   lines = line.split('\t')
   lines[0] = lines[0].split()[-1]
   return lines
@@ -35,15 +35,14 @@ def report(input_file, output_file):
   f = io.open(input_file, "r")
   results = f.read().split('\n')
   arr_results = []
-  # header = True
 
-  for i in range(len(results)):
-    if results[i].find('Done warm up') != -1:
-      i += 1
-      while results[i].find('---') == -1:
-        lines = process_line(results[i])
-        arr_results.append(lines)
-        i += 1
+  do_process = False
+  for res in results:
+    if res.find('Done warm up') != -1:
+      do_process = True
+    if do_process and res.find('---') == -1:
+      lines = process_line(res)
+      arr_results.append(lines)
   f.close()
   save_csv(arr_results, output_file)
 
@@ -55,9 +54,8 @@ def main():
   args = parser.parse_args()
 
   for filename in os.listdir(args.path):
-    if re.search('worker\d+.log', filename):
+    if re.search(r'worker\d+.log', filename):
       report(args.path + '/' + filename, args.outfile)
 
 if __name__ == "__main__":
   main()
-
