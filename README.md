@@ -14,7 +14,7 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
 
   - Install Dependencies (Kubebench depends on an existing Kubeflow deployment. For details about using Kubeflow, please refer to [Kubeflow user guide](https://github.com/kubeflow/kubeflow/blob/master/user_guide.md))
 
-    ```
+    ```bash
     KF_VERSION=master
     KF_ENV=local
     NAMESPACE=default
@@ -22,7 +22,7 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
     # Initialize Ksonnet app
     ks init my-kubeflow
     cd my-kubeflow
-  
+
     # Install required Kubeflow packages
     ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KF_VERSION}/kubeflow
     ks pkg install kubeflow/core@${KF_VERSION}
@@ -47,19 +47,19 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
 
   - Install Kubebench
 
-    ```
+    ```bash
     KB_VERSION=master
     ks registry add kubebench github.com/kubeflow/kubebench/tree/${KB_VERSION}/kubebench
     ks pkg install kubebench/kubebench-job@${KB_VERSION}
     ```
-  
+
   - Create a persistent volume claim for data storage
     - currently this is the only supported way to store benchmark configurations and results. In the future this will be simplified, and more options of configuration/result storage will be provided.
     - the persistent volume needs to have ReadWriteMany access mode.
     - we provide an example PVC setup below based on NFS, the example config file is in [examples/tf_cnn_benchmarks directory](https://github.com/kubeflow/kubebench/blob/master/examples/tf_cnn_benchmarks/nfs_pvc.yaml)
     - assuming that you have NFS setup, edit the example config file with the right server address and exported path of your NFS server, then run the following command
 
-    ```
+    ```bash
     kubectl create -f nfs_pvc.yaml --namespace ${NAMESPACE}
     ```
 
@@ -101,5 +101,9 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
     ```
     kubectl get -o yaml workflows ${JOB_NAME}
     ```
-  
+
   - Once the job is finished, you can find the results under your specified output directory in the NFS, if you used the same configurations as is in this example, the output directory will be in `/var/nfs/kubebench/output`.
+
+## Design Document
+
+For additional information about motivation and design for this project please refer to [kubebench_design.md](./doc/kubebench_design.md)
