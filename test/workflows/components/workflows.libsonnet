@@ -46,17 +46,23 @@
       // The name to use for the volume to use to contain test data.
       local dataVolume = "kubeflow-test-volume";
       local versionTag = name;
+      // GCP information
+      local zone = "us-east1-d";
+      local project = "kubeflow-ci";
+      // The name of test cluster
+      local clusterName = "kubebench-e2e-" + std.substr(name, std.length(name) - 4, 4);
+      // The Kubernetes version of test cluster
+      local clusterVersion = "1.10";
 
       {
         // Build an Argo template to execute a particular command.
         // step_name: Name for the template
         // command: List to pass as the container command.
-        buildTemplate(step_name, command):: {
+        buildTemplate(step_name, command, env_vars=[], sidecars=[], kubeConfig="config"):: {
           name: step_name,
           container: {
             command: command,
             image: image,
-            workingDir: srcDir,
             env: [
               {
                 // Add the source directories to the python path.
@@ -68,7 +74,7 @@
                 value: "/secret/gcp-credentials/key.json",
               },
               {
-                name: "GIT_TOKEN",
+                name: "GITHUB_TOKEN",
                 valueFrom: {
                   secretKeyRef: {
                     name: "github-token",
@@ -76,7 +82,29 @@
                   },
                 },
               },
-            ] + prow_env,
+              {
+                name: "ZONE",
+                value: zone,
+              },
+              {
+                name: "PROJECT",
+                value: project,
+              },
+              {
+                name: "CLUSTER_NAME",
+                value: clusterName,
+              },
+              {
+                name: "CLUSTER_VERSION",
+                value: clusterVersion,
+              },
+              {
+                // We use a directory in our NFS share to store our kube config.
+                // This way we can configure it on a single step and reuse it on subsequent steps.
+                name: "KUBECONFIG",
+                value: testDir + "/.kube/" + kubeConfig,
+              },
+            ] + prow_env + env_vars,
             volumeMounts: [
               {
                 name: dataVolume,
@@ -92,6 +120,7 @@
               },
             ],
           },
+          sidecars: sidecars,
         },  // buildTemplate
 
         apiVersion: "argoproj.io/v1alpha1",
@@ -152,6 +181,28 @@
                     name: "test-jsonnet-formatting",
                     template: "test-jsonnet-formatting",
                   },
+                  {
+                    name: "setup-cluster",
+                    template: "setup-cluster",
+                  },
+                ],
+                [
+                  {
+                    name: "deploy-kubeflow",
+                    template: "deploy-kubeflow",
+                  },
+                ],
+                [
+                  {
+                    name: "wait-for-kubeflow-deployment",
+                    template: "wait-for-kubeflow-deployment",
+                  },
+                ],
+                [
+                  {
+                    name: "test-kubebench-job",
+                    template: "test-kubebench-job",
+                  },
                 ],
               ],
             },
@@ -160,29 +211,32 @@
               steps: [
                 [
                   {
+                    name: "teardown-cluster",
+                    template: "teardown-cluster",
+                  },
+                ],
+                [
+                  {
                     name: "copy-artifacts",
                     template: "copy-artifacts",
                   },
                 ],
-              ],
-            },
-            {
-              name: "checkout",
-              container: {
-                command: [
-                  "/usr/local/bin/checkout.sh",
-                  srcRootDir,
-                ],
-                env: prow_env,
-                image: image,
-                volumeMounts: [
+                [
                   {
-                    name: dataVolume,
-                    mountPath: mountPath,
+                    name: "delete-test-dir",
+                    template: "delete-test-dir",
                   },
                 ],
-              },
-            },  // checkout
+              ],
+            },
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate(
+              "checkout",
+              ["/usr/local/bin/checkout.sh", srcRootDir],
+              [{
+                name: "EXTRA_REPOS",
+                value: "kubeflow/kubeflow@master",
+              }],
+            ),  // checkout
             $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", [
               "python",
               "-m",
@@ -220,6 +274,44 @@
               "--artifacts_dir=" + artifactsDir,
               "--src_dir=" + srcDir,
             ]),  // test-jsonnet-formatting
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster", [
+              srcDir + "/test/scripts/create_cluster.sh",
+            ]),  // setup cluster
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster", [
+              srcDir + "/test/scripts/delete_cluster.sh",
+            ]),  // teardown cluster
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("deploy-kubeflow", [
+              "python",
+              "-m",
+              "kubebench.test.deploy_kubeflow",
+              "--test_dir=" + testDir,
+              "--src_root_dir=" + srcRootDir,
+              "--namespace=" + namespace,
+              "--as_gcloud_user",
+            ]),  // deploy kubeflow
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("wait-for-kubeflow-deployment", [
+              "python",
+              "-m",
+              "kubebench.test.wait_for_deployment",
+              "--cluster=" + clusterName,
+              "--project=" + project,
+              "--zone=" + zone,
+              "--timeout=5",
+            ]),  // deploy kubeflow
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("test-kubebench-job", [
+              "python",
+              "-m",
+              "kubebench.test.test_kubebench_job",
+              "--test_dir=" + testDir,
+              "--src_root_dir=" + srcRootDir,
+              "--namespace=" + namespace,
+              "--as_gcloud_user",
+            ]),  // test kubebench job
+            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("delete-test-dir", [
+              "bash",
+              "-c",
+              "rm -rf " + testDir,
+            ]),  // delete test dir
           ],  // templates
         },
       },  // e2e
