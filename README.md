@@ -26,23 +26,22 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
     # Install required Kubeflow packages
     ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KF_VERSION}/kubeflow
     ks pkg install kubeflow/core@${KF_VERSION}
-    ks pkg install kubeflow/tf-job@${KF_VERSION}
     ks pkg install kubeflow/argo@${KF_VERSION}
 
     # Create components
-    ks generate core kubeflow-core --name=kubeflow-core
-    ks generate argo kubeflow-argo --name=kubeflow-argo
+    ks generate tf-job-operator tf-job-operator
+    ks generate argo kubeflow-argo
 
     # Configure environment
     ks env add ${KF_ENV}
     ks env set ${KF_ENV} --namespace ${NAMESPACE}
 
     # Deploy the components
-    ks apply ${KF_ENV} -c kubeflow-core
+    ks apply ${KF_ENV} -c tf-job-operator
     ks apply ${KF_ENV} -c kubeflow-argo
 
     # Configure service account to grant Argo more privileges
-    kubectl create rolebinding default-admin --clusterrole=admin --serviceaccount=default:default
+    kubectl create rolebinding default-admin --clusterrole=cluster-admin --serviceaccount=default:default
     ```
 
   - Install Kubebench
@@ -84,7 +83,7 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
 
     ks generate kubebench-job ${JOB_NAME} --name=${JOB_NAME}
 
-    ks param set ${JOB_NAME} name ${CONFIG_NAME}
+    ks param set ${JOB_NAME} name ${JOB_NAME}
     ks param set ${JOB_NAME} namespace ${NAMESPACE}
     ks param set ${JOB_NAME} config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180522-1
     ks param set ${JOB_NAME} report_image gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-csv-reporter:v20180522-1
