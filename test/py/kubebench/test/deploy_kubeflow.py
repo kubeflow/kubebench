@@ -50,12 +50,12 @@ def deploy_kubeflow(test_case):
       test_dir, src_root_dir, namespace, args.github_token, api_client)
 
   # Deploy Kubeflow
-  util.run(["ks", "generate", "core", "kubeflow-core", "--name=kubeflow-core",
+  util.run(["ks", "generate", "tf-job-operator", "tf-job-operator",
             "--namespace=" + namespace], cwd=app_dir)
   util.run(["ks", "generate", "argo", "kubeflow-argo", "--name=kubeflow-argo",
             "--namespace=" + namespace], cwd=app_dir)
   apply_command = ["ks", "apply", "default",
-                   "-c", "kubeflow-core", "-c", "kubeflow-argo"]
+                   "-c", "tf-job-operator", "-c", "kubeflow-argo"]
   if args.as_gcloud_user:
     account = deploy_utils.get_gcp_identity()
     logging.info("Impersonate %s", account)
