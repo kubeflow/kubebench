@@ -20,6 +20,6 @@ local name = import "param://name";
 local namespace = updatedParams.namespace;
 
 std.prune(k.core.v1.list.new([
-  nfs.parts.nfsdeployment(name,namespace),
-  nfs.parts.nfsservice(name, namespace)
+  nfs.parts.nfsdeployment(name, namespace),
+  nfs.parts.nfsservice(name, namespace),
 ]))

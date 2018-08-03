@@ -31,6 +31,5 @@ local storage_request = import "param://storage_request";
 
 std.prune(k.core.v1.list.new([
   nfs.parts.nfsPV(name, namespace, nfs_server_ip, capacity, path),
-  nfs.parts.nfsPVC(name, namespace, storage_request)
+  nfs.parts.nfsPVC(name, namespace, storage_request),
 ]))
-
