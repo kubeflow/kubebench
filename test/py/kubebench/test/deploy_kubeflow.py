@@ -38,7 +38,6 @@ def parse_args():
   args, _ = parser.parse_known_args()
   return args
 
-
 def deploy_kubeflow(test_case):
   """Deploy Kubeflow."""
   args = parse_args()
@@ -76,6 +75,38 @@ def deploy_kubeflow(test_case):
   logging.info("Verifying Argo controller started.")
   util.wait_for_deployment(api_client, namespace, argo_deployment_name)
 
+  util.run(["ks", "generate", "nfs-server", "nfs-server", "--name=nfs-server",
+            "--namespace=" + namespace], cwd=app_dir)
+  apply_command = ["ks", "apply", "default",
+                   "-c", "nfs-server"]
+  if args.as_gcloud_user:
+    account = deploy_utils.get_gcp_identity()
+    logging.info("Impersonate %s", account)
+    # If we don't use --as to impersonate the service account then we
+    # observe RBAC errors when doing certain operations. The problem appears
+    # to be that we end up using the in cluster config (e.g. pod service account)
+    # and not the GCP service account which has more privileges.
+    apply_command.append("--as=" + account)
+  util.run(apply_command, cwd=app_dir)
+  util.wait_for_deployment(api_client, namespace, "nfs-server")
+
+  nfs_server_ip = deploy_utils.get_nfs_server_ip(api_client, "nfs-server",namespace)
+
+  util.run(["ks", "generate", "nfs-volume", "nfs-volume", "--name=kubebench-pvc","--nfs_server_ip="+nfs_server_ip,
+            "--namespace=" + namespace], cwd=app_dir)
+  apply_command = ["ks", "apply", "default",
+                   "-c", "nfs-volume"]
+  if args.as_gcloud_user:
+    account = deploy_utils.get_gcp_identity()
+    logging.info("Impersonate %s", account)
+    # If we don't use --as to impersonate the service account then we
+    # observe RBAC errors when doing certain operations. The problem appears
+    # to be that we end up using the in cluster config (e.g. pod service account)
+    # and not the GCP service account which has more privileges.
+    apply_command.append("--as=" + account)
+  util.run(apply_command, cwd=app_dir)
+  #util.wait_for_deployment(api_client, namespace, "nfs-volume")
+  deploy_utils.copy_job_config(src_root_dir + "/kubeflow/kubebench", namespace)
 
 def main():
   test_case = test_helper.TestCase(
