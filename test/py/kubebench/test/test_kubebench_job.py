@@ -92,6 +92,8 @@ def run_smoke_test(test_case):
   cmd = "kubectl get pods -n " + namespace
   util.run(cmd.split(), cwd=app_dir)
   time.sleep(240)
+  cmd = "kubectl get pods -n " + namespace
+  util.run(cmd.split(), cwd=app_dir)
   ret = deploy_utils.check_kb_job(job_name, namespace)
   if not ret:
     logging.error("Job FAILED.")
