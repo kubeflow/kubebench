@@ -6,9 +6,16 @@ import time
 import uuid
 
 from kubernetes import client as k8s_client
+from kubernetes import config
 from kubernetes.client import rest
 
 from kubeflow.testing import util  # pylint: disable=no-name-in-module
+
+def set_clusterrole(namespace):
+
+  cmd = "kubectl create clusterrolebinding default-admin-binding \
+          --clusterrole=cluster-admin --serviceaccount=" + namespace + ":default"
+  util.run(cmd.split())
 
 def get_gcp_identity():
   google_application_credentials = os.getenv(
@@ -100,7 +107,8 @@ def setup_ks_app(test_dir, src_root_dir, namespace, github_token, api_client):
     util.run(["ks", "registry", "add", r, registries[r]], cwd=app_dir)
 
   # Install required packages
-  packages = ["kubeflow/core", "kubeflow/argo", "kubebench/kubebench-job"]
+  packages = ["kubeflow/core", "kubeflow/argo", "kubebench/kubebench-job",
+              "kubebench/nfs-server", "kubebench/nfs-volume"]
   for p in packages:
     util.run(["ks", "pkg", "install", p], cwd=app_dir)
 
@@ -157,3 +165,70 @@ def wait_for_operation(client,
 
   # Linter complains if we don't have a return here even though its unreachable.
   return None
+
+def copy_job_config(src_dir, namespace):
+
+  config.load_kube_config()
+
+  v1 = k8s_client.CoreV1Api()
+  nfs_server_pod = None
+  ret = v1.list_namespaced_pod(namespace, watch=False)
+  for i in ret.items:
+    if(i.metadata.labels.get("role") != None) & (i.metadata.labels.get("role") == "nfs-server"):
+      nfs_server_pod = i.metadata.name
+  if nfs_server_pod is None:
+    logging.info("nfs server pod NOT found")
+    return 0
+
+  cmd = "kubectl -n " + namespace + " exec " + nfs_server_pod + " -- mkdir -p /exports/config"
+  util.run(cmd.split(), cwd=src_dir)
+
+  cmd = "kubectl cp examples/tf_cnn_benchmarks/job_config.yaml " + namespace + \
+          "/" + nfs_server_pod + ":/exports/config/job-config.yaml"
+  util.run(cmd.split(), cwd=src_dir)
+
+  return 1
+
+def get_nfs_server_ip(name, namespace):
+
+  config.load_kube_config()
+
+  v1 = k8s_client.CoreV1Api()
+  server_ip = None
+  ret = v1.read_namespaced_service(name, namespace)
+  if (ret != None) & (ret.spec.cluster_ip != None):
+    server_ip = ret.spec.cluster_ip
+
+  return server_ip
+
+def check_kb_job(job_name, namespace):
+
+  config.load_kube_config()
+
+  crd_api = k8s_client.CustomObjectsApi()
+  GROUP = "argoproj.io"
+  VERSION = "v1alpha1"
+  PLURAL = "workflows"
+  res = crd_api.get_namespaced_custom_object(GROUP, VERSION, namespace, PLURAL, job_name)
+
+  logging.info(res)
+
+  if res["status"]["phase"] == "Succeeded":
+    logging.info("Job Completed")
+    return 1
+
+  logging.info("Job NOT Completed")
+  return 0
+
+def cleanup_kb_job(app_dir, job_name):
+
+  cmd = "ks delete default -c " + job_name
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks delete default -c nfs-volume"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks delete default -c nfs-server"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks delete default -c kubeflow-argo"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks delete default -c tf-job-operator"
+  util.run(cmd.split(), cwd=app_dir)
