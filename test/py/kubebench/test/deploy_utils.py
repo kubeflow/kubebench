@@ -209,6 +209,9 @@ def check_kb_job(job_name, namespace):
     logging.info("Job Completed")
     return 1
 
+  cmd = "kubectl get pods -n " + namespace
+  util.run(cmd.split(), cwd=app_dir)
+
   logging.info("Job NOT Completed")
   return 0
 

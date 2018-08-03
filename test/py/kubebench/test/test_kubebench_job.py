@@ -89,6 +89,8 @@ def run_smoke_test(test_case):
   # TODO(xyhuang): Currently a place holder so the job is not actually run.
   # A real smoke test job needs to be added and run here.
   util.run(apply_command, cwd=app_dir)
+  cmd = "kubectl get pods -n " + namespace
+  util.run(cmd.split(), cwd=app_dir)
   time.sleep(240)
   ret = deploy_utils.check_kb_job(job_name, namespace)
   if not ret:
