@@ -101,7 +101,8 @@ def setup_ks_app(test_dir, src_root_dir, namespace, github_token, api_client):
     util.run(["ks", "registry", "add", r, registries[r]], cwd=app_dir)
 
   # Install required packages
-  packages = ["kubeflow/core", "kubeflow/argo", "kubebench/kubebench-job", "kubebench/nfs-server", "kubebench/nfs-volume"]
+  packages = ["kubeflow/core", "kubeflow/argo", "kubebench/kubebench-job",
+              "kubebench/nfs-server", "kubebench/nfs-volume"]
   for p in packages:
     util.run(["ks", "pkg", "install", p], cwd=app_dir)
 
@@ -169,14 +170,18 @@ def copy_job_config(src_dir, namespace):
   for i in ret.items:
     if(i.metadata.labels.get("role") != None) & (i.metadata.labels.get("role") == "nfs-server"):
       nfs_server_pod = i.metadata.name
-  if(nfs_server_pod is None):
+  if nfs_server_pod is None:
     logging.info("nfs server pod NOT found")
     return 0
 
   cmd = "kubectl -n " + namespace + " exec " + nfs_server_pod + " -- mkdir -p /exports/config"
   util.run(cmd.split(), cwd=src_dir)
-  cmd = "kubectl cp examples/tf_cnn_benchmarks/job_config.yaml " + namespace + "/" + nfs_server_pod + ":/exports/config/job-config.yaml"
+
+  cmd = "kubectl cp examples/tf_cnn_benchmarks/job_config.yaml " + namespace + \
+          "/" + nfs_server_pod + ":/exports/config/job-config.yaml"
   util.run(cmd.split(), cwd=src_dir)
+
+  return 1
 
 def get_nfs_server_ip(name, namespace):
 
@@ -200,12 +205,12 @@ def check_kb_job(job_name, namespace):
   PLURAL = "workflows"
   res = crd_api.get_namespaced_custom_object(GROUP, VERSION, namespace, PLURAL, job_name)
 
-  if(res["status"]["phase"] == "Succeeded"):
+  if res["status"]["phase"] == "Succeeded":
     logging.info("Job Completed")
     return 1
-  else:
-    logging.info("Job NOT Completed")
-    return 0
+
+  logging.info("Job NOT Completed")
+  return 0
 
 def cleanup_kb_job(app_dir, job_name):
 

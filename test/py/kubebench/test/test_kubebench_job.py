@@ -60,13 +60,17 @@ def run_smoke_test(test_case):
   util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set " + job_name + " namespace " + namespace
   util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks param set " + job_name + " config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180522-1"
+  cmd = "ks param set " + job_name + \
+          " config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180522-1"
   util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks param set " + job_name + " report_image gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-csv-reporter:v20180522-1"
+  cmd = "ks param set " + job_name + \
+          " report_image gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-csv-reporter:v20180522-1"
   util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks param set " + job_name + " config_args -- --config-file=" + pvc_mount + "/config/" + config_name + ".yaml"
+  cmd = "ks param set " + job_name + " config_args -- --config-file=" + pvc_mount + \
+          "/config/" + config_name + ".yaml"
   util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks param set " + job_name + " report_args -- --output-file=" + pvc_mount + "/output/results.csv"
+  cmd = "ks param set " + job_name + " report_args -- --output-file=" + pvc_mount + \
+          "/output/results.csv"
   util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set " + job_name + " pvc_name "  + pvc_name
   util.run(cmd.split(), cwd=app_dir)
