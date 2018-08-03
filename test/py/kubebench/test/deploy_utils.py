@@ -205,6 +205,8 @@ def check_kb_job(job_name, namespace):
   PLURAL = "workflows"
   res = crd_api.get_namespaced_custom_object(GROUP, VERSION, namespace, PLURAL, job_name)
 
+  logging.info(res)
+
   if res["status"]["phase"] == "Succeeded":
     logging.info("Job Completed")
     return 1
