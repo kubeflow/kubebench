@@ -90,7 +90,7 @@ def deploy_kubeflow(test_case):
   util.run(apply_command, cwd=app_dir)
   util.wait_for_deployment(api_client, namespace, "nfs-server")
 
-  nfs_server_ip = deploy_utils.get_nfs_server_ip(api_client, "nfs-server",namespace)
+  nfs_server_ip = deploy_utils.get_nfs_server_ip("nfs-server",namespace)
 
   util.run(["ks", "generate", "nfs-volume", "nfs-volume", "--name=kubebench-pvc","--nfs_server_ip="+nfs_server_ip,
             "--namespace=" + namespace], cwd=app_dir)
