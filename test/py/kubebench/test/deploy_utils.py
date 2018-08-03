@@ -163,29 +163,29 @@ def copy_job_config(src_dir, namespace):
 
   config.load_kube_config()
 
-  v1= k8s_client.CoreV1Api()
+  v1 = k8s_client.CoreV1Api()
   nfs_server_pod = None
-  ret = v1.list_namespaced_pod(namespace,watch=False)
+  ret = v1.list_namespaced_pod(namespace, watch=False)
   for i in ret.items:
-    if((i.metadata.labels.get("role") != None) & (i.metadata.labels.get("role") == "nfs-server")):
+    if(i.metadata.labels.get("role") != None) & (i.metadata.labels.get("role") == "nfs-server"):
       nfs_server_pod = i.metadata.name
-  if(nfs_server_pod == None):
+  if(nfs_server_pod is None):
     logging.info("nfs server pod NOT found")
     return 0
 
   cmd = "kubectl -n " + namespace + " exec " + nfs_server_pod + " -- mkdir -p /exports/config"
-  util.run(cmd.split(),cwd=src_dir)
+  util.run(cmd.split(), cwd=src_dir)
   cmd = "kubectl cp examples/tf_cnn_benchmarks/job_config.yaml " + namespace + "/" + nfs_server_pod + ":/exports/config/job-config.yaml"
-  util.run(cmd.split(),cwd=src_dir)
+  util.run(cmd.split(), cwd=src_dir)
 
 def get_nfs_server_ip(name, namespace):
 
   config.load_kube_config()
 
-  v1= k8s_client.CoreV1Api()
+  v1 = k8s_client.CoreV1Api()
   server_ip = None
   ret = v1.read_namespaced_service(name, namespace)
-  if ((ret != None) & (ret.spec.cluster_ip != None)) :
+  if (ret != None) & (ret.spec.cluster_ip != None):
     server_ip = ret.spec.cluster_ip
 
   return server_ip
@@ -194,7 +194,7 @@ def check_kb_job(job_name, namespace):
 
   config.load_kube_config()
 
-  crd_api=client.CustomObjectsApi()
+  crd_api = k8s_client.CustomObjectsApi()
   GROUP = "argoproj.io"
   VERSION = "v1alpha1"
   PLURAL = "workflows"
@@ -207,15 +207,15 @@ def check_kb_job(job_name, namespace):
     logging.info("Job NOT Completed")
     return 0
 
-def cleanup_kb_job(job_name, namespace):
+def cleanup_kb_job(app_dir, job_name):
 
   cmd = "ks delete default -c " + job_name
-  util.run(cmd.split(),cwd=app_dir)
+  util.run(cmd.split(), cwd=app_dir)
   cmd = "ks delete default -c nfs-volume"
-  util.run(cmd.split(),cwd=app_dir)
+  util.run(cmd.split(), cwd=app_dir)
   cmd = "ks delete default -c nfs-server"
-  util.run(cmd.split(),cwd=app_dir)
+  util.run(cmd.split(), cwd=app_dir)
   cmd = "ks delete default -c kubeflow-argo"
-  util.run(cmd.split(),cwd=app_dir)
+  util.run(cmd.split(), cwd=app_dir)
   cmd = "ks delete default -c kubeflow-core"
-  util.run(cmd.split(),cwd=app_dir)
+  util.run(cmd.split(), cwd=app_dir)
