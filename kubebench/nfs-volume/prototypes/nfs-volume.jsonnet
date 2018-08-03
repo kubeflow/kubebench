@@ -11,7 +11,7 @@
 
 
 local k = import "k.libsonnet";
-local nfs = import "ciscoai/nfs-volume/nfs-volume.libsonnet";
+local nfs = import "kubebench/nfs-volume/nfs-volume.libsonnet";
 
 // updatedParams uses the environment namespace if
 // the namespace parameter is not explicitly set
