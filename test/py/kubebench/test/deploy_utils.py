@@ -21,8 +21,8 @@ def set_gcp_clusterrole(namespace):
     logging.warning("GOOGLE_APPLICATION_CREDENTIALS not set.")
   #identity = util.run(["gcloud", "config", "get-value", "account"])
 
-  cmd = "kubectl -n " + namespace + " create rolebinding default-admin-binding \
-          --clusterrole=cluster-admin --serviceaccount=" + namespace + ":kubeflow-testing"
+  cmd = "kubectl create clusterrolebinding default-admin-binding \
+          --clusterrole=cluster-admin --serviceaccount=" + namespace + ":default"
           #--clusterrole=cluster-admin --user=" + identity
   util.run(cmd.split())
 
