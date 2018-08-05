@@ -44,7 +44,7 @@ def deploy_kubeflow(test_case):
   test_dir = test_case.test_suite.test_dir
   src_root_dir = args.src_root_dir
   namespace = args.namespace
-  #deploy_utils.set_gcp_clusterrole(namespace)
+  deploy_utils.set_gcp_clusterrole(namespace)
   api_client = deploy_utils.create_k8s_client()
   app_dir = deploy_utils.setup_ks_app(
       test_dir, src_root_dir, namespace, args.github_token, api_client)
