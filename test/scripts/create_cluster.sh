@@ -39,4 +39,4 @@ gcloud --project ${PROJECT} container clusters get-credentials ${CLUSTER_NAME} \
 
 ACCOUNT=`gcloud config get-value account --quiet`
 echo "Grant cluster-admin privileges to account ${ACCOUNT}"
-kubectl create clusterrolebinding default-admin --clusterrole=cluster-admin --user=${ACCOUNT}
+kubectl -n kubeflow-test-infra create clusterrolebinding default-admin --clusterrole=cluster-admin --user=${ACCOUNT}
