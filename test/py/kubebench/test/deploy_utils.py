@@ -11,6 +11,20 @@ from kubernetes.client import rest
 
 from kubeflow.testing import util  # pylint: disable=no-name-in-module
 
+def set_gcp_clusterrole(namespace):
+  google_application_credentials = os.getenv(
+      "GOOGLE_APPLICATION_CREDENTIALS", None)
+  if google_application_credentials:
+    util.run(["gcloud", "auth", "activate-service-account",
+              "--key-file=" + google_application_credentials])
+  else:
+    logging.warning("GOOGLE_APPLICATION_CREDENTIALS not set.")
+  identity = util.run(["gcloud", "config", "get-value", "account"])
+
+  cmd = "kubectl -n " + namespace + " create clusterrolebinding default-admin \
+          --clusterrole=cluster-admin --user="+identity
+  util.run(cmd.split())
+
 def get_gcp_identity():
   google_application_credentials = os.getenv(
       "GOOGLE_APPLICATION_CREDENTIALS", None)
