@@ -55,6 +55,11 @@ def deploy_kubeflow(test_case):
             "--namespace=" + namespace], cwd=app_dir)
   util.run(["ks", "generate", "argo", "kubeflow-argo", "--name=kubeflow-argo",
             "--namespace=" + namespace], cwd=app_dir)
+  cmd = "ks param set tf-job-operator tfJobImage \
+          gcr.io/kubeflow-images-public/tf_operator:v20180522-77375baf"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set tf-job-operator tfJobVersion v1alpha1"
+  util.run(cmd.split(), cwd=app_dir)
   apply_command = ["ks", "apply", "default",
                    "-c", "tf-job-operator", "-c", "kubeflow-argo"]
   if args.as_gcloud_user:
@@ -68,7 +73,7 @@ def deploy_kubeflow(test_case):
   util.run(apply_command, cwd=app_dir)
 
   # Verify that the TfJob operator is actually deployed.
-  tf_job_deployment_name = "tf-job-operator-v1alpha2"
+  tf_job_deployment_name = "tf-job-operator"
   logging.info("Verifying TfJob controller started.")
   util.wait_for_deployment(api_client, namespace, tf_job_deployment_name)
 
