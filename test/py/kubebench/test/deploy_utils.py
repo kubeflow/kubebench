@@ -22,8 +22,8 @@ def set_gcp_clusterrole(namespace):
   identity = util.run(["gcloud", "config", "get-value", "account"])
 
   cmd = "kubectl -n " + namespace + " create clusterrolebinding default-admin-binding \
-          --clusterrole=cluster-admin --user=" + identity
-          #--clusterrole=cluster-admin --serviceaccount=" + namespace + ":default"
+          --clusterrole=cluster-admin --serviceaccount=" + namespace + ":" + identity
+          #--clusterrole=cluster-admin --user=" + identity
   util.run(cmd.split())
 
 def get_gcp_identity():
