@@ -53,6 +53,9 @@ def run_smoke_test(test_case):
   pvc_name = "kubebench-pvc"
   pvc_mount = "/kubebench"
   config_name = "job-config"
+
+  # set the namespace of kb job to default
+  namespace = "default"
   # Deploy Kubebench
   util.run(["ks", "generate", "kubebench-job", job_name,
             "--name="+job_name, "--namespace=" + namespace], cwd=app_dir)

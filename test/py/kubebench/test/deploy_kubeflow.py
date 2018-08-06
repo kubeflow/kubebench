@@ -82,6 +82,9 @@ def deploy_kubeflow(test_case):
   logging.info("Verifying Argo controller started.")
   util.wait_for_deployment(api_client, namespace, argo_deployment_name)
 
+  # change the namespace to default for nfs-volume and nfs-server
+  namespace = "default"
+
   util.run(["ks", "generate", "nfs-server", "nfs-server", "--name=nfs-server",
             "--namespace=" + namespace], cwd=app_dir)
   apply_command = ["ks", "apply", "default",
