@@ -48,8 +48,6 @@ def deploy_kubeflow(test_case):
   app_dir = deploy_utils.setup_ks_app(
       test_dir, src_root_dir, namespace, args.github_token, api_client)
 
-  deploy_utils.set_gcp_clusterrole("default")
-
   # Deploy Kubeflow
   util.run(["ks", "generate", "tf-job-operator", "tf-job-operator",
             "--namespace=" + namespace], cwd=app_dir)
@@ -82,8 +80,10 @@ def deploy_kubeflow(test_case):
   logging.info("Verifying Argo controller started.")
   util.wait_for_deployment(api_client, namespace, argo_deployment_name)
 
-  # change the namespace to default for nfs-volume and nfs-server
+  # change the namespace to default to set up nfs-volume and nfs-server
   namespace = "default"
+
+  deploy_utils.set_gcp_clusterrole(namespace)
 
   util.run(["ks", "generate", "nfs-server", "nfs-server", "--name=nfs-server",
             "--namespace=" + namespace], cwd=app_dir)
