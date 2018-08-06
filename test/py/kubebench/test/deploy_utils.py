@@ -239,5 +239,5 @@ def cleanup_kb_job(app_dir, job_name):
   util.run(cmd.split(), cwd=app_dir)
   cmd = "ks delete default -c kubeflow-argo"
   util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks delete default -c kubeflow-core"
+  cmd = "ks delete default -c tf-job-operator"
   util.run(cmd.split(), cwd=app_dir)

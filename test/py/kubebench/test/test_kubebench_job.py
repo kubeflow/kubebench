@@ -94,7 +94,7 @@ def run_smoke_test(test_case):
   util.run(apply_command, cwd=app_dir)
   cmd = "kubectl get pods -n " + namespace
   util.run(cmd.split(), cwd=app_dir)
-  time.sleep(300)
+  time.sleep(240)
   cmd = "kubectl get pods -n " + namespace
   util.run(cmd.split(), cwd=app_dir)
   ret = deploy_utils.check_kb_job(job_name, namespace)
