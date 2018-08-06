@@ -48,7 +48,7 @@ def deploy_kubeflow(test_case):
   app_dir = deploy_utils.setup_ks_app(
       test_dir, src_root_dir, namespace, args.github_token, api_client)
 
-  deploy_utils.set_gcp_clusterrole(namespace)
+  deploy_utils.set_gcp_clusterrole("default")
 
   # Deploy Kubeflow
   util.run(["ks", "generate", "tf-job-operator", "tf-job-operator",
