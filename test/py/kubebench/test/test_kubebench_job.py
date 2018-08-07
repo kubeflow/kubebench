@@ -1,5 +1,7 @@
 import argparse
 import logging
+import sys
+import time
 
 from kubebench.test import deploy_utils
 from kubeflow.testing import test_helper
@@ -47,10 +49,36 @@ def run_smoke_test(test_case):
   app_dir = deploy_utils.setup_ks_app(
       test_dir, src_root_dir, namespace, args.github_token, api_client)
 
+  job_name = "smoke-test-job"
+  pvc_name = "kubebench-pvc"
+  pvc_mount = "/kubebench"
+  config_name = "job-config"
 
+  # set the namespace of kb job to default
+  namespace = "default"
   # Deploy Kubebench
-  util.run(["ks", "generate", "kubebench-job", "smoke-test-job",
-            "--name=smoke-test-job", "--namespace=" + namespace], cwd=app_dir)
+  util.run(["ks", "generate", "kubebench-job", job_name,
+            "--name="+job_name, "--namespace=" + namespace], cwd=app_dir)
+  cmd = "ks param set " + job_name + " name " + job_name
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set " + job_name + " namespace " + namespace
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set " + job_name + \
+          " config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180522-1"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set " + job_name + \
+          " report_image gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-csv-reporter:v20180522-1"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set " + job_name + " config_args -- --config-file=" + pvc_mount + \
+          "/config/" + config_name + ".yaml"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set " + job_name + " report_args -- --output-file=" + pvc_mount + \
+          "/output/results.csv"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set " + job_name + " pvc_name "  + pvc_name
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set " + job_name + " pvc_mount "  + pvc_mount
+  util.run(cmd.split(), cwd=app_dir)
 
   apply_command = ["ks", "apply", "default", "-c", "smoke-test-job"]
   if args.as_gcloud_user:
@@ -61,9 +89,22 @@ def run_smoke_test(test_case):
     # to be that we end up using the in cluster config (e.g. pod service account)
     # and not the GCP service account which has more privileges.
     apply_command.append("--as=" + account)
-  # TODO(xyhuang): Currently a place holder so the job is not actually run.
-  # A real smoke test job needs to be added and run here.
-  # util.run(apply_command, cwd=app_dir)
+  util.run(apply_command, cwd=app_dir)
+
+  cmd = "kubectl get pods -n " + namespace
+  util.run(cmd.split(), cwd=app_dir)
+  time.sleep(240)
+  cmd = "kubectl get pods -n " + namespace
+  util.run(cmd.split(), cwd=app_dir)
+
+  ret = deploy_utils.check_kb_job(job_name, namespace)
+  if not ret:
+    logging.error("Job FAILED.")
+    deploy_utils.cleanup_kb_job(app_dir, job_name)
+    sys.exit(1)
+
+  deploy_utils.cleanup_kb_job(app_dir, job_name)
+  sys.exit(0)
 
 
 def main():

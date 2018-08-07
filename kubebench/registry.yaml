@@ -4,3 +4,9 @@ libraries:
   kubebench-job:
     version: master
     path: kubebench-job
+  nfs-server:
+    version: master
+    path: nfs-server
+  nfs-volume:
+    version: master
+    path: nfs-volume
