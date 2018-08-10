@@ -64,7 +64,7 @@ def run_smoke_test(test_case):
   cmd = "ks param set " + job_name + " namespace " + namespace
   util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set " + job_name + \
-          " config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180522-1"
+          " config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180809-1"
   util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set " + job_name + \
           " report_image gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-csv-reporter:v20180522-1"
