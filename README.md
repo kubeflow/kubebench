@@ -85,7 +85,7 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
 
     ks param set ${JOB_NAME} name ${JOB_NAME}
     ks param set ${JOB_NAME} namespace ${NAMESPACE}
-    ks param set ${JOB_NAME} config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180522-1
+    ks param set ${JOB_NAME} config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180809-1
     ks param set ${JOB_NAME} report_image gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-csv-reporter:v20180522-1
     ks param set ${JOB_NAME} config_args -- --config-file=${PVC_MOUNT}/config/${CONFIG_NAME}.yaml
     ks param set ${JOB_NAME} report_args -- --output-file=${PVC_MOUNT}/output/results.csv

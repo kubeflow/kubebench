@@ -27,7 +27,7 @@ else
   tfJob.parts.tfJobTerminationPolicy("WORKER", 0);
 
 local workerSpec = if numGpus > 0 then
-  tfJob.parts.tfJobReplica("WORKER", numWorkers, args, imageGpu, numGpus, pvcName, pvcMount)
+  tfJob.parts.tfJobReplica("WORKER", numWorkers, args, imageGpu, pvcName, pvcMount, numGpus)
 else
   tfJob.parts.tfJobReplica("WORKER", numWorkers, args, image, pvcName, pvcMount);
 
