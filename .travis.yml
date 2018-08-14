@@ -1,0 +1,20 @@
+language: go
+
+sudo: required
+
+env:
+  - HOME=/home/travis
+
+services:
+  - docker
+
+go:
+  - "1.10"
+
+go_import_path: github.com/kubeflow/kubebench
+
+install:
+  - go get -u github.com/golang/lint/golint
+
+script:
+  - make verify
