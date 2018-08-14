@@ -13,12 +13,8 @@ go:
 
 go_import_path: github.com/kubeflow/kubebench
 
-before_script:
-  - go install ./vendor/github.com/golangci/golangci-lint/cmd/golangci-lint
-
 install:
   - go get -u github.com/golang/lint/golint
 
 script:
   - make verify
-  - golangci-lint run

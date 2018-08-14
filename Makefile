@@ -1,2 +1,3 @@
 verify:
 	go fmt ./controller/*
+	golint ./...
