@@ -1,8 +1,9 @@
 #!/bin/bash
 find_files() {
   find . -not \( \
-      \( \
-        -wholename '*/vendor/*' \
+      \(\
+        -wholename './output' \
+        -o -wholename '*/vendor/*' \
       \) -prune \
     \) -name '*.go'
 }
@@ -14,5 +15,6 @@ find_files() {
 diff=$(find_files | xargs ${gofmt} -I -s 2>&1) || true
 if [[ -n "${diff}" ]]; then
   echo "${diff}"
+  echo "Hello"
   exit 1
 fi
