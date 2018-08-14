@@ -106,3 +106,9 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
 ## Design Document
 
 For additional information about motivation and design for this project please refer to [kubebench_design.md](./doc/kubebench_design.md)
+
+## Development
+
+Ensure you run `$ make verify` before submitting PRs. 
+
+// TODO post detailed development guide. 
