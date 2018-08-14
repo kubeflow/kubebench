@@ -1,3 +1,3 @@
 verify:
-	gofmt ./controller/*
+	hack/verify-gofmt.sh
 	golint ./...
