@@ -5,152 +5,312 @@ local k = import "k.libsonnet";
 
     workflow(name,
              namespace,
-             configImage,
-             configArgs,
-             reportImage,
-             reportArgs,
-             pvcName,
-             pvcMount):: {
-      apiVersion: "argoproj.io/v1alpha1",
-      kind: "Workflow",
-      metadata: {
-        name: name,
-        namespace: namespace,
-      },
-      spec: {
-        entrypoint: "kubebench-workflow",
-        volumes: [
-          {
-            name: "kubebench-volume",
-            persistentVolumeClaim: {
-              claimName: pvcName,
-            },
-          },
-        ],
-        templates: [
-          {
-            name: "kubebench-workflow",
-            steps: [
-              [
-                {
-                  name: "step-config",
-                  template: "config",
-                },
-              ],
-              [
-                {
-                  name: "step-run",
-                  template: "run",
-                  arguments: {
-                    parameters: [
-                      {
-                        name: "manifest",
-                        value: "{{steps.step-config.outputs.parameters.manifest}}",
-                      },
-                    ],
-                  },
-                },
-              ],
-              [
-                {
-                  name: "step-report",
-                  template: "report",
-                },
-              ],
-              [
-                {
-                  name: "step-cleanup",
-                  template: "cleanup",
-                  arguments: {
-                    parameters: [
-                      {
-                        name: "manifest",
-                        value: "{{steps.step-config.outputs.parameters.manifest}}",
-                      },
-                    ],
-                  },
-                },
-              ],
-            ],
-          },
+             controllerImage,
+             configPvc,
+             dataPvc,
+             experimentPvc,
+             githubTokenSecret,
+             gcpCredentialsSecret,
+             kfJobConfig,
+             postProcessorImage,
+             postProcessorArgs,
+             reporterType,
+             reporterArgs):
 
-          {
-            name: "config",
-            container: {
-              image: configImage,
-              imagePullPolicy: "IfNotPresent",
-              args: [
-                "--output-file=" + pvcMount + "/output/" + name + "/manifest.json",
-                "--runner-log-dir=" + pvcMount + "/output/" + name,
-                "--pvc-name=" + pvcName,
-                "--pvc-mount=" + pvcMount,
-              ] + configArgs,
-              volumeMounts: [
-                {
-                  name: "kubebench-volume",
-                  mountPath: pvcMount,
-                },
+      local kubebenchConfigVol = "kubebench-config-volume";
+      local kubebenchDataVol = "kubebench-data-volume";
+      local kubebenchExpVol = "kubebench-exp-volume";
+      local kubebenchGithubTokenVol = "kubebench-github-token-volume";
+      local kubebenchGcpCredsVol = "kubebench-gcp-credentials-volume";
+      local kubebenchConfigRoot = "/kubebench/config";
+      local kubebenchDataRoot = "/kubebench/data";
+      local kubebenchExpRoot = "/kubebench/experiments";
+      local configuratorOutputDir = "/kubebench/configurator/output";
+      local manifestOutput = configuratorOutputDir + "/kf-job-manifest.yaml";
+      local experimentIdOutput = configuratorOutputDir + "/experiment-id";
+
+      local secretEnvVars = [
+        if gcpCredentialsSecret != "null" then {
+          name: "GOOGLE_APPLICATION_CREDENTIALS",
+          value: "/secret/gcp-credentials/key.json",
+        },
+        if githubTokenSecret != "null" then {
+          name: "GITHUB_TOKEN",
+          valueFrom: {
+            secretKeyRef: {
+              name: githubTokenSecret,
+              key: "github_token",
+            },
+          },
+        },
+      ];  // secretEnvVars
+      local baseEnvVars = [
+        {
+          name: "KUBEBENCH_CONFIG_ROOT",
+          value: kubebenchConfigRoot,
+        },
+        {
+          name: "KUBEBENCH_EXP_ROOT",
+          value: kubebenchExpRoot,
+        },
+        {
+          name: "KUBEBENCH_DATA_ROOT",
+          value: kubebenchDataRoot,
+        },
+      ];  // baseEnvVars
+      local expEnvVars = [
+        {
+          name: "KUBEBENCH_EXP_ID",
+          value: "{{inputs.parameters.experiment-id}}",
+        },
+        {
+          name: "KUBEBENCH_EXP_PATH",
+          value: "$(KUBEBENCH_EXP_ROOT)/$(KUBEBENCH_EXP_ID)",
+        },
+        {
+          name: "KUBEBENCH_EXP_CONFIG_PATH",
+          value: "$(KUBEBENCH_EXP_PATH)/config",
+        },
+        {
+          name: "KUBEBENCH_EXP_OUTPUT_PATH",
+          value: "$(KUBEBENCH_EXP_PATH)/output",
+        },
+        {
+          name: "KUBEBENCH_EXP_RESULT_PATH",
+          value: "$(KUBEBENCH_EXP_PATH)/result",
+        },
+      ];  // expEnvVars
+
+      local secretVols = [
+        if githubTokenSecret != "null" then {
+          name: kubebenchGithubTokenVol,
+          secret: {
+            secretName: githubTokenSecret,
+          },
+        },
+        if gcpCredentialsSecret != "null" then {
+          name: kubebenchGcpCredsVol,
+          secret: {
+            secretName: gcpCredentialsSecret,
+          },
+        },
+      ];  // secretVols
+      local baseVols = [
+        {
+          name: kubebenchConfigVol,
+          persistentVolumeClaim: {
+            claimName: configPvc,
+          },
+        },
+        {
+          name: kubebenchExpVol,
+          persistentVolumeClaim: {
+            claimName: experimentPvc,
+          },
+        },
+        if dataPvc != "null" then {
+          name: kubebenchDataVol,
+          persistentVolumeClaim: {
+            claimName: dataPvc,
+          },
+        },
+      ];  // baseVols
+
+      local secretVolMnts = [
+        if githubTokenSecret != "null" then {
+          name: kubebenchGithubTokenVol,
+          mountPath: "/secret/github-token",
+        },
+        if gcpCredentialsSecret != "null" then {
+          name: kubebenchGcpCredsVol,
+          mountPath: "/secret/gcp-credentials",
+        },
+      ];  // secretVolMnts
+      local baseVolMnts = [
+        {
+          name: kubebenchConfigVol,
+          mountPath: kubebenchConfigRoot,
+        },
+        {
+          name: kubebenchExpVol,
+          mountPath: kubebenchExpRoot,
+        },
+        if dataPvc != "null" then {
+          name: kubebenchDataVol,
+          mountPath: kubebenchDataRoot,
+        },
+      ];  // baseVolMnts
+
+      local buildStep(name, template, argParams=[]) = {
+        name: name,
+        template: template,
+      } + if std.length(argParams) > 0 then {
+        arguments: {
+          parameters: argParams,
+        },
+      } else {};  // buildStep
+
+      local buildTemplate(stepName, image, command, envVars=[], volMnts=[], inParams=[], outParams=[]) = {
+        name: stepName,
+        container: {
+          command: command,
+          image: image,
+          env: envVars,
+          volumeMounts: volMnts,
+        },
+      } + if std.length(inParams) > 0 then {
+        inputs: {
+          parameters: inParams,
+        },
+      } else {} + if std.length(outParams) > 0 then {
+        outputs: {
+          parameters: outParams,
+        },
+      } else {};  // buildTemplate
+
+      {
+        apiVersion: "argoproj.io/v1alpha1",
+        kind: "Workflow",
+        metadata: {
+          name: name,
+          namespace: namespace,
+        },
+        spec: {
+          entrypoint: "kubebench-workflow",
+          volumes: secretVols + baseVols,
+          templates: [
+            {
+              name: "kubebench-workflow",
+              steps: [
+                [buildStep("run-configurator", "configurator")],
+                [
+                  buildStep(
+                    "run-kf-job",
+                    "kf-job",
+                    argParams=[
+                      {
+                        name: "kf-job-manifest",
+                        value: "{{steps.run-configurator.outputs.parameters.kf-job-manifest}}",
+                      },
+                      {
+                        name: "experiment-id",
+                        value: "{{steps.run-configurator.outputs.parameters.experiment-id}}",
+                      },
+                    ],
+                  ),
+                ],
+                [
+                  buildStep(
+                    "run-kf-job-monitor",
+                    "kf-job-monitor",
+                    argParams=[
+                      {
+                        name: "kf-job-manifest",
+                        value: "{{steps.run-configurator.outputs.parameters.kf-job-manifest}}",
+                      },
+                    ],
+                  ),
+                ],
+                [
+                  buildStep(
+                    "run-post-processor",
+                    "post-processor",
+                    argParams=[
+                      {
+                        name: "kf-job-manifest",
+                        value: "{{steps.run-configurator.outputs.parameters.kf-job-manifest}}",
+                      },
+                      {
+                        name: "experiment-id",
+                        value: "{{steps.run-configurator.outputs.parameters.experiment-id}}",
+                      },
+                    ],
+                  ),
+                ],
+                [
+                  buildStep(
+                    "run-reporter",
+                    "reporter",
+                    argParams=[
+                      {
+                        name: "kf-job-manifest",
+                        value: "{{steps.run-configurator.outputs.parameters.kf-job-manifest}}",
+                      },
+                      {
+                        name: "experiment-id",
+                        value: "{{steps.run-configurator.outputs.parameters.experiment-id}}",
+                      },
+                    ],
+                  ),
+                ],
               ],
             },
-            outputs: {
-              parameters: [
+            buildTemplate(
+              "configurator",
+              controllerImage,
+              [
+                "configurator",
+                "--config=" + kfJobConfig,
+                "--manifest-output=" + manifestOutput,
+                "--experiment-id-output=" + experimentIdOutput,
+              ],
+              envVars=secretEnvVars + baseEnvVars,
+              volMnts=secretVolMnts + baseVolMnts,
+              outParams=[
                 {
-                  name: "manifest",
+                  name: "kf-job-manifest",
                   valueFrom: {
-                    path: pvcMount + "/output/" + name + "/manifest.json",
+                    path: manifestOutput,
+                  },
+                },
+                {
+                  name: "experiment-id",
+                  valueFrom: {
+                    path: experimentIdOutput,
                   },
                 },
               ],
+            ),
+            {
+              name: "kf-job",
+              resource: {
+                action: "create",
+                successCondition: "status.startTime",
+                manifest: "{{inputs.parameters.kf-job-manifest}}",
+              },
+              inputs: {
+                parameters: [{ name: "kf-job-manifest" }],
+              },
             },
-          },
-          {
-            name: "run",
-            resource: {
-              action: "create",
-              successCondition: "status.phase == Done",
-              failureCondition: "status.phase == Failed",
-              manifest: "{{inputs.parameters.manifest}}",
+            {
+              name: "kf-job-monitor",
+              resource: {
+                action: "get",
+                successCondition: "status.completionTime",
+                manifest: "{{inputs.parameters.kf-job-manifest}}",
+              },
+              inputs: {
+                parameters: [{ name: "kf-job-manifest" }],
+              },
             },
-            inputs: {
-              parameters: [
-                {
-                  name: "manifest",
-                },
-              ],
-            },
-          },
-          {
-            name: "report",
-            container: {
-              image: reportImage,
-              imagePullPolicy: "IfNotPresent",
-              args: [
-                "--log-dir=" + pvcMount + "/output/" + name,
-              ] + reportArgs,
-              volumeMounts: [
-                {
-                  name: "kubebench-volume",
-                  mountPath: pvcMount,
-                },
-              ],
-            },
-          },
-          {
-            name: "cleanup",
-            resource: {
-              action: "delete",
-              manifest: "{{inputs.parameters.manifest}}",
-            },
-            inputs: {
-              parameters: [
-                {
-                  name: "manifest",
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
+            buildTemplate(
+              "post-processor",
+              postProcessorImage,
+              postProcessorArgs,
+              envVars=baseEnvVars + expEnvVars,
+              volMnts=baseVolMnts,
+              inParams=[{ name: "experiment-id" }],
+            ),
+            buildTemplate(
+              "reporter",
+              controllerImage,
+              ["reporter", reporterType] + reporterArgs,
+              envVars=secretEnvVars + baseEnvVars + expEnvVars,
+              volMnts=secretVolMnts + baseVolMnts,
+              inParams=[{ name: "experiment-id" }],
+            ),
+          ],  // templates
+        },
+      },  // workflow
   },
 }
