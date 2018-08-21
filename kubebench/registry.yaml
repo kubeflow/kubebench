@@ -1,6 +1,9 @@
 apiVersion: '0.1'
 kind: ksonnet.io/registry
 libraries:
+  kubebench-examples:
+    version: master
+    path: kubebench-examples
   kubebench-job:
     version: master
     path: kubebench-job
