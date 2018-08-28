@@ -7,6 +7,9 @@ libraries:
   kubebench-job:
     version: master
     path: kubebench-job
+  kubebench-quickstarter:
+    version: master
+    path: kubebench-quickstarter
   nfs-server:
     version: master
     path: nfs-server
