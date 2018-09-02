@@ -81,7 +81,7 @@ def test_wait_for_deployment(test_case): # pylint: disable=redefined-outer-name,
 
 if __name__ == "__main__":
   test_case = test_helper.TestCase(
-    name="test_wait_for_deployment", test_func=test_wait_for_deployment)
+    name="wait_for_deployment", test_func=test_wait_for_deployment)
   test_suite = test_helper.init(
-    name="", test_cases=[test_case])
+    name="test_wait_for_deployment", test_cases=[test_case])
   test_suite.run()
