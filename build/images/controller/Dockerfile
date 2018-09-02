@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo
 
 # pack controller binaries into the image 
 FROM alpine:3.7
-RUN apk add ca-certificates wget && update-ca-certificates
+RUN apk --update add ca-certificates wget && update-ca-certificates
 
 WORKDIR /app
 
@@ -17,6 +17,7 @@ WORKDIR /app
 RUN wget https://github.com/ksonnet/ksonnet/releases/download/v0.11.0/ks_0.11.0_linux_amd64.tar.gz 
 RUN tar -xzf ks_0.11.0_linux_amd64.tar.gz
 ENV PATH="/app/ks_0.11.0_linux_amd64:${PATH}"
+ENV PATH="/app:${PATH}"
 
 #copy built binaries from the builder to the image 
 COPY --from=builder /go/src/github.com/kubeflow/kubebench/controller/cmd/configurator/configurator /app/
@@ -25,5 +26,3 @@ COPY --from=builder /go/src/github.com/kubeflow/kubebench/controller/cmd/reporte
 ## setup a fake kube config for ks init
 COPY --from=builder /go/src/github.com/kubeflow/kubebench/controller/misc/fake_kubeconfig .
 ENV KUBECONFIG="/app/fake_kubeconfig"
-
-ENTRYPOINT ["/bin/sh"]
