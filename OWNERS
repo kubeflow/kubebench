@@ -1,8 +1,8 @@
 # list approvers for the benchmarking effort
 approvers:
   - ddutta
-  - xyhuang
-  - swiftdiaries
-reviewers:
   - gaocegege
+  - swiftdiaries
+  - xyhuang
+reviewers:
   - ramdootp
