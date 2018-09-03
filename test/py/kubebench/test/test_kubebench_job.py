@@ -57,7 +57,7 @@ def run_smoke_test(test_case):
   # set the namespace of kb job to default
   namespace = "default"
   # Deploy Kubebench
-  util.run(["ks", "generate", "kubebench-job", job_name,
+  util.run(["ks", "generate", "kubebench-job-legacy", job_name,
             "--name="+job_name, "--namespace=" + namespace], cwd=app_dir)
   cmd = "ks param set " + job_name + " name " + job_name
   util.run(cmd.split(), cwd=app_dir)
