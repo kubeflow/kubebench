@@ -19,46 +19,66 @@ import (
 	"os"
 	"path"
 
-	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/kubeflow/kubebench/controller/pkg/apis/kubebench/v1alpha1"
-	"github.com/kubeflow/kubebench/controller/pkg/util"
 )
 
 type FileOperatorInterface interface {
-	ReadRunnerConfig(runnerConfigFile string) (*v1alpha1.RunnerConfig, error)
-	WriteManifest(manifest []byte, manifestFile string) error
+	ReadConfig(configFile string) ([]byte, error)
+	WriteOutputs(outputsMap map[string][]byte) error
+	InitExperiment(experimentID string, outputsMap map[string][]byte) error
 }
 
 type FileOperator struct{}
 
-func (fo *FileOperator) ReadRunnerConfig(runnerConfigFile string) (*v1alpha1.RunnerConfig, error) {
-	runnerConfig := &v1alpha1.RunnerConfig{}
-	log.Printf("Loading job runner config from %s.", runnerConfigFile)
-	data, err := ioutil.ReadFile(runnerConfigFile)
+func (fo *FileOperator) ReadConfig(configFile string) ([]byte, error) {
+	configRoot := os.Getenv("KUBEBENCH_CONFIG_ROOT")
+	data, err := ioutil.ReadFile(path.Join(configRoot, configFile))
 	if err != nil {
-		log.Errorf("Could not read file: %s. Error: %s", runnerConfigFile, err)
+		log.Errorf("Could not read file: %s. Error: %s", configFile, err)
 		return nil, err
 	}
-	err = yaml.Unmarshal(data, runnerConfig)
-	if err != nil {
-		log.Errorf("Could not parse job runner config; Error: %s\n", err)
-		return nil, err
-	}
-	log.Infof("RunnerConfig: %s", util.Pformat(runnerConfig))
-
-	return runnerConfig, nil
+	return data, nil
 }
 
-func (fo *FileOperator) WriteManifest(manifest []byte, manifestFile string) error {
-	dir, _ := path.Split(manifestFile)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		log.Errorf("Failed to create directory: %s", err)
-		return err
+func (fo *FileOperator) WriteOutputs(outputsMap map[string][]byte) error {
+	for file, data := range outputsMap {
+		if err := fo.writeFileNewDir(data, file); err != nil {
+			return err
+		}
 	}
-	if err := ioutil.WriteFile(manifestFile, manifest, 0644); err != nil {
-		log.Errorf("Failed to write output file: %s", err)
+	return nil
+}
+
+func (fo *FileOperator) InitExperiment(experimentID string, outputsMap map[string][]byte) error {
+	expRoot := os.Getenv("KUBEBENCH_EXP_ROOT")
+	expConfigDir := path.Join(expRoot, experimentID, "config")
+	expOutputDir := path.Join(expRoot, experimentID, "output")
+	expResultDir := path.Join(expRoot, experimentID, "result")
+	for _, dir := range [...]string{expConfigDir, expOutputDir, expResultDir} {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	}
+
+	for file, data := range outputsMap {
+		if err := fo.writeFileNewDir(data, path.Join(expConfigDir, file)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (fo *FileOperator) writeFileNewDir(data []byte, file string) error {
+	dir, _ := path.Split(file)
+	if dir != "" {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			log.Errorf("Failed to create directory: %s. Error: %s", dir, err)
+			return err
+		}
+	}
+	if err := ioutil.WriteFile(file, data, 0644); err != nil {
+		log.Errorf("Failed to write output file: %s. Error: %s", file, err)
 		return err
 	}
 	return nil

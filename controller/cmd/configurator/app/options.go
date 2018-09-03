@@ -19,8 +19,9 @@ import (
 )
 
 type AppOption struct {
-	ConfigFile string
-	OutputFile string
+	Config             string
+	ManifestOutput     string
+	ExperimentIDOutput string
 }
 
 func NewAppOption() *AppOption {
@@ -29,6 +30,9 @@ func NewAppOption() *AppOption {
 }
 
 func (opt *AppOption) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&opt.ConfigFile, "config-file", "", "The configuration file.")
-	fs.StringVar(&opt.OutputFile, "output-file", "", "The output file.")
+	fs.StringVar(&opt.Config, "config", "", "The configuration file.")
+	fs.StringVar(&opt.ManifestOutput, "manifest-output", "kf-job-manifest.yaml",
+		"The output manifest file.")
+	fs.StringVar(&opt.ExperimentIDOutput, "experiment-id-output", "experiment-id",
+		"The output experiment id file.")
 }

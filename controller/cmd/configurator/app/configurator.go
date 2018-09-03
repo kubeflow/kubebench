@@ -15,7 +15,12 @@
 package app
 
 import (
+	"path"
+
+	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/kubeflow/kubebench/controller/pkg/apis/kubebench/v1alpha1"
 )
 
 type Configurator struct {
@@ -23,20 +28,53 @@ type Configurator struct {
 	ManifestGenerator ManifestGeneratorInterface
 }
 
-func (c *Configurator) Run(configFile string, outputFile string) error {
-	runnerConfig, err := c.FileOperator.ReadRunnerConfig(configFile)
+func (c *Configurator) Run(config string, manifestOutput string, experimentIDOutput string) error {
+
+	// Read and parse config
+	runnerConfigRaw, err := c.FileOperator.ReadConfig(config)
 	if err != nil {
 		log.Errorf("Failed to read runner config: %s", err)
 		return err
 	}
+	runnerConfig := &v1alpha1.RunnerConfig{}
+	if err := yaml.Unmarshal(runnerConfigRaw, runnerConfig); err != nil {
+		log.Errorf("Could not parse job runner config; Error: %s\n", err)
+		return err
+	}
+
+	// Generate experiment ID
+	// TODO(xyhuang): add timestamp in experiment ID when ingestion into kf job is implemented
+	experimentName := runnerConfig.Metadata.Name
+	experimentID := experimentName // + "-" + time.Now().Format("20060102150405")
+
+	// Generate manifest
 	manifest, err := c.ManifestGenerator.GenerateManifest(runnerConfig)
 	if err != nil {
 		log.Errorf("Failed to generate manifest: %s", err)
 		return err
 	}
-	err = c.FileOperator.WriteManifest(manifest, outputFile)
+
+	// Write outputs
+	outputsMap := map[string][]byte{
+		experimentIDOutput: []byte(experimentID),
+		manifestOutput:     manifest,
+	}
+	err = c.FileOperator.WriteOutputs(outputsMap)
 	if err != nil {
-		log.Errorf("Failed to write output: %s", err)
+		log.Errorf("Failed to write outputs: %s", err)
+		return err
+	}
+
+	// Initialize experiment
+	_, configFilename := path.Split(config)
+	_, manifestFilename := path.Split(manifestOutput)
+	outputsMap = map[string][]byte{
+		configFilename:   runnerConfigRaw,
+		manifestFilename: manifest,
+	}
+	err = c.FileOperator.InitExperiment(experimentID, outputsMap)
+	if err != nil {
+		log.Errorf("Failed to initialize experiment: %s", err)
 		return err
 	}
 

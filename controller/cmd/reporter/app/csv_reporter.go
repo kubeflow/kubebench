@@ -65,7 +65,9 @@ func (cr *CsvReporter) Run(options ReporterOption) error {
 }
 
 func (cr *CsvReporter) readInput(filePath string) (map[string]interface{}, error) {
-	data, err := ioutil.ReadFile(filePath)
+	// the experiment result's path is relative to $KUBEBENCH_EXP_RESULT_PATH
+	expResultDir := os.Getenv("KUBEBENCH_EXP_RESULT_PATH")
+	data, err := ioutil.ReadFile(path.Join(expResultDir, filePath))
 	if err != nil {
 		log.Errorf("Could not read file: %s. Error: %s", filePath, err)
 		return nil, err
@@ -80,13 +82,15 @@ func (cr *CsvReporter) readInput(filePath string) (map[string]interface{}, error
 }
 
 func (cr *CsvReporter) appendResult(filePath string, input map[string]interface{}) error {
-	dir, _ := path.Split(filePath)
+	// the report's path is relative to $KUBEBENCH_EXP_ROOT
+	expRootDir := os.Getenv("KUBEBENCH_EXP_ROOT")
+	dir, _ := path.Split(path.Join(expRootDir, filePath))
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Errorf("Failed to create directory: %s", err)
 		return err
 	}
 
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	f, err := os.OpenFile(path.Join(expRootDir, filePath), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
