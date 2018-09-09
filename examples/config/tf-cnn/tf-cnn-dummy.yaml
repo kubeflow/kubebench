@@ -8,7 +8,7 @@ spec:
   parameters:
     name: tf-cnn-dummy
     args: null
-    image: gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-runner-cpu:v20180826-1
+    image: gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-runner-cpu:v20180909-1
     num_worker: 1
     num_ps: 1
     batch_size: 2

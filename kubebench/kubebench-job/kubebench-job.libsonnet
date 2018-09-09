@@ -29,6 +29,16 @@ local k = import "k.libsonnet";
       local manifestOutput = configuratorOutputDir + "/kf-job-manifest.yaml";
       local experimentIdOutput = configuratorOutputDir + "/experiment-id";
 
+      local ownerReferences = [
+        {
+          apiVersion: "argoproj.io/v1alpha1",
+          blockOwnerDeletion: true,
+          kind: "Workflow",
+          name: "{{workflow.name}}",
+          uid: "{{workflow.uid}}",
+        },
+      ];
+
       local secretEnvVars = [
         if gcpCredentialsSecret != "null" then {
           name: "GOOGLE_APPLICATION_CREDENTIALS",
@@ -58,8 +68,12 @@ local k = import "k.libsonnet";
           value: kubebenchDataRoot,
         },
       ];  // baseEnvVars
-      local expEnvVars = [
-        {
+      local expEnvVars(isConfigurator=false) = [
+        if isConfigurator then {
+          name: "KUBEBENCH_EXP_ID",
+          value: "null",
+        }
+        else {
           name: "KUBEBENCH_EXP_ID",
           value: "{{inputs.parameters.experiment-id}}",
         },
@@ -251,6 +265,11 @@ local k = import "k.libsonnet";
               [
                 "configurator",
                 "--config=" + kfJobConfig,
+                "--namespace=" + namespace,
+                "--owner-references=" + std.toString(std.prune(ownerReferences)),
+                "--volumes=" + std.toString(std.prune(baseVols)),
+                "--volume-mounts=" + std.toString(std.prune(baseVolMnts)),
+                "--env-vars=" + std.toString(std.prune(baseEnvVars + expEnvVars(isConfigurator=true))),
                 "--manifest-output=" + manifestOutput,
                 "--experiment-id-output=" + experimentIdOutput,
               ],
@@ -297,7 +316,7 @@ local k = import "k.libsonnet";
               "post-processor",
               postProcessorImage,
               postProcessorArgs,
-              envVars=baseEnvVars + expEnvVars,
+              envVars=baseEnvVars + expEnvVars(),
               volMnts=baseVolMnts,
               inParams=[{ name: "experiment-id" }],
             ),
@@ -305,7 +324,7 @@ local k = import "k.libsonnet";
               "reporter",
               controllerImage,
               ["reporter", reporterType] + reporterArgs,
-              envVars=secretEnvVars + baseEnvVars + expEnvVars,
+              envVars=secretEnvVars + baseEnvVars + expEnvVars(),
               volMnts=secretVolMnts + baseVolMnts,
               inParams=[{ name: "experiment-id" }],
             ),

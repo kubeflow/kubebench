@@ -20,6 +20,11 @@ import (
 
 type AppOption struct {
 	Config             string
+	Namespace          string
+	OwnerReferences    string
+	Volumes            string
+	VolumeMounts       string
+	EnvVars            string
 	ManifestOutput     string
 	ExperimentIDOutput string
 }
@@ -31,6 +36,11 @@ func NewAppOption() *AppOption {
 
 func (opt *AppOption) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&opt.Config, "config", "", "The configuration file.")
+	fs.StringVar(&opt.Namespace, "namespace", "default", "The namespace of the job.")
+	fs.StringVar(&opt.OwnerReferences, "owner-references", "[]", "The owner reference objects.")
+	fs.StringVar(&opt.Volumes, "volumes", "[]", "The volume objects.")
+	fs.StringVar(&opt.VolumeMounts, "volume-mounts", "[]", "The volume mount objects.")
+	fs.StringVar(&opt.EnvVars, "env-vars", "[]", "The environment variables.")
 	fs.StringVar(&opt.ManifestOutput, "manifest-output", "kf-job-manifest.yaml",
 		"The output manifest file.")
 	fs.StringVar(&opt.ExperimentIDOutput, "experiment-id-output", "experiment-id",

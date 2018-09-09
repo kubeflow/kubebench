@@ -24,16 +24,14 @@ import (
 )
 
 func run(opt *app.AppOption) error {
-	config := opt.Config
-	manifestOutput := opt.ManifestOutput
-	experimentIDOutput := opt.ExperimentIDOutput
 
 	configurator := app.Configurator{
 		FileOperator:      &(app.FileOperator{}),
 		ManifestGenerator: &(app.ManifestGenerator{}),
+		ManifestModifier:  &(app.ManifestModifier{}),
 	}
 
-	if err := configurator.Run(config, manifestOutput, experimentIDOutput); err != nil {
+	if err := configurator.Run(opt); err != nil {
 		log.Errorf("Configurator failed to run: %s", err)
 		return err
 	}

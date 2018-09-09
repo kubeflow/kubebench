@@ -15,10 +15,13 @@
 package app
 
 import (
+	"encoding/json"
 	"path"
 
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/kubeflow/kubebench/controller/pkg/apis/kubebench/v1alpha1"
 )
@@ -26,9 +29,35 @@ import (
 type Configurator struct {
 	FileOperator      FileOperatorInterface
 	ManifestGenerator ManifestGeneratorInterface
+	ManifestModifier  ManifestModifierInterface
 }
 
-func (c *Configurator) Run(config string, manifestOutput string, experimentIDOutput string) error {
+func (c *Configurator) Run(options *AppOption) error {
+
+	config := options.Config
+	namespace := options.Namespace
+	manifestOutput := options.ManifestOutput
+	experimentIDOutput := options.ExperimentIDOutput
+	var ownerReferences []metav1.OwnerReference
+	if err := json.Unmarshal([]byte(options.OwnerReferences), &ownerReferences); err != nil {
+		log.Errorf("Cannot unmarshal value: %s", options.OwnerReferences)
+		return err
+	}
+	var volumes []corev1.Volume
+	if err := json.Unmarshal([]byte(options.Volumes), &volumes); err != nil {
+		log.Errorf("Cannot unmarshal value: %s", options.Volumes)
+		return err
+	}
+	var volumeMounts []corev1.VolumeMount
+	if err := json.Unmarshal([]byte(options.VolumeMounts), &volumeMounts); err != nil {
+		log.Errorf("Cannot unmarshal value: %s", options.VolumeMounts)
+		return err
+	}
+	var envVars []corev1.EnvVar
+	if err := json.Unmarshal([]byte(options.EnvVars), &envVars); err != nil {
+		log.Errorf("Cannot unmarshal value: %s", options.EnvVars)
+		return err
+	}
 
 	// Read and parse config
 	runnerConfigRaw, err := c.FileOperator.ReadConfig(config)
@@ -46,11 +75,32 @@ func (c *Configurator) Run(config string, manifestOutput string, experimentIDOut
 	// TODO(xyhuang): add timestamp in experiment ID when ingestion into kf job is implemented
 	experimentName := runnerConfig.Metadata.Name
 	experimentID := experimentName // + "-" + time.Now().Format("20060102150405")
+	// modify environment variable with experiment id
+	for i, env := range envVars {
+		if env.Name == "KUBEBENCH_EXP_ID" {
+			envVars[i].Value = experimentID
+		}
+	}
 
 	// Generate manifest
 	manifest, err := c.ManifestGenerator.GenerateManifest(runnerConfig)
 	if err != nil {
 		log.Errorf("Failed to generate manifest: %s", err)
+		return err
+	}
+
+	// Modify manifest
+	modSpec := ManifestModSpec{
+		Name:            experimentID,
+		Namespace:       namespace,
+		OwnerReferences: ownerReferences,
+		Volumes:         volumes,
+		VolumeMounts:    volumeMounts,
+		EnvVars:         envVars,
+	}
+	manifest, err = c.ManifestModifier.ModifyManifest(manifest, modSpec)
+	if err != nil {
+		log.Errorf("Failed to modify manifest: %s", err)
 		return err
 	}
 
