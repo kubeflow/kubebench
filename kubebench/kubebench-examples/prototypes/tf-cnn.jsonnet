@@ -3,7 +3,7 @@
 // @description kubebench-example-tfcnn
 // @shortDescription A simple TFJob to run CNN benchmark
 // @param name string Name for the job.
-// @optionalParam image string gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-runner-cpu:v20180826-1 Image
+// @optionalParam image string gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-runner-cpu:v20180909-1 Image
 // @optionalParam num_worker number 1 Number of workders
 // @optionalParam num_ps number 1 Number of parameter servers
 // @optionalParam args string null Other arguments
@@ -55,21 +55,6 @@ local tfjob = {
         replicas: numWorker,
         template: {
           spec: {
-            // TODO (xyhuang): the kubebench volumes are to be automated by the configurator.
-            volumes: [
-              {
-                name: "kubebench-config-volume",
-                persistentVolumeClaim: {
-                  claimName: "kubebench-config-pvc",
-                },
-              },
-              {
-                name: "kubebench-exp-volume",
-                persistentVolumeClaim: {
-                  claimName: "kubebench-exp-pvc",
-                },
-              },
-            ],
             containers: [
               {
                 args: [
@@ -86,52 +71,6 @@ local tfjob = {
                 image: image,
                 name: "tensorflow",
                 workingDir: "/opt/tf-benchmarks/scripts/tf_cnn_benchmarks",
-                // TODO (xyhuang): the kubebench envs are to be automated by the configurator.
-                env: [
-                  {
-                    name: "KUBEBENCH_CONFIG_ROOT",
-                    value: "/kubebench/config",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_ROOT",
-                    value: "/kubebench/experiments",
-                  },
-                  {
-                    name: "KUBEBENCH_DATA_ROOT",
-                    value: "/kubebench/data",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_ID",
-                    value: name,
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_PATH",
-                    value: "$(KUBEBENCH_EXP_ROOT)/$(KUBEBENCH_EXP_ID)",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_CONFIG_PATH",
-                    value: "$(KUBEBENCH_EXP_PATH)/config",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_OUTPUT_PATH",
-                    value: "$(KUBEBENCH_EXP_PATH)/output",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_RESULT_PATH",
-                    value: "$(KUBEBENCH_EXP_PATH)/result",
-                  },
-                ],
-                // TODO (xyhuang): the kubebench volumes are to be automated by the configurator.
-                volumeMounts: [
-                  {
-                    name: "kubebench-config-volume",
-                    mountPath: "/kubebench/config",
-                  },
-                  {
-                    name: "kubebench-exp-volume",
-                    mountPath: "/kubebench/experiments",
-                  },
-                ],
               },
             ],
             restartPolicy: "OnFailure",
@@ -142,21 +81,6 @@ local tfjob = {
         replicas: numPs,
         template: {
           spec: {
-            // TODO (xyhuang): the kubebench volumes are to be automated by the configurator.
-            volumes: [
-              {
-                name: "kubebench-config-volume",
-                persistentVolumeClaim: {
-                  claimName: "kubebench-config-pvc",
-                },
-              },
-              {
-                name: "kubebench-exp-volume",
-                persistentVolumeClaim: {
-                  claimName: "kubebench-exp-pvc",
-                },
-              },
-            ],
             containers: [
               {
                 args: [
@@ -173,52 +97,6 @@ local tfjob = {
                 image: image,
                 name: "tensorflow",
                 workingDir: "/opt/tf-benchmarks/scripts/tf_cnn_benchmarks",
-                // TODO (xyhuang): the kubebench envs are to be automated by the configurator.
-                env: [
-                  {
-                    name: "KUBEBENCH_CONFIG_ROOT",
-                    value: "/kubebench/config",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_ROOT",
-                    value: "/kubebench/experiments",
-                  },
-                  {
-                    name: "KUBEBENCH_DATA_ROOT",
-                    value: "/kubebench/data",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_ID",
-                    value: name,
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_PATH",
-                    value: "$(KUBEBENCH_EXP_ROOT)/$(KUBEBENCH_EXP_ID)",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_CONFIG_PATH",
-                    value: "$(KUBEBENCH_EXP_PATH)/config",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_OUTPUT_PATH",
-                    value: "$(KUBEBENCH_EXP_PATH)/output",
-                  },
-                  {
-                    name: "KUBEBENCH_EXP_RESULT_PATH",
-                    value: "$(KUBEBENCH_EXP_PATH)/result",
-                  },
-                ],
-                // TODO (xyhuang): the kubebench volumes are to be automated by the configurator.
-                volumeMounts: [
-                  {
-                    name: "kubebench-config-volume",
-                    mountPath: "/kubebench/config",
-                  },
-                  {
-                    name: "kubebench-exp-volume",
-                    mountPath: "/kubebench/experiments",
-                  },
-                ],
               },
             ],
             restartPolicy: "OnFailure",

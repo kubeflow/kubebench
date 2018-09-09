@@ -4,14 +4,14 @@
 // @shortDescription A benchmark job on Kubeflow
 // @param name string Name to give to each of the components
 // @optionalParam namespace string default Namespace
-// @optionalParam controller_image string gcr.io/xyhuang-kubeflow/kubebench-controller:v20180902-1 Configurator image
+// @optionalParam controller_image string gcr.io/xyhuang-kubeflow/kubebench-controller:v20180909-1 Configurator image
 // @optionalParam config_pvc string kubebench-config-pvc Configuration PVC
 // @optionalParam data_pvc string null Data PVC
 // @optionalParam github_token_secret string null Github token secret
 // @optionalParam gcp_credentials_secret string null GCP credentials secret
 // @optionalParam experiment_pvc string kubebench-exp-pvc Experiment PVC
 // @optionalParam kf_job_config string null Path to the kubeflow job config
-// @optionalParam post_processor_image string gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-postprocessor:v20180826-1 Image of post processor
+// @optionalParam post_processor_image string gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-postprocessor:v20180909-1 Image of post processor
 // @optionalParam post_processor_args string null Arguments of post processor
 // @optionalParam reporter_type string csv Type of reporter
 // @optionalParam reporter_args string --input-file=result.json,output-file=report.csv Arguments of reporter
