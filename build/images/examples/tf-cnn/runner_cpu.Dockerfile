@@ -23,7 +23,7 @@ RUN mkdir -p /kubebench/experiments
 RUN git clone -n https://github.com/tensorflow/benchmarks.git /opt/tf-benchmarks
 RUN cd /opt/tf-benchmarks; git checkout 3b90c14fb2bf02ca5d27c188aee878663229a0a7
 
-COPY examples/tf-cnn/src/runner.py /opt
+COPY examples/src/tf-cnn/runner.py /opt
 RUN chmod u+x /opt/*
 WORKDIR /opt/tf-benchmarks/scripts/tf_cnn_benchmarks/
 ENTRYPOINT ["python", "/opt/runner.py"]
