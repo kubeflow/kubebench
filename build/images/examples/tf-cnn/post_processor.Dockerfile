@@ -16,7 +16,7 @@ RUN apk add --update --no-cache build-base
 
 RUN mkdir /workspace
 
-COPY examples/tf-cnn/src/post_processor.py /workspace
+COPY examples/src/tf-cnn/post_processor.py /workspace
 
 WORKDIR /workspace
 
