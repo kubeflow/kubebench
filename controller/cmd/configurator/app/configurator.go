@@ -17,13 +17,15 @@ package app
 import (
 	"encoding/json"
 	"path"
+	"strings"
+	"time"
 
 	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/kubeflow/kubebench/controller/pkg/apis/kubebench/v1alpha1"
+	"github.com/kubeflow/kubebench/controller/pkg/util"
 )
 
 const (
@@ -42,6 +44,11 @@ func (c *Configurator) Run(options *AppOption) error {
 	namespace := options.Namespace
 	manifestOutput := options.ManifestOutput
 	experimentIDOutput := options.ExperimentIDOutput
+	var ksPrototypeRef KsPrototypeRef
+	if err := json.Unmarshal([]byte(options.TemplateRef), &ksPrototypeRef); err != nil {
+		log.Errorf("Cannot unmarshal value: %s", options.TemplateRef)
+		return err
+	}
 	var ownerReferences []metav1.OwnerReference
 	if err := json.Unmarshal([]byte(options.OwnerReferences), &ownerReferences); err != nil {
 		log.Errorf("Cannot unmarshal value: %s", options.OwnerReferences)
@@ -64,21 +71,20 @@ func (c *Configurator) Run(options *AppOption) error {
 	}
 
 	// Read and parse config
-	runnerConfigRaw, err := c.FileOperator.ReadConfig(config)
+	parametersRaw, err := c.FileOperator.ReadConfig(config)
 	if err != nil {
 		log.Errorf("Failed to read runner config: %s", err)
 		return err
 	}
-	runnerConfig := &v1alpha1.RunnerConfig{}
-	if err := yaml.Unmarshal(runnerConfigRaw, runnerConfig); err != nil {
-		log.Errorf("Could not parse job runner config; Error: %s\n", err)
+	var parameters map[string]interface{}
+	if err := yaml.Unmarshal(parametersRaw, &parameters); err != nil {
+		log.Errorf("Could not parse job parameters; Error: %s\n", err)
 		return err
 	}
 
 	// Generate experiment ID
-	// TODO(xyhuang): add timestamp in experiment ID when ingestion into kf job is implemented
-	experimentName := runnerConfig.Metadata.Name
-	experimentID := experimentName // + "-" + time.Now().Format("20060102150405")
+	experimentName := strings.TrimSuffix(config, path.Ext(config))
+	experimentID := experimentName + "-" + time.Now().Format("200601021504") + "-" + util.RandString(4)
 	// modify environment variable with experiment id
 	for i, env := range envVars {
 		if env.Name == experimentIDEnvName {
@@ -87,7 +93,7 @@ func (c *Configurator) Run(options *AppOption) error {
 	}
 
 	// Generate manifest
-	manifest, err := c.ManifestGenerator.GenerateManifest(runnerConfig)
+	manifest, err := c.ManifestGenerator.GenerateManifest(ksPrototypeRef, parameters)
 	if err != nil {
 		log.Errorf("Failed to generate manifest: %s", err)
 		return err
@@ -123,7 +129,7 @@ func (c *Configurator) Run(options *AppOption) error {
 	_, configFilename := path.Split(config)
 	_, manifestFilename := path.Split(manifestOutput)
 	outputsMap = map[string][]byte{
-		configFilename:   runnerConfigRaw,
+		configFilename:   parametersRaw,
 		manifestFilename: manifest,
 	}
 	err = c.FileOperator.InitExperiment(experimentID, outputsMap)

@@ -20,12 +20,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/kubeflow/kubebench/controller/pkg/apis/kubebench/v1alpha1"
 	"github.com/kubeflow/kubebench/controller/pkg/util"
 )
 
 type ManifestGeneratorInterface interface {
-	GenerateManifest(runnerConfig *v1alpha1.RunnerConfig) ([]byte, error)
+	GenerateManifest(ksPrototypeRef KsPrototypeRef, parameters map[string]interface{}) ([]byte, error)
 }
 
 type ManifestGenerator struct{}
@@ -90,16 +89,17 @@ func (mg *ManifestGenerator) ksShow(name string, cwd string) ([]byte, error) {
 	return out, nil
 }
 
-func (mg *ManifestGenerator) GenerateManifest(runnerConfig *v1alpha1.RunnerConfig) ([]byte, error) {
+func (mg *ManifestGenerator) GenerateManifest(
+	ksPrototypeRef KsPrototypeRef, params map[string]interface{}) ([]byte, error) {
+
 	wkdir := "/tmp"
 	ksApp := "kubebench-app"
 	ksdir := path.Join(wkdir, ksApp)
 
-	ksPrototype := runnerConfig.Spec.Prototype.Name
-	ksPackage := runnerConfig.Spec.Prototype.Package
-	ksRegistryPath := runnerConfig.Spec.Prototype.Registry
+	ksPrototype := ksPrototypeRef.Name
+	ksPackage := ksPrototypeRef.Package
+	ksRegistryPath := ksPrototypeRef.Registry
 	_, ksRegistry := path.Split(path.Clean(ksRegistryPath))
-	params := runnerConfig.Spec.Parameters
 
 	if err := mg.ksInit(ksApp, wkdir); err != nil {
 		return nil, err
