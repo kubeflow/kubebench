@@ -77,6 +77,7 @@ local tfjob = {
           },
         },
       },
+    } + if numPs > 0 then {
       Ps: {
         replicas: numPs,
         template: {
@@ -104,7 +105,7 @@ local tfjob = {
         },
         tfReplicaType: "PS",
       },
-    },
+    } else {},
   },
 };
 
