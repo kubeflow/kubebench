@@ -1,0 +1,34 @@
+{
+   "name": "kubebench-quickstarter",
+   "apiVersion": "0.0.1",
+   "kind": "ksonnet.io/parts",
+   "description": "Quick-start installer for Kubebench\n",
+   "author": "Cisco Systems, Inc.",
+   "contributors": [
+      {
+         "name": "Xinyuan Huang",
+         "email": "xinyuahu@cisco.com"
+      }
+   ],
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/kubeflow/kubebench"
+   },
+   "bugs": {
+      "url": "https://github.com/kubeflow/kubebench/issues"
+   },
+   "keywords": [
+      "kubeflow",
+      "benchmark"
+   ],
+   "quickStart": {
+      "prototype": "io.ksonnet.pkg.kubebench-quickstarter",
+      "componentName": "kubebench-quickstarter",
+      "flags": {
+         "name": "kubebench-quickstarter",
+         "namespace": "default"
+      },
+      "comment": "Run Kubebench quick-start installer"
+   },
+   "license": "Apache 2.0"
+}
