@@ -4,7 +4,10 @@
 // @shortDescription A benchmark job on Kubeflow
 // @param name string Name to give to each of the components
 // @optionalParam namespace string default Namespace
-// @optionalParam controller_image string gcr.io/xyhuang-kubeflow/kubebench-controller:v20180909-1 Configurator image
+// @optionalParam controller_image string gcr.io/xyhuang-kubeflow/kubebench-controller:v20180913-1 Configurator image
+// @optionalParam ks_prototype string kubebench-example-tfcnn The Ksonnet prototype of the job being benchmarked
+// @optionalParam ks_package string kubebench-examples The Ksonnet package of the job being benchmarked
+// @optionalParam ks_registry string github.com/kubeflow/kubebench/tree/master/kubebench The Ksonnet registry of the job being benchmarked
 // @optionalParam config_pvc string kubebench-config-pvc Configuration PVC
 // @optionalParam data_pvc string null Data PVC
 // @optionalParam github_token_secret string null Github token secret
@@ -21,6 +24,9 @@ local kubebench = import "kubebench/kubebench-job/kubebench-job.libsonnet";
 
 local configPvc = import "param://config_pvc";
 local controllerImage = import "param://controller_image";
+local ksPrototype = import "param://ks_prototype";
+local ksPackage = import "param://ks_package";
+local ksRegistry = import "param://ks_registry";
 local dataPvc = import "param://data_pvc";
 local experimentPvc = import "param://experiment_pvc";
 local gcpCredentialsSecret = import "param://gcp_credentials_secret";
@@ -49,6 +55,9 @@ std.prune(k.core.v1.list.new([
   kubebench.parts.workflow(name,
                            namespace,
                            controllerImage,
+                           ksPrototype,
+                           ksPackage,
+                           ksRegistry,
                            configPvc,
                            dataPvc,
                            experimentPvc,

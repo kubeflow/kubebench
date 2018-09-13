@@ -42,3 +42,13 @@ type ManifestModSpec struct {
 	// Container environment variables
 	EnvVars []corev1.EnvVar
 }
+
+// KsPrototypeRef is a reference to a ksonnet prototype
+type KsPrototypeRef struct {
+	// Prototype name
+	Name string
+	// Package of the prototype
+	Package string
+	// Registry of the prototype
+	Registry string
+}

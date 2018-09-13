@@ -6,6 +6,9 @@ local k = import "k.libsonnet";
     workflow(name,
              namespace,
              controllerImage,
+             ksPrototype,
+             ksPackage,
+             ksRegistry,
              configPvc,
              dataPvc,
              experimentPvc,
@@ -28,6 +31,12 @@ local k = import "k.libsonnet";
       local configuratorOutputDir = "/kubebench/configurator/output";
       local manifestOutput = configuratorOutputDir + "/kf-job-manifest.yaml";
       local experimentIdOutput = configuratorOutputDir + "/experiment-id";
+
+      local ksPrototypeRef = {
+        name: ksPrototype,
+        package: ksPackage,
+        registry: ksRegistry,
+      };
 
       local ownerReferences = [
         {
@@ -264,6 +273,7 @@ local k = import "k.libsonnet";
               controllerImage,
               [
                 "configurator",
+                "--template-ref=" + std.toString(ksPrototypeRef),
                 "--config=" + kfJobConfig,
                 "--namespace=" + namespace,
                 "--owner-references=" + std.toString(std.prune(ownerReferences)),

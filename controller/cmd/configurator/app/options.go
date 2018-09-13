@@ -19,6 +19,7 @@ import (
 )
 
 type AppOption struct {
+	TemplateRef        string
 	Config             string
 	Namespace          string
 	OwnerReferences    string
@@ -35,7 +36,8 @@ func NewAppOption() *AppOption {
 }
 
 func (opt *AppOption) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&opt.Config, "config", "", "The configuration file.")
+	fs.StringVar(&opt.TemplateRef, "template-ref", "", "Reference to the job template.")
+	fs.StringVar(&opt.Config, "config", "", "The parameter configuration file.")
 	fs.StringVar(&opt.Namespace, "namespace", "default", "The namespace of the job.")
 	fs.StringVar(&opt.OwnerReferences, "owner-references", "[]", "The owner reference objects.")
 	fs.StringVar(&opt.Volumes, "volumes", "[]", "The volume objects.")
