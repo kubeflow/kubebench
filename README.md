@@ -3,112 +3,92 @@
 The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](https://github.com/kubeflow/kubeflow) with various system and model settings. Kubebench enables benchmarks by leveraging Kubeflow's capability of managing TFJobs, as well as [Argo](https://github.com/argoproj/argo) based workflows.
 
 
-## Getting Started
+## Quick Start
+
+NOTE: the quick start guide serves as a demo that helps you quickly go through a Kubebench Job. The components installed may not be suitable for production use. Please refer to detailed user guide for proper configuration of Kubebench Jobs.
 
 ### Prerequisites
 
   - Kubernetes >= 1.8
-  - Ksonnet >= 0.10
+  - Ksonnet >= 0.11
+  - Kubeflow >= 0.3
+    - Required modules: argo, tf-operator
+  - For the quick-starter installation, Kubernetes nodes need to support NFS mounting
 
 ### Installation
 
-  - Install Dependencies (Kubebench depends on an existing Kubeflow deployment. For details about using Kubeflow, please refer to [Kubeflow user guide](https://github.com/kubeflow/kubeflow/blob/master/user_guide.md))
+  - Install Dependencies (Kubebench depends on an existing Kubeflow deployment. For details about using Kubeflow, please refer to [Kubeflow documentation](https://www.kubeflow.org/docs/started/getting-started/))
 
-    ```bash
-    KF_VERSION=master
-    KF_ENV=local
-    NAMESPACE=default
-
-    # Initialize Ksonnet app
-    ks init my-kubeflow
-    cd my-kubeflow
-
-    # Install required Kubeflow packages
-    ks registry add kubeflow github.com/kubeflow/kubeflow/tree/${KF_VERSION}/kubeflow
-    ks pkg install kubeflow/core@${KF_VERSION}
-    ks pkg install kubeflow/argo@${KF_VERSION}
-
-    # Create components
-    ks generate tf-job-operator tf-job-operator
-    ks generate argo kubeflow-argo
-
-    # Configure environment
-    ks env add ${KF_ENV}
-    ks env set ${KF_ENV} --namespace ${NAMESPACE}
-
-    # Deploy the components
-    ks apply ${KF_ENV} -c tf-job-operator
-    ks apply ${KF_ENV} -c kubeflow-argo
-
-    # Configure service account to grant Argo more privileges
-    kubectl create rolebinding default-admin --clusterrole=cluster-admin --serviceaccount=default:default
-    ```
-
-  - Install Kubebench
+  - Install Kubebench quick-starter package
 
     ```bash
     KB_VERSION=master
+    KB_ENV=default
+
     ks registry add kubebench github.com/kubeflow/kubebench/tree/${KB_VERSION}/kubebench
+    ks pkg install kubebench/kubebench-quickstarter@${KB_VERSION}
     ks pkg install kubebench/kubebench-job@${KB_VERSION}
+    ks pkg install kubebench/kubebench-examples@${KB_VERSION}
+
+    ks generate kubebench-quickstarter-service kubebench-quickstarter-service
+    ks generate kubebench-quickstarter-volume kubebench-quickstarter-volume
+
+    ks apply ${KB_ENV} -c kubebench-quickstarter-service
+  
+    # wait for deployment to finish
+    KB_NFS_IP=`kubectl get svc kubebench-nfs-server -o=jsonpath={.spec.clusterIP}`
+    ks param set kubebench-quickstarter-volume nfsServiceIP ${KB_NFS_IP}
+    ks apply ${KB_ENV} -c kubebench-quickstarter-service
     ```
 
-  - Create a persistent volume claim for data storage
-    - currently this is the only supported way to store benchmark configurations and results. In the future this will be simplified, and more options of configuration/result storage will be provided.
-    - the persistent volume needs to have ReadWriteMany access mode.
-    - we provide an example PVC setup below based on NFS, the example config file is in [examples/tf_cnn_benchmarks directory](https://github.com/kubeflow/kubebench/blob/master/examples/tf_cnn_benchmarks/nfs_pvc.yaml)
-    - assuming that you have NFS setup, edit the example config file with the right server address and exported path of your NFS server, then run the following command
+  - View the Kubebench directory contents
 
-    ```bash
-    kubectl create -f nfs_pvc.yaml --namespace ${NAMESPACE}
+    The installer comes with a simple file server that allows you to view the contents of Kubebench directory through browser. You may find details of the file server service through:
+
+    ```
+    kubectl get svc kubebench-nfs-file-server-svc -o wide
+    ```
+
+    Alternatively, you can also access the deployed NFS service directly. You may find details of the nfs service through:
+
+    ```
+    kubectl get svc kubebench-nfs-svc -o wide
     ```
 
 ### Run a Kubebench Job
 
-  - Copy benchmark configuration file to the persistent volume
-    - an example benchmark config is in [examples/tf_cnn_benchmarks directory](https://github.com/kubeflow/kubebench/blob/master/examples/tf_cnn_benchmarks/job_config.yaml)
-    - assuming that your NFS exported path is `/var/nfs/kubebench`, as is in the PVC config example, run the following command on the NFS server
-
-    ```
-    mkdir -p /var/nfs/kubebench/config
-    cp job_config.yaml /var/nfs/kubebench/config
-    ```
-
   - Generate, configure, and deploy a kubebench-job
 
     ```
-    CONFIG_NAME="job_config"
     JOB_NAME="my-benchmark"
-    PVC_NAME="kubebench-pvc"
-    PVC_MOUNT="/kubebench"
 
-    ks generate kubebench-job ${JOB_NAME} --name=${JOB_NAME}
+    ks generate kubebench-job ${JOB_NAME}
 
-    ks param set ${JOB_NAME} name ${JOB_NAME}
-    ks param set ${JOB_NAME} namespace ${NAMESPACE}
-    ks param set ${JOB_NAME} config_image gcr.io/xyhuang-kubeflow/kubebench-configurator:v20180809-1
-    ks param set ${JOB_NAME} report_image gcr.io/xyhuang-kubeflow/kubebench-tf-cnn-csv-reporter:v20180522-1
-    ks param set ${JOB_NAME} config_args -- --config-file=${PVC_MOUNT}/config/${CONFIG_NAME}.yaml
-    ks param set ${JOB_NAME} report_args -- --output-file=${PVC_MOUNT}/output/results.csv
-    ks param set ${JOB_NAME} pvc_name ${PVC_NAME}
-    ks param set ${JOB_NAME} pvc_mount ${PVC_MOUNT}
-
-    ks apply ${KF_ENV} -c ${JOB_NAME}
+    ks apply ${KB_ENV} -c ${JOB_NAME}
     ```
 
   - Track the status of your job
+
+    The Kubebench Job will be deployed as an Argo Workflow, you may go to Argo dashboard to track the progress of the job.
+
+    Alternatively, you can also use the followings in command line:
 
     ```
     kubectl get -o yaml workflows ${JOB_NAME}
     ```
 
-  - Once the job is finished, you can find the results under your specified output directory in the NFS, if you used the same configurations as is in this example, the output directory will be in `/var/nfs/kubebench/output`.
+### View results
+
+  - Once the job is finished, you can find the results under the experiment directory in the NFS, the details of the particular experiment is located at `/experiments/<EXPERIMENT_UID>`. You may also see a csv file at `/experiments/report.csv`, if you run multiple experiments, the aggregated results will be recorded here.
+
 
 ## Design Document
 
 For additional information about motivation and design for this project please refer to [kubebench_design.md](./doc/kubebench_design.md)
 
+
 ## Development
 
 Ensure you run `$ make verify` before submitting PRs. 
 
-// TODO post detailed development guide. 
+// TODO post detailed development guide.
