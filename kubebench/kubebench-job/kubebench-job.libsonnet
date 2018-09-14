@@ -6,19 +6,22 @@ local k = import "k.libsonnet";
     workflow(name,
              namespace,
              controllerImage,
-             ksPrototype,
-             ksPackage,
-             ksRegistry,
              configPvc,
              dataPvc,
              experimentPvc,
              githubTokenSecret,
+             githubTokenSecretKey,
              gcpCredentialsSecret,
-             kfJobConfig,
-             postProcessorImage,
-             postProcessorArgs,
+             gcpCredentialsSecretKey,
+             mainJobKsPrototype,
+             mainJobKsPackage,
+             mainJobKsRegistry,
+             mainJobConfig,
+             postJobImage,
+             postJobArgs,
              reporterType,
-             reporterArgs):
+             csvReporterInput,
+             csvReporterOutput):
 
       local kubebenchConfigVol = "kubebench-config-volume";
       local kubebenchDataVol = "kubebench-data-volume";
@@ -32,10 +35,10 @@ local k = import "k.libsonnet";
       local manifestOutput = configuratorOutputDir + "/kf-job-manifest.yaml";
       local experimentIdOutput = configuratorOutputDir + "/experiment-id";
 
-      local ksPrototypeRef = {
-        name: ksPrototype,
-        package: ksPackage,
-        registry: ksRegistry,
+      local mainJobKsPrototypeRef = {
+        name: mainJobKsPrototype,
+        package: mainJobKsPackage,
+        registry: mainJobKsRegistry,
       };
 
       local ownerReferences = [
@@ -48,17 +51,22 @@ local k = import "k.libsonnet";
         },
       ];
 
+      local reporterArgs = if reporterType == "csv" then [
+        "--input-file=" + csvReporterInput,
+        "--output-file=" + csvReporterOutput,
+      ] else [];
+
       local secretEnvVars = [
         if gcpCredentialsSecret != "null" then {
           name: "GOOGLE_APPLICATION_CREDENTIALS",
-          value: "/secret/gcp-credentials/key.json",
+          value: "/secret/gcp-credentials/" + gcpCredentialsSecretKey,
         },
         if githubTokenSecret != "null" then {
           name: "GITHUB_TOKEN",
           valueFrom: {
             secretKeyRef: {
               name: githubTokenSecret,
-              key: "github_token",
+              key: githubTokenSecretKey,
             },
           },
         },
@@ -208,8 +216,8 @@ local k = import "k.libsonnet";
                 [buildStep("run-configurator", "configurator")],
                 [
                   buildStep(
-                    "run-kf-job",
-                    "kf-job",
+                    "launch-main-job",
+                    "main-job",
                     argParams=[
                       {
                         name: "kf-job-manifest",
@@ -224,8 +232,8 @@ local k = import "k.libsonnet";
                 ],
                 [
                   buildStep(
-                    "run-kf-job-monitor",
-                    "kf-job-monitor",
+                    "wait-for-main-job",
+                    "main-job-monitor",
                     argParams=[
                       {
                         name: "kf-job-manifest",
@@ -236,8 +244,8 @@ local k = import "k.libsonnet";
                 ],
                 [
                   buildStep(
-                    "run-post-processor",
-                    "post-processor",
+                    "run-post-job",
+                    "post-job",
                     argParams=[
                       {
                         name: "kf-job-manifest",
@@ -273,8 +281,8 @@ local k = import "k.libsonnet";
               controllerImage,
               [
                 "configurator",
-                "--template-ref=" + std.toString(ksPrototypeRef),
-                "--config=" + kfJobConfig,
+                "--template-ref=" + std.toString(mainJobKsPrototypeRef),
+                "--config=" + mainJobConfig,
                 "--namespace=" + namespace,
                 "--owner-references=" + std.toString(std.prune(ownerReferences)),
                 "--volumes=" + std.toString(std.prune(baseVols)),
@@ -301,7 +309,7 @@ local k = import "k.libsonnet";
               ],
             ),
             {
-              name: "kf-job",
+              name: "main-job",
               resource: {
                 action: "create",
                 successCondition: "status.startTime",
@@ -312,7 +320,7 @@ local k = import "k.libsonnet";
               },
             },
             {
-              name: "kf-job-monitor",
+              name: "main-job-monitor",
               resource: {
                 action: "get",
                 successCondition: "status.completionTime",
@@ -323,9 +331,9 @@ local k = import "k.libsonnet";
               },
             },
             buildTemplate(
-              "post-processor",
-              postProcessorImage,
-              postProcessorArgs,
+              "post-job",
+              postJobImage,
+              postJobArgs,
               envVars=baseEnvVars + expEnvVars(),
               volMnts=baseVolMnts,
               inParams=[{ name: "experiment-id" }],

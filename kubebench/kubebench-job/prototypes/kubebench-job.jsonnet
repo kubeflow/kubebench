@@ -3,69 +3,72 @@
 // @description A benchmark job on Kubeflow
 // @shortDescription A benchmark job on Kubeflow
 // @param name string Name to give to each of the components
-// @optionalParam namespace string default Namespace
-// @optionalParam controller_image string gcr.io/xyhuang-kubeflow/kubebench-controller:v20180913-1 Configurator image
-// @optionalParam ks_prototype string kubebench-example-tfcnn The Ksonnet prototype of the job being benchmarked
-// @optionalParam ks_package string kubebench-examples The Ksonnet package of the job being benchmarked
-// @optionalParam ks_registry string github.com/kubeflow/kubebench/tree/master/kubebench The Ksonnet registry of the job being benchmarked
-// @optionalParam config_pvc string kubebench-config-pvc Configuration PVC
-// @optionalParam data_pvc string null Data PVC
-// @optionalParam github_token_secret string null Github token secret
-// @optionalParam gcp_credentials_secret string null GCP credentials secret
-// @optionalParam experiment_pvc string kubebench-exp-pvc Experiment PVC
-// @optionalParam kf_job_config string null Path to the kubeflow job config
-// @optionalParam post_processor_image string gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-postprocessor:v20180909-1 Image of post processor
-// @optionalParam post_processor_args string null Arguments of post processor
-// @optionalParam reporter_type string csv Type of reporter
-// @optionalParam reporter_args string --input-file=result.json,output-file=report.csv Arguments of reporter
+// @optionalParam namespace string null Namespace
+// @optionalParam controllerImage string gcr.io/xyhuang-kubeflow/kubebench-controller:v20180913-1 Configurator image
+// @optionalParam githubTokenSecret string null Github token secret
+// @optionalParam githubTokenSecretKey string null Key of Github token secret
+// @optionalParam gcpCredentialsSecret string null GCP credentials secret
+// @optionalParam gcpCredentialsSecretKey string null Key of GCP credentials secret
+// @optionalParam mainJobKsPrototype string kubebench-example-tfcnn The Ksonnet prototype of the job being benchmarked
+// @optionalParam mainJobKsPackage string kubebench-examples The Ksonnet package of the job being benchmarked
+// @optionalParam mainJobKsRegistry string github.com/kubeflow/kubebench/tree/master/kubebench The Ksonnet registry of the job being benchmarked
+// @optionalParam mainJobConfig string tf-cnn-dummy.yaml Path to the config of the benchmarked job
+// @optionalParam experimentConfigPvc string kubebench-config-pvc Configuration PVC
+// @optionalParam experimentDataPvc string null Data PVC
+// @optionalParam experimentRecordPvc string kubebench-exp-pvc Experiment PVC
+// @optionalParam postJobImage string gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-postprocessor:v20180909-1 Image of post processor
+// @optionalParam postJobArgs string null Arguments of post processor
+// @optionalParam reporterType string csv Type of reporter
+// @optionalParam csvReporterInput string result.json The input of CSV reporter
+// @optionalParam csvReporterOutput string report.csv The output of CSV reporter
 
 local k = import "k.libsonnet";
 local kubebench = import "kubebench/kubebench-job/kubebench-job.libsonnet";
 
-local configPvc = import "param://config_pvc";
-local controllerImage = import "param://controller_image";
-local ksPrototype = import "param://ks_prototype";
-local ksPackage = import "param://ks_package";
-local ksRegistry = import "param://ks_registry";
-local dataPvc = import "param://data_pvc";
-local experimentPvc = import "param://experiment_pvc";
-local gcpCredentialsSecret = import "param://gcp_credentials_secret";
-local githubTokenSecret = import "param://github_token_secret";
-local kfJobConfig = import "param://kf_job_config";
-local name = import "param://name";
-local namespace = import "param://namespace";
-local postProcessorArgsStr = import "param://post_processor_args";
-local postProcessorImage = import "param://post_processor_image";
-local reporterArgsStr = import "param://reporter_args";
-local reporterType = import "param://reporter_type";
+local name = params.name;
+local namespace = if params.namespace == "null" then env.namespace else params.namespace;
+local controllerImage = params.controllerImage;
+local configPvc = params.experimentConfigPvc;
+local dataPvc = params.experimentDataPvc;
+local experimentPvc = params.experimentRecordPvc;
+local gcpCredentialsSecret = params.gcpCredentialsSecret;
+local gcpCredentialsSecretKey = params.gcpCredentialsSecretKey;
+local githubTokenSecret = params.githubTokenSecret;
+local githubTokenSecretKey = params.githubTokenSecretKey;
+local mainJobKsPrototype = params.mainJobKsPrototype;
+local mainJobKsPackage = params.mainJobKsPackage;
+local mainJobKsRegistry = params.mainJobKsRegistry;
+local mainJobConfig = params.mainJobConfig;
+local postJobArgsStr = params.postJobArgs;
+local postJobImage = params.postJobImage;
+local reporterType = params.reporterType;
+local csvReporterInput = params.csvReporterInput;
+local csvReporterOutput = params.csvReporterOutput;
 
-local postProcessorArgs =
-  if postProcessorArgsStr == "null" then
+local postJobArgs =
+  if postJobArgsStr == "null" then
     []
   else
-    std.split(postProcessorArgs, ",");
-
-local reporterArgs =
-  if reporterArgsStr == "null" then
-    []
-  else
-    std.split(reporterArgsStr, ",");
+    std.split(postJobArgs, ",");
 
 std.prune(k.core.v1.list.new([
   kubebench.parts.workflow(name,
                            namespace,
                            controllerImage,
-                           ksPrototype,
-                           ksPackage,
-                           ksRegistry,
                            configPvc,
                            dataPvc,
                            experimentPvc,
                            githubTokenSecret,
+                           githubTokenSecretKey,
                            gcpCredentialsSecret,
-                           kfJobConfig,
-                           postProcessorImage,
-                           postProcessorArgs,
+                           gcpCredentialsSecretKey,
+                           mainJobKsPrototype,
+                           mainJobKsPackage,
+                           mainJobKsRegistry,
+                           mainJobConfig,
+                           postJobImage,
+                           postJobArgs,
                            reporterType,
-                           reporterArgs),
+                           csvReporterInput,
+                           csvReporterOutput),
 ]))
