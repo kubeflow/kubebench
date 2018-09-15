@@ -4,6 +4,7 @@
 // @shortDescription A benchmark job on Kubeflow
 // @param name string Name to give to each of the components
 // @optionalParam namespace string null Namespace
+// @optionalParam serviceAccount string null The service account used to run the job
 // @optionalParam controllerImage string gcr.io/xyhuang-kubeflow/kubebench-controller:v20180913-1 Configurator image
 // @optionalParam githubTokenSecret string null Github token secret
 // @optionalParam githubTokenSecretKey string null Key of Github token secret
@@ -23,10 +24,12 @@
 // @optionalParam csvReporterOutput string report.csv The output of CSV reporter
 
 local k = import "k.libsonnet";
-local kubebench = import "kubebench/kubebench-job/kubebench-job.libsonnet";
+local kubebenchJob = import "kubebench/kubebench-job/kubebench-job.libsonnet";
+local kubebenchRbac = import "kubebench/kubebench-job/kubebench-rbac.libsonnet";
 
 local name = params.name;
 local namespace = if params.namespace == "null" then env.namespace else params.namespace;
+local serviceAccount = params.serviceAccount;
 local controllerImage = params.controllerImage;
 local configPvc = params.experimentConfigPvc;
 local dataPvc = params.experimentDataPvc;
@@ -51,24 +54,34 @@ local postJobArgs =
   else
     std.split(postJobArgs, ",");
 
-std.prune(k.core.v1.list.new([
-  kubebench.parts.workflow(name,
-                           namespace,
-                           controllerImage,
-                           configPvc,
-                           dataPvc,
-                           experimentPvc,
-                           githubTokenSecret,
-                           githubTokenSecretKey,
-                           gcpCredentialsSecret,
-                           gcpCredentialsSecretKey,
-                           mainJobKsPrototype,
-                           mainJobKsPackage,
-                           mainJobKsRegistry,
-                           mainJobConfig,
-                           postJobImage,
-                           postJobArgs,
-                           reporterType,
-                           csvReporterInput,
-                           csvReporterOutput),
-]))
+local newUser = if serviceAccount == "null" then "kubebench-user-" + name else serviceAccount;
+local rbacParts = if newUser != serviceAccount then [
+  kubebenchRbac.parts.serviceAccount(newUser, namespace),
+  kubebenchRbac.parts.role(newUser, namespace),
+  kubebenchRbac.parts.roleBinding(newUser, newUser, newUser, namespace),
+] else [];
+
+local jobParts = [
+  kubebenchJob.parts.workflow(name,
+                              namespace,
+                              newUser,
+                              controllerImage,
+                              configPvc,
+                              dataPvc,
+                              experimentPvc,
+                              githubTokenSecret,
+                              githubTokenSecretKey,
+                              gcpCredentialsSecret,
+                              gcpCredentialsSecretKey,
+                              mainJobKsPrototype,
+                              mainJobKsPackage,
+                              mainJobKsRegistry,
+                              mainJobConfig,
+                              postJobImage,
+                              postJobArgs,
+                              reporterType,
+                              csvReporterInput,
+                              csvReporterOutput),
+];
+
+std.prune(k.core.v1.list.new(rbacParts + jobParts))

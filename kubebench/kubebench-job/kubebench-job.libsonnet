@@ -5,6 +5,7 @@ local k = import "k.libsonnet";
 
     workflow(name,
              namespace,
+             serviceAccount,
              controllerImage,
              configPvc,
              dataPvc,
@@ -207,6 +208,7 @@ local k = import "k.libsonnet";
           namespace: namespace,
         },
         spec: {
+          [if serviceAccount != "default" then "serviceAccountName"]: serviceAccount,
           entrypoint: "kubebench-workflow",
           volumes: secretVols + baseVols,
           templates: [
