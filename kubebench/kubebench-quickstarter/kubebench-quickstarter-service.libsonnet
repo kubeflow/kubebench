@@ -104,24 +104,25 @@ local k = import "k.libsonnet";
               },
               {
                 name: "kubebench-nfs-file-server",
-                image: "python:alpine3.7",
+                image: "httpd:2.4-alpine",
                 command: [
                   "sh",
                 ],
                 args: [
                   "-c",
-                  "cd /mnt/kubebench ; python3 -m http.server",
+                  "rm -f /usr/local/apache2/logs/httpd.pid ; " +
+                  'httpd -DFOREGROUND -c "DocumentRoot /usr/local/apache2/htdocs/kubebench"',
                 ],
                 volumeMounts: [
                   {
                     name: "kubebench",
-                    mountPath: "/mnt",
+                    mountPath: "/usr/local/apache2/htdocs",
                   },
                 ],
                 ports: [
                   {
                     name: "file-server",
-                    containerPort: 8000,
+                    containerPort: 80,
                   },
                 ],
               },
@@ -172,7 +173,7 @@ local k = import "k.libsonnet";
         ports: [
           {
             name: "file-server",
-            port: 8000,
+            port: 80,
           },
         ],
         selector: {
