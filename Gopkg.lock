@@ -53,12 +53,12 @@
   version = "0.16.0"
 
 [[projects]]
-  digest = "1:3e5bdbd2a071c72c778c28fd7b5dfde95cdfbcef412f364377e031877205e418"
+  branch = "master"
+  digest = "1:d538832fc6033760440c9b7058504c495542905c83925f5d846bc954ff899a3b"
   name = "github.com/go-openapi/spec"
   packages = ["."]
   pruneopts = "UT"
-  revision = "384415f06ee238aae1df5caad877de6ceac3a5c4"
-  version = "0.16.0"
+  revision = "f1468acb3b29cdd5c5f6fa29435d2d2d6e6c9ff1"
 
 [[projects]]
   digest = "1:c80984d4a9bb79539743aff5af91b595d84f513700150b0ed73c1697d1200d54"
@@ -104,12 +104,20 @@
   version = "v1.1.5"
 
 [[projects]]
-  branch = "v1alpha2"
-  digest = "1:ef88731b81309e887a3c9ea21c62d5f542692049079ccb6406503f1b560d5753"
+  branch = "master"
+  digest = "1:b41d3b6cdfa3a8718c3a4e68e507ba53fc86b7798c57e928d84714b0db46ab44"
+  name = "github.com/kubeflow/pytorch-operator"
+  packages = ["pkg/apis/pytorch/v1alpha2"]
+  pruneopts = "UT"
+  revision = "114a507e23e0c5ca4c5b436786d2039515e52ec6"
+
+[[projects]]
+  branch = "master"
+  digest = "1:96a0c07646cf00345fe9909b5d42f2c98ad58ad013299524c3545302ba0cdd5f"
   name = "github.com/kubeflow/tf-operator"
   packages = ["pkg/apis/tensorflow/v1alpha2"]
   pruneopts = "UT"
-  revision = "d53c1f8590d401e5e8a04034df55072dee2ab5f0"
+  revision = "b026d2b9873fed7c587c461adbac5dd94e7e1d08"
 
 [[projects]]
   branch = "master"
@@ -228,23 +236,29 @@
   version = "v2.2.1"
 
 [[projects]]
-  branch = "release-1.8"
-  digest = "1:ad70724a1993f2475188eaedd90ef3c4b5acf19f6f832bb21e23fa276b6803da"
+  branch = "release-1.9"
+  digest = "1:867624b33341fb0d6996d358d47307cf3e54c307c33b13ce2f585072a102a8c7"
   name = "k8s.io/api"
   packages = [
     "batch/v1",
     "core/v1",
   ]
   pruneopts = "UT"
-  revision = "a315a049e7a93e5455f7fefce1ba136d85054687"
+  revision = "9273ee02527c608cecc74969b3e489f5dba686da"
 
 [[projects]]
-  branch = "release-1.8"
-  digest = "1:b12ed963b0b5bba067533c5be590033d57f01c4c6e7d529151ed0106f0847a36"
+  branch = "release-1.9"
+  digest = "1:9539d74c815feded3d6bfe6475f68dfc3a8cdc15f6558bfc94ab676f40599840"
   name = "k8s.io/apimachinery"
   packages = [
+    "pkg/api/meta",
     "pkg/api/resource",
+    "pkg/apimachinery",
+    "pkg/apimachinery/announced",
+    "pkg/apimachinery/registered",
     "pkg/apis/meta/v1",
+    "pkg/apis/meta/v1/unstructured",
+    "pkg/apis/meta/v1alpha1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
     "pkg/fields",
@@ -255,6 +269,7 @@
     "pkg/types",
     "pkg/util/errors",
     "pkg/util/intstr",
+    "pkg/util/json",
     "pkg/util/net",
     "pkg/util/runtime",
     "pkg/util/sets",
@@ -265,7 +280,7 @@
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
-  revision = "b593b18191da3eff9afdfd373da5f5e08fe5ac5f"
+  revision = "fb40df2b502912cbe3a93aa61c2b2487f39cb42f"
 
 [[projects]]
   branch = "release-1.9"
@@ -280,6 +295,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/ghodss/yaml",
+    "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2",
     "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha2",
     "github.com/sirupsen/logrus",
     "k8s.io/api/batch/v1",

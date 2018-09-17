@@ -31,14 +31,22 @@ var (
 const (
 	// GroupName is the group name use in this package.
 	GroupName = "kubeflow.org"
-	// TFJobResourceKind is the kind name.
-	TFJobResourceKind = "TFJob"
+	// Kind is the kind name.
+	Kind = "TFJob"
 	// GroupVersion is the version.
 	GroupVersion = "v1alpha2"
+	// Plural is the Plural for TFJob.
+	Plural = "tfjobs"
+	// Singular is the singular for TFJob.
+	Singular = "tfjob"
 )
 
-// SchemeGroupVersion is the group version used to register these objects.
-var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: GroupVersion}
+var (
+	// SchemeGroupVersion is the group version used to register these objects.
+	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: GroupVersion}
+	// SchemeGroupVersionKind is the GroupVersionKind of the resource.
+	SchemeGroupVersionKind = SchemeGroupVersion.WithKind(Kind)
+)
 
 func init() {
 	// We only register manually written functions here. The registration of the

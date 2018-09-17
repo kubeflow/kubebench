@@ -43,6 +43,18 @@ type TFJob struct {
 
 // TFJobSpec is a desired state description of the TFJob.
 type TFJobSpec struct {
+	// CleanPodPolicy defines the policy to kill pods after TFJob is
+	// succeeded.
+	// Default to Running.
+	CleanPodPolicy *CleanPodPolicy `json:"cleanPodPolicy,omitempty"`
+
+	// TTLSecondsAfterFinished is the TTL to clean up tf-jobs (temporary
+	// before kubernetes adds the cleanup controller).
+	// It may take extra ReconcilePeriod seconds for the cleanup, since
+	// reconcile gets called periodically.
+	// Default to infinite.
+	TTLSecondsAfterFinished *int32 `json:"ttlSecondsAfterFinished,omitempty"`
+
 	// TFReplicaSpecs is map of TFReplicaType and TFReplicaSpec
 	// specifies the TF replicas to run.
 	// For example,
@@ -60,17 +72,25 @@ type TFReplicaSpec struct {
 	Replicas *int32 `json:"replicas,omitempty"`
 
 	// Template is the object that describes the pod that
-	// will be created for this TFReplica.
-	// We use RestartPolicy in PodTemplateSpec
-	// to describe how the containers within the pod should be restarted.
-	// Please set this restart policy carefully according to your code.
+	// will be created for this TFReplica. RestartPolicy in PodTemplateSpec
+	// will be overide by RestartPolicy in TFReplicaSpec
 	Template v1.PodTemplateSpec `json:"template,omitempty"`
 
 	// Restart policy for all TFReplicas within the TFJob.
 	// One of Always, OnFailure, Never and ExitCode.
-	// Default to Always.
+	// Default to Never.
 	RestartPolicy RestartPolicy `json:"restartPolicy,omitempty"`
 }
+
+// CleanPodPolicy describes how to deal with pods when the TFJob is finished.
+type CleanPodPolicy string
+
+const (
+	CleanPodPolicyUndefined CleanPodPolicy = ""
+	CleanPodPolicyAll       CleanPodPolicy = "All"
+	CleanPodPolicyRunning   CleanPodPolicy = "Running"
+	CleanPodPolicyNone      CleanPodPolicy = "None"
+)
 
 // RestartPolicy describes how the TFReplicas should be restarted.
 // Only one of the following restart policies may be specified.
@@ -107,13 +127,17 @@ const (
 	// Else, worker:0 is the chief worker.
 	TFReplicaTypeChief TFReplicaType = "Chief"
 
+	// TFReplicaTypeMaster is the type for master worker of distributed TensorFlow.
+	// This is similar to chief, and kept just for backwards compatibility.
+	TFReplicaTypeMaster TFReplicaType = "Master"
+
 	// TFReplicaTypeEval is the type for evaluation replica in TensorFlow.
-	TFReplicaTypeEval TFReplicaType = "Eval"
+	TFReplicaTypeEval TFReplicaType = "Evaluator"
 )
 
 // TFJobStatus represents the current observed state of the TFJob.
 type TFJobStatus struct {
-	// Represents is an array of current observed TFJob conditions.
+	// Conditions is an array of current observed TFJob conditions.
 	Conditions []TFJobCondition `json:"conditions"`
 
 	// TFReplicaStatuses is map of TFReplicaType and TFReplicaStatus,

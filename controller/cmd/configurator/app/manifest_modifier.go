@@ -34,6 +34,8 @@ func (mmf *ManifestModifierFactory) NewManifestModifier() (ManifestModifierInter
 	switch mmf.Name {
 	case "TFJob":
 		m = &TFJobManifestModifier{}
+	case "PyTorchJob":
+		m = &PyTorchJobManifestModifier{}
 	case "Job":
 		m = &JobManifestModifier{}
 	default:
