@@ -3,5 +3,21 @@
 workflows:
   - app_dir: kubeflow/kubebench/test/workflows
     component: workflows
-    name: kubebench-e2e
-
+    name: e2e
+    job_types:
+      - presubmit
+    params:
+      namespace: "kubeflow-test-infra"
+      nfsVolumeClaim: "nfs-external"
+      project: "kubeflow-ci"
+      registry: "gcr.io/kubeflow-ci"
+  - app_dir: kubeflow/kubebench/test/workflows
+    component: workflows
+    name: release
+    job_types:
+      - postsubmit
+    params:
+      namespace: "kubeflow-test-infra"
+      nfsVolumeClaim: "nfs-external"
+      project: "kubeflow-releasing"
+      registry: "gcr.io/kubeflow-images-public"

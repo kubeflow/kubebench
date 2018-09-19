@@ -6,5 +6,11 @@
   components: {
     // Component-level parameters, defined initially from 'ks prototype use ...'
     // Each object below should correspond to a component in the components/ directory
+    workflows: {
+      name: "kubebench-test",
+      namespace: "kubeflow-test-infra",
+      clusterVersion: "1.10",
+      versionTag: null,
+    },
   },
 }
