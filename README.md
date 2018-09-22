@@ -26,7 +26,7 @@ NOTE: the quick start guide serves as a demo that helps you quickly go through a
     ```bash
     export KB_VERSION=master
     export KB_ENV=default
-    
+
     curl https://raw.githubusercontent.com/kubeflow/kubebench/master/scripts/install_quickstarter.sh | bash
     ```
 
