@@ -5,7 +5,7 @@ The goal of Kubebench is to make it easy to run benchmark jobs on [Kubeflow](htt
 
 ## Quick Start
 
-NOTE: the quick start guide serves as a demo that helps you quickly go through a Kubebench Job. The components installed may not be suitable for production use. Please refer to detailed user guide for proper configuration of Kubebench Jobs.
+NOTE: the quick start guide serves as a demo that helps you quickly go through a Kubebench Job. The components installed may not be suitable for production use. Please refer to detailed [user guide](doc/user_guide.md) for proper configuration of Kubebench Jobs.
 
 ### Prerequisites
 
