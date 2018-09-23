@@ -17,6 +17,7 @@ package app
 import (
 	"encoding/json"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -83,7 +84,10 @@ func (c *Configurator) Run(options *AppOption) error {
 	}
 
 	// Generate experiment ID
-	experimentName := strings.TrimSuffix(config, path.Ext(config))
+	// trim the config file name, replace invalid characters, add timestamps and random id
+	experimentName := strings.TrimSuffix(path.Base(config), path.Ext(config))
+	experimentName = strings.ToLower(experimentName)
+	experimentName = regexp.MustCompile("[^a-zA-Z0-9-.]").ReplaceAllString(experimentName, "-")
 	experimentID := experimentName + "-" + time.Now().Format("200601021504") + "-" + util.RandString(4)
 	// modify environment variable with experiment id
 	for i, env := range envVars {
