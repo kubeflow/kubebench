@@ -19,5 +19,5 @@ workflows:
     params:
       namespace: "kubeflow-test-infra"
       nfsVolumeClaim: "nfs-external"
-      project: "kubeflow-releasing"
+      project: "kubeflow-ci"
       registry: "gcr.io/kubeflow-images-public"
