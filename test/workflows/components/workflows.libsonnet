@@ -20,9 +20,20 @@
       )
     else [],
 
-  parts(namespace, name):: {
+  // default parameters.
+  defaultParams:: {
+    project:: "kubeflow-ci",
+    zone:: "us-east1-d",
+    registry:: "gcr.io/kubeflow-ci",
+    versionTag:: null,
+    gcpCredentialsSecretName:: "kubeflow-testing-credentials",
+  },
+
+  parts(namespace, name, overrides):: {
     // Workflow to run the e2e test.
     e2e(prow_env, bucket):
+      local params = $.defaultParams + overrides;
+
       // mountPath is the directory where the volume to store the test data
       // should be mounted.
       local mountPath = "/mnt/" + "test-data-volume";
@@ -45,24 +56,28 @@
       local nfsVolumeClaim = "nfs-external";
       // The name to use for the volume to use to contain test data.
       local dataVolume = "kubeflow-test-volume";
-      local versionTag = name;
       // GCP information
-      local zone = "us-east1-d";
-      local project = "kubeflow-ci";
+      local zone = params.zone;
+      local project = params.project;
       // The name of test cluster
       local clusterName = "kubebench-e2e-" + std.substr(name, std.length(name) - 4, 4);
       // The Kubernetes version of test cluster
       local clusterVersion = "1.10";
+      // Container build information
+      local registry = params.registry;
+      local versionTag = if params.versionTag != null then
+        params.versionTag else "";
 
       {
         // Build an Argo template to execute a particular command.
         // step_name: Name for the template
         // command: List to pass as the container command.
-        buildTemplate(step_name, command, env_vars=[], sidecars=[], kubeConfig="config"):: {
+        buildTemplate(step_name, command, envVars=[], sidecars=[], workingDir=null, kubeConfig="config"):: {
           name: step_name,
           container: {
             command: command,
             image: image,
+            [if workingDir != null then "workingDir"]: workingDir,
             env: [
               {
                 // Add the source directories to the python path.
@@ -104,7 +119,11 @@
                 name: "KUBECONFIG",
                 value: testDir + "/.kube/" + kubeConfig,
               },
-            ] + prow_env + env_vars,
+              {
+                name: "REGISTRY",
+                value: registry,
+              },
+            ] + prow_env + envVars,
             volumeMounts: [
               {
                 name: dataVolume,
@@ -181,9 +200,21 @@
                     name: "test-jsonnet-formatting",
                     template: "test-jsonnet-formatting",
                   },
+                ],
+                [
                   {
                     name: "setup-cluster",
                     template: "setup-cluster",
+                  },
+                ],
+                [
+                  {
+                    name: "build-kubebench-controller",
+                    template: "build-kubebench-controller",
+                  },
+                  {
+                    name: "build-kubebench-examples",
+                    template: "build-kubebench-examples",
                   },
                 ],
                 [
@@ -229,15 +260,15 @@
                 ],
               ],
             },
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate(
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
               "checkout",
               ["/usr/local/bin/checkout.sh", srcRootDir],
-              [{
+              envVars=[{
                 name: "EXTRA_REPOS",
-                value: "kubeflow/kubeflow@master",
+                value: "kubeflow/kubeflow@HEAD",
               }],
             ),  // checkout
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -245,7 +276,7 @@
               "create_pr_symlink",
               "--bucket=" + bucket,
             ]),  // create-pr-symlink
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("copy-artifacts", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("copy-artifacts", [
               "python",
               "-m",
               "kubeflow.testing.prow_artifacts",
@@ -253,34 +284,56 @@
               "copy_artifacts",
               "--bucket=" + bucket,
             ]),  // copy-artifacts
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-test", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("py-test", [
               "python",
               "-m",
               "kubeflow.testing.test_py_checks",
               "--artifacts_dir=" + artifactsDir,
               "--src_dir=" + srcDir,
             ]),  // py test
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("py-lint", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("py-lint", [
               "python",
               "-m",
               "kubeflow.testing.test_py_lint",
               "--artifacts_dir=" + artifactsDir,
               "--src_dir=" + srcDir,
             ]),  // py lint
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("test-jsonnet-formatting", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("test-jsonnet-formatting", [
               "python",
               "-m",
               "kubeflow.testing.test_jsonnet_formatting",
               "--artifacts_dir=" + artifactsDir,
               "--src_dir=" + srcDir,
             ]),  // test-jsonnet-formatting
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("setup-cluster", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("setup-cluster", [
               srcDir + "/test/scripts/create_cluster.sh",
             ]),  // setup cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("teardown-cluster", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("teardown-cluster", [
               srcDir + "/test/scripts/delete_cluster.sh",
             ]),  // teardown cluster
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("deploy-kubeflow", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
+              "build-kubebench-controller",
+              [
+                srcDir + "/build/images/controller/build_image.sh",
+                srcDir,
+                srcDir + "/build/images/controller/Dockerfile",
+                "kubebench-controller",
+                versionTag,
+              ],
+              workingDir=srcDir,
+            ),  // build-kubebench-controller
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
+              "build-kubebench-examples",
+              [
+                srcDir + "/build/images/examples/build_image.sh",
+                srcDir,
+                srcDir + "/build/images/examples",
+                "kubebench-example",
+                versionTag,
+              ],
+              workingDir=srcDir,
+            ),  // build-kubebench-examples
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("deploy-kubeflow", [
               "python",
               "-m",
               "kubebench.test.deploy_kubeflow",
@@ -289,7 +342,7 @@
               "--namespace=" + namespace,
               "--as_gcloud_user",
             ]),  // deploy kubeflow
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("wait-for-kubeflow-deployment", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("wait-for-kubeflow-deployment", [
               "python",
               "-m",
               "kubebench.test.wait_for_deployment",
@@ -298,7 +351,7 @@
               "--zone=" + zone,
               "--timeout=5",
             ]),  // deploy kubeflow
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("test-kubebench-job", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("test-kubebench-job", [
               "python",
               "-m",
               "kubebench.test.test_kubebench_job",
@@ -307,7 +360,7 @@
               "--namespace=" + namespace,
               "--as_gcloud_user",
             ]),  // test kubebench job
-            $.parts(namespace, name).e2e(prow_env, bucket).buildTemplate("delete-test-dir", [
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("delete-test-dir", [
               "bash",
               "-c",
               "rm -rf " + testDir,

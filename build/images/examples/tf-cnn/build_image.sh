@@ -2,22 +2,32 @@
 #
 # Build Docker images for Kubebench example tf-cnn.
 #
-# build_image.sh ${DOCKERFILE} ${IMAGE} ${TAG}
+# build_image.sh ${SRC_DIR} ${DOCKERFILE} ${IMAGE} ${VERSION}
 set -ex
 
-DOCKERFILE=$(realpath $1)
-IMAGE=$2
-TAG=$3
+SRC_DIR=$(realpath $1)
+DOCKERFILE=$(realpath $2)
+IMAGE=$3
+VERSION=$4
+TAG=${REGISTRY}/${REPO_NAME}/${IMAGE}:${VERSION}
 
-DOCKERFILE_DIR=$(dirname $DOCKERFILE)
-SRC_ROOT=${DOCKERFILE_DIR%/build/images/examples/tf-cnn}
+echo "Setup build directory"
+export BUILD_DIR=`mktemp -d -p $(dirname $SRC_DIR)`
+
+echo "Copy source and Dockerfile to build directory"
+cp -r ${SRC_DIR}/examples ${BUILD_DIR}/examples
+cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
+
+echo "Change working directory to ${BUILD_DIR}"
+cd ${BUILD_DIR}
 
 echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+echo "Build image ${TAG}"
+gcloud builds submit --tag=${TAG} --project=${PROJECT} .
 
-cd $SRC_ROOT
-echo "Build image ${IMAGE}:${TAG}"
-docker build -t ${IMAGE}:${TAG} -f ${DOCKERFILE} .
-echo "Push image ${IMAGE}:${TAG}"
-gcloud docker -- push "${IMAGE}:${TAG}"
-echo "Image ${IMAGE}:${TAG} built successfully"
+echo "Clean up build directory"
+cd
+rm -rf ${BUILD_DIR}
+
+echo "Image ${TAG} built successfully"

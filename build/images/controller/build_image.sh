@@ -3,36 +3,43 @@
 # Build Docker images for Kubebench controller.
 # This is intended to be invoked as a step in Argo to build the docker image.
 #
-# build_image.sh ${DOCKERFILE} ${IMAGE} ${TAG}
+# build_image.sh ${SRC_DIR} ${DOCKERFILE} ${IMAGE} ${VERSION}
 set -ex
 
-DOCKERFILE=$(realpath $1)
-IMAGE=$2
-TAG=$3
+SRC_DIR=$(realpath $1)
+DOCKERFILE=$(realpath $2)
+IMAGE=$3
+VERSION=$4
+if [ -z ${VERSION} ]; then
+  VERSION=$(git describe --tags --always --dirty)
+fi
+TAG=${REGISTRY}/${REPO_NAME}/${IMAGE}:${VERSION}
 
-DOCKERFILE_DIR=$(dirname $DOCKERFILE)
-SRC_ROOT=${DOCKERFILE_DIR%/build/images/controller}
-
-echo "Setup go build directory"
-export GOPATH=`mktemp -d -p $(dirname $SRC_ROOT)`
+echo "Setup build directory"
+export GOPATH=`mktemp -d -p $(dirname $SRC_DIR)`
 export PATH=${GOPATH}/bin:/usr/local/go/bin:${PATH}
-mkdir -p ${GOPATH}/src/github.com/kubeflow
-GO_BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
-ln -s ${SRC_ROOT} ${GO_BUILD_DIR}
+mkdir -p ${GOPATH}/src/github.com/kubeflow/kubebench
+BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 
-cd ${SRC_ROOT}
+echo "Copy source and Dockerfile to build directory"
+cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
+cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
+cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
+
+echo "Change working directory to ${BUILD_DIR}"
+cd ${BUILD_DIR}
 
 echo "Build go binaries"
 go build github.com/kubeflow/kubebench/controller/cmd/configurator
 go build github.com/kubeflow/kubebench/controller/cmd/reporter
-echo "Build image ${IMAGE}:${TAG}"
-docker build -t ${IMAGE}:${TAG} -f ${DOCKERFILE} .
 
-echo "Push image ${IMAGE}:${TAG}"
+echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-gcloud docker -- push "${IMAGE}:${TAG}"
+echo "Build image ${TAG}"
+gcloud builds submit --tag=${TAG} --project=${PROJECT} .
 
 echo "Clean up go build directory"
+cd
 rm -rf ${GOPATH}
 
-echo "Image ${IMAGE}:${TAG} built successfully"
+echo "Image ${TAG} built successfully"
