@@ -1,6 +1,6 @@
 # Grafana dashboard for Kubebench jobs
 
-This dashboard can provide you information about resources (memory usage, CPU usage, Disk IOs per Workflow) by using workflows in Kubebnech Jobs.
+This dashboard can provide you information about Kubebench job resources (memory usage, CPU usage, Disk IOs per workflow).
 
 ## Installation
 
@@ -47,11 +47,11 @@ Also, you can check prometheus services ports ```kubectl get svc --namespace $NA
 
 ### Grafana dashboard
 * Get port for ```kube-prometheus-grafana``` service in your cluster.
-* Import JSON with [Kubebench Dashboard](kubebench-dashboard.json) to Grafana dashboard.
+* Import [JSON](kubebench-dashboard.json) with Kubebench Dashboard to Grafana dashboard.
 For more information about import/export Grafana Dashboard visit [Grafana](http://docs.grafana.org/reference/export_import/) docs.
 
 ## View results
 
 You should be able to see Grafana dashboard with report about workflow resources.
 
-![Kubebench Dashboard](/images/kubebench_dashboard.png)
+![Kubebench Dashboard](images/kubebench_dashboard.png)
