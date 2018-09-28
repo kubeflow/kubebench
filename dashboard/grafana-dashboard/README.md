@@ -55,15 +55,15 @@ helm install coreos/prometheus-operator --name prometheus-operator --namespace $
 helm install coreos/kube-prometheus --name kube-prometheus --set global.rbacEnable=true --namespace $NAMESPACE
 ```
 
-After that, you should be able to run ```kubectl get pods --namespace $NAMESPACE``` and see prometheus deployment running.
-Also, you can check prometheus services ports ```kubectl get svc --namespace $NAMESPACE``` to access UI for prometheus and grafana. 
+After that, you should be able to run ```kubectl get pods --namespace $NAMESPACE``` and see Prometheus deployment running.
+Also, you can check Prometheus services ports ```kubectl get svc --namespace $NAMESPACE``` to access UI for Prometheus and Grafana. 
 
 ### Grafana dashboard
 
 * Get port for ```kube-prometheus-grafana``` service in your cluster.
 
 * Import [JSON](kubebench-dashboard.json) with Kubebench Dashboard to Grafana.
-For more information about import/export dashboard to Grafana visit [Grafana](http://docs.grafana.org/reference/export_import/) docs.
+For additional information about import/export dashboard to Grafana visit [Grafana](http://docs.grafana.org/reference/export_import/) docs.
 
 ## View results
 
