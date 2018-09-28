@@ -60,9 +60,10 @@ Also, you can check Prometheus services ports ```kubectl get svc --namespace $NA
 
 ### Grafana dashboard
 
-* Get port for ```kube-prometheus-grafana``` service in your cluster.
+* Get port for ```kube-prometheus-grafana``` service in your cluster
 
-* Import [JSON](kubebench-dashboard.json) with Kubebench Dashboard to Grafana.
+* Import [JSON](kubebench-dashboard.json) with Kubebench Dashboard to Grafana
+
 For additional information about import/export dashboard to Grafana visit [Grafana](http://docs.grafana.org/reference/export_import/) docs.
 
 ## View results
