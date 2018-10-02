@@ -71,3 +71,12 @@ For additional information about import/export dashboard to Grafana visit [Grafa
 You should be able to see Grafana dashboard with report about workflow resources.
 
 ![Kubebench Dashboard](images/kubebench_dashboard.png)
+
+## Cleanups
+
+* Delete the helm deployment
+
+```
+helm delete prometheus-operator --purge
+helm delete kube-prometheus --purge
+```
