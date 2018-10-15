@@ -10,6 +10,7 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	argoproj "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	kubebenchjobclientset "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned"
 )
 
@@ -22,10 +23,8 @@ func parseKubernetesConfig() *restclient.Config {
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
-	// Parse the command line arguments
 	flag.Parse()
 
-	// create the config from the path
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		log.Fatalf("getClusterConfig: %v", err)
@@ -33,25 +32,29 @@ func parseKubernetesConfig() *restclient.Config {
 	return config
 }
 
-// Retrieve the Kubernetes cluster client from outside of the cluster and add the Team Clienset
 func GetKubernetesCRDClient() (kubernetes.Interface, kubebenchjobclientset.Interface) {
-	// Generate the client based off of the config
 	client := GetKubernetesClient()
 
-	// Create a Team ClientSet
 	clientset, err := kubebenchjobclientset.NewForConfig(config)
 	if err != nil {
-		log.Fatalf("Team clienset: %v", err)
+		log.Fatalf("KubebenchJob clienset: %v", err)
 	}
 
 	log.Info("Successfully constructed k8s client")
 	return client, clientset
 }
 
-// Retrieve the Kubernetes cluster client from outside of the cluster
+func GetArgoClient() *argoproj.ArgoprojV1alpha1Client {
+	argoClient, err := argoproj.NewForConfig(config)
+	if err != nil {
+		log.Fatalf("ArgoClient: %v", err)
+	}
+
+	return argoClient
+}
+
 func GetKubernetesClient() kubernetes.Interface {
 
-	// generate the client based off of the config
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		log.Fatalf("getClusterConfig: %v", err)

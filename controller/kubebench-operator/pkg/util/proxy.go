@@ -15,16 +15,11 @@ import (
 
 func GetPodsSharedIndexInformer(client kubernetes.Interface) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		// the ListWatch contains two different functions that our
-		// informer requires: ListFunc to take care of listing and watching
-		// the resources we want to handle
 		&cache.ListWatch{
 			ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
-				// list all of the pods (core resource) in the deafult namespace
 				return client.CoreV1().Pods(meta_v1.NamespaceDefault).List(options)
 			},
 			WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
-				// watch all of the pods (core resource) in the default namespace
 				return client.CoreV1().Pods(meta_v1.NamespaceDefault).Watch(options)
 			},
 		},
@@ -35,16 +30,10 @@ func GetPodsSharedIndexInformer(client kubernetes.Interface) cache.SharedIndexIn
 }
 
 func CreateWorkingQueue() workqueue.RateLimitingInterface {
-	// a result of listing or watching, we can add an idenfitying key to the queue
-	// so that it can be handled in the handler
 	return workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 }
 
 func AddPodsEventHandler(inf cache.SharedInformer, queue workqueue.RateLimitingInterface) {
-	// add event handlers to handle the three types of events for resources:
-	//  - adding new resources
-	//  - updating existing resources
-	//  - deleting resources
 	inf.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			// convert the resource object into a key (in this case
@@ -52,7 +41,6 @@ func AddPodsEventHandler(inf cache.SharedInformer, queue workqueue.RateLimitingI
 			key, err := cache.MetaNamespaceKeyFunc(obj)
 			log.Infof("Add pod: %s", key)
 			if err == nil {
-				// add the key to the queue for the handler to get
 				queue.Add(key)
 			}
 		},
