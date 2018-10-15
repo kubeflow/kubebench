@@ -2,12 +2,41 @@
 
 
 [[projects]]
+  digest = "1:8e47871087b94913898333f37af26732faaab30cdb41571136cf7aec9921dae7"
+  name = "github.com/PuerkitoBio/purell"
+  packages = ["."]
+  pruneopts = ""
+  revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:331a419049c2be691e5ba1d24342fc77c7e767a80c666a18fd8a9f7b82419c1c"
+  name = "github.com/PuerkitoBio/urlesc"
+  packages = ["."]
+  pruneopts = ""
+  revision = "de5bf2ad457846296e2031421a34e2568e304e35"
+
+[[projects]]
   digest = "1:5f48b818f16848d05cf74f4cbdd0cbe9e0dcddb3c459b4c510c6e2c8e1b4dff1"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
   pruneopts = ""
   revision = "ad15b42461921f1fb3529b058c6786c6a45d5162"
   version = "v1.1.1"
+
+[[projects]]
+  digest = "1:d86e64018b4e1ac6982136daf66c14c765f6733dcbf438c5f7e37ed8204b99cc"
+  name = "github.com/argoproj/argo"
+  packages = [
+    "pkg/apis/workflow",
+    "pkg/apis/workflow/v1alpha1",
+    "pkg/client/clientset/versioned/scheme",
+    "pkg/client/clientset/versioned/typed/workflow/v1alpha1",
+  ]
+  pruneopts = ""
+  revision = "3b52b26190163d1f72f3aef1a39f9f291378dafb"
+  version = "v2.2.1"
 
 [[projects]]
   digest = "1:0deddd908b6b4b768cfc272c16ee61e7088a60f7fe2f06c547bd3d8e1f8b8e77"
@@ -18,12 +47,55 @@
   version = "v1.1.1"
 
 [[projects]]
+  digest = "1:8a34d7a37b8f07239487752e14a5faafcbbc718fc385ad429a2c4ac6f27a207f"
+  name = "github.com/emicklei/go-restful"
+  packages = [
+    ".",
+    "log",
+  ]
+  pruneopts = ""
+  revision = "3eb9738c1697594ea6e71a7156a9bb32ed216cf0"
+  version = "v2.8.0"
+
+[[projects]]
   digest = "1:b13707423743d41665fd23f0c36b2f37bb49c30e94adb813319c44188a51ba22"
   name = "github.com/ghodss/yaml"
   packages = ["."]
   pruneopts = ""
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:c8052dcf3ec378a9a6bc4f00ecc10d6d5eb3cc1f8faaf6b2f70f047e8881d446"
+  name = "github.com/go-openapi/jsonpointer"
+  packages = ["."]
+  pruneopts = ""
+  revision = "ef5f0afec364d3b9396b7b77b43dbe26bf1f8004"
+  version = "v0.17.0"
+
+[[projects]]
+  digest = "1:1824e5330b35b2a2418d06aa55629cc59ad454b72e338aa125ba8ff98f16298b"
+  name = "github.com/go-openapi/jsonreference"
+  packages = ["."]
+  pruneopts = ""
+  revision = "8483a886a90412cd6858df4ea3483dce9c8e35a3"
+  version = "v0.17.0"
+
+[[projects]]
+  digest = "1:d4680b89600466e543754c838cbc987ed58b962417a88600881cd0ed88d6b4cc"
+  name = "github.com/go-openapi/spec"
+  packages = ["."]
+  pruneopts = ""
+  revision = "5bae59e25b21498baea7f9d46e9c147ec106a42e"
+  version = "v0.17.0"
+
+[[projects]]
+  digest = "1:062de20b7d299ae95c902a5c472c4bc87a2f3ae707751fe155ecf640d99074b4"
+  name = "github.com/go-openapi/swag"
+  packages = ["."]
+  pruneopts = ""
+  revision = "5899d5c5e619fda5fa86e14795a835f473ca284c"
+  version = "v0.17.0"
 
 [[projects]]
   digest = "1:6e73003ecd35f4487a5e88270d3ca0a81bc80dc88053ac7e4dcfec5fba30d918"
@@ -132,6 +204,18 @@
   version = "v1.0.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:212bebc561f4f654a653225868b2a97353cd5e160dc0b0bbc7232b06608474ec"
+  name = "github.com/mailru/easyjson"
+  packages = [
+    "buffer",
+    "jlexer",
+    "jwriter",
+  ]
+  pruneopts = ""
+  revision = "60711f1a8329503b04e1c88535f419d0bb440bff"
+
+[[projects]]
   digest = "1:0c0ff2a89c1bb0d01887e1dac043ad7efbf3ec77482ef058ac423d13497e16fd"
   name = "github.com/modern-go/concurrent"
   packages = ["."]
@@ -222,6 +306,7 @@
     "unicode/cldr",
     "unicode/norm",
     "unicode/rangetable",
+    "width",
   ]
   pruneopts = ""
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
@@ -411,7 +496,10 @@
   branch = "master"
   digest = "1:7b06ff480fd71dead51f0f243b573c448c372ec086b790ec7ed4f8a78f2c1cbf"
   name = "k8s.io/kube-openapi"
-  packages = ["pkg/util/proto"]
+  packages = [
+    "pkg/common",
+    "pkg/util/proto",
+  ]
   pruneopts = ""
   revision = "9dfdf9be683f61f82cda12362c44c784e0778b56"
 
@@ -420,6 +508,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Sirupsen/logrus",
+    "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",

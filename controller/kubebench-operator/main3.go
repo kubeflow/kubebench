@@ -1,42 +1,41 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
-
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client"
+	log "github.com/Sirupsen/logrus"
+
+	kubeclient "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client"
 	controllers "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/controller"
 	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/handler"
 	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/util"
 )
 
 func main() {
-	// Get the Kubernetes client to access the Cloud platform
-	client, kubebenchjobclient := client.GetKubernetesCRDClient()
+	client, kubebenchjobclient := kubeclient.GetKubernetesCRDClient()
 
 	teaminformer := util.GetTeamsSharedIndexInformer(client, kubebenchjobclient)
 	queue := util.CreateWorkingQueue()
 	util.AddPodsEventHandler(teaminformer, queue)
 
-	// construct the Controller object which has all of the necessary components to
-	// handle logging, connections, informing (listing and watching), the queue,
-	// and the handler
+	argoClient := kubeclient.GetArgoClient()
+
 	controller := controllers.KubebenchJobController{
 		Logger:    log.NewEntry(log.New()),
 		Clientset: client,
 		Informer:  teaminformer,
 		Queue:     queue,
 		Handler:   handler.KubebenchJobHandler{},
+
+		//pass correct namespace here
+		Workflows: argoClient.Workflows("default"),
 	}
 
-	// use a channel to synchronize the finalization for a graceful shutdown
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 
-	// run the controller loop to process items
 	go controller.Run(stopCh)
 
 	// use a channel to handle OS signals to terminate and gracefully shut
