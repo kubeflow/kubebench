@@ -7,8 +7,9 @@ import (
 	log "github.com/Sirupsen/logrus"
 	argoproj "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 
-	// workflowUtils "github.com/kubeflow/kubebench/controller/kubebench-operator/util"
-	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/handler"
+	workflowUtils "github.com/kubeflow/kubebench/controller/kubebench-operator/util"
+	// "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/handler"
+	kubebenchjob_v1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/apis/kubebenchjob/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -21,7 +22,6 @@ type KubebenchJobController struct {
 	Clientset kubernetes.Interface
 	Queue     workqueue.RateLimitingInterface
 	Informer  cache.SharedIndexInformer
-	Handler   handler.KubebenchJobHandler
 	Workflows argoproj.WorkflowInterface
 }
 
@@ -84,13 +84,31 @@ func (c *KubebenchJobController) processNextItem() bool {
 
 	if !exists {
 		c.Logger.Infof("Controller.processNextItem: object deleted detected: %s", keyRaw)
-		c.Handler.ObjectDeleted(item)
+		c.handleDelete(item)
 		c.Queue.Forget(key)
 	} else {
 		c.Logger.Infof("Controller.processNextItem: object created detected: %s", keyRaw)
-		c.Handler.ObjectCreated(item)
+		c.handleCreate(item)
 		c.Queue.Forget(key)
 	}
 
 	return true
+}
+
+func (c *KubebenchJobController) handleCreate(obj interface{}) {
+	kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
+	result, err := workflowUtils.ConvertKubebenchJobToArgoWorkflow(kbjob)
+	if err != nil {
+		log.Fatalf("Error converting to workflow: %v", err)
+	}
+
+	workflow, err := c.Workflows.Create(result)
+	if err != nil {
+		log.Fatalf("Error submitting workflow: %v", err)
+	}
+	log.Infof("Workflow successfully submitted: %v", workflow.ObjectMeta.Name)
+}
+
+func (c *KubebenchJobController) handleDelete(obj interface{}) {
+	kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
 }
