@@ -53,7 +53,6 @@ func ConvertEnvVarsToString(envs []apiv1.EnvVar) string {
 	return "[" + tempResult + "]"
 }
 
-// think over
 func CreateKeyValuePairs(m map[string]string) string {
 	result := []string{}
 	for key, value := range m {
