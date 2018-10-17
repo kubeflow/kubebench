@@ -46,7 +46,7 @@ local tfjob = {
   apiVersion: "kubeflow.org/v1alpha2",
   kind: "TFJob",
   metadata: {
-    name: name,
+    name: name+"test11111",
     namespace: namespace,
   },
   spec: {
