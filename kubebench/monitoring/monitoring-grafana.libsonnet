@@ -1,5 +1,5 @@
 local k = import "k.libsonnet";
-local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards-data/kubebench-monitoring.json";
+local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench-monitoring.json";
 
 {
   parts (grafanaName, namespace, prometheusName):: {

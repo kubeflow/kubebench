@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": 3,
-  "iteration": 1539721902026,
+  "id": 2,
+  "iteration": 1539823260550,
   "links": [],
   "panels": [
     {
@@ -25,38 +25,29 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
-      "editable": true,
-      "error": false,
       "fill": 1,
-      "grid": {
-        "threshold1Color": "rgba(216, 200, 27, 0.27)",
-        "threshold2Color": "rgba(234, 112, 112, 0.22)"
-      },
       "gridPos": {
-        "h": 7,
+        "h": 9,
         "w": 24,
         "x": 0,
         "y": 0
       },
-      "id": 1,
-      "isNew": false,
+      "id": 7,
       "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": false,
-        "hideZero": false,
+        "avg": false,
+        "current": false,
         "max": false,
         "min": false,
-        "rightSide": true,
+        "rightSide": false,
         "show": true,
+        "sideWidth": null,
         "total": false,
-        "values": true
+        "values": false
       },
       "lines": true,
-      "linewidth": 2,
+      "linewidth": 1,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -67,11 +58,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by(container_name) (container_memory_usage_bytes{pod_name=~\"$workflow-.*\", container_name=\"main\", container_name!=\"POD\"})",
+          "expr": "sum by(container_name) (container_memory_usage_bytes{image!=\"\", namespace=\"$namespace\", pod_name=\"$pod\", container_name!=\"POD\"})",
           "format": "time_series",
-          "hide": false,
           "intervalFactor": 1,
-          "legendFormat": "Workflow: $workflow",
+          "legendFormat": "Container: {{ container_name }}",
           "refId": "A"
         }
       ],
@@ -80,10 +70,9 @@
       "timeShift": null,
       "title": "Memory Usage",
       "tooltip": {
-        "msResolution": true,
         "shared": true,
         "sort": 0,
-        "value_type": "cumulative"
+        "value_type": "individual"
       },
       "type": "graph",
       "xaxis": {
@@ -95,13 +84,19 @@
       },
       "yaxes": [
         {
-          "format": "bytes",
+          "format": "short",
+          "label": null,
           "logBase": 1,
+          "max": null,
+          "min": null,
           "show": true
         },
         {
           "format": "short",
+          "label": null,
           "logBase": 1,
+          "max": null,
+          "min": null,
           "show": true
         }
       ],
@@ -116,38 +111,30 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "prometheus",
-      "editable": true,
-      "error": false,
       "fill": 1,
-      "grid": {
-        "threshold1Color": "rgba(216, 200, 27, 0.27)",
-        "threshold2Color": "rgba(234, 112, 112, 0.22)"
-      },
       "gridPos": {
-        "h": 7,
+        "h": 9,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 9
       },
-      "id": 2,
-      "isNew": false,
+      "id": 9,
       "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": false,
-        "hideZero": false,
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
         "max": false,
         "min": false,
-        "rightSide": true,
+        "rightSide": false,
         "show": true,
+        "sideWidth": null,
         "total": false,
-        "values": true
+        "values": false
       },
       "lines": true,
-      "linewidth": 2,
+      "linewidth": 1,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -158,13 +145,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (container_name)( rate(container_cpu_usage_seconds_total{image!=\"\",container_name!=\"POD\",pod_name=~\"$workflow-.*\"}[1m] ) )",
+          "expr": "sum by (container_name)( rate(container_cpu_usage_seconds_total{container_name!=\"POD\", image!=\"\",pod_name=\"$pod\"}[1m] ) )",
           "format": "time_series",
-          "hide": false,
-          "intervalFactor": 2,
-          "legendFormat": "Workflow: $workflow",
-          "refId": "A",
-          "step": 30
+          "intervalFactor": 1,
+          "legendFormat": "Container: {{container_name}}",
+          "refId": "A"
         }
       ],
       "thresholds": [],
@@ -172,10 +157,9 @@
       "timeShift": null,
       "title": "CPU Usage",
       "tooltip": {
-        "msResolution": true,
         "shared": true,
         "sort": 0,
-        "value_type": "cumulative"
+        "value_type": "individual"
       },
       "type": "graph",
       "xaxis": {
@@ -188,12 +172,18 @@
       "yaxes": [
         {
           "format": "short",
+          "label": null,
           "logBase": 1,
+          "max": null,
+          "min": null,
           "show": true
         },
         {
           "format": "short",
+          "label": null,
           "logBase": 1,
+          "max": null,
+          "min": null,
           "show": true
         }
       ],
@@ -216,10 +206,10 @@
         "threshold2Color": "rgba(234, 112, 112, 0.22)"
       },
       "gridPos": {
-        "h": 7,
+        "h": 9,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 18
       },
       "id": 5,
       "isNew": false,
@@ -250,25 +240,18 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_disk_read_time_ms{namespace=\"$namespace\", pod=~\"$workflow-.*\"}",
+          "expr": "node_disk_io_now",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
-          "legendFormat": "Workflow: $workflow",
+          "legendFormat": "Instance: {{instance}}",
           "refId": "A"
-        },
-        {
-          "expr": "node_disk_write_time_ms{namespace=\"$namespace\", pod=~\"$workflow-.*\"}",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "Workflow: $workflow",
-          "refId": "B"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Disk IOs per Workflow",
+      "title": "Disk IOs",
       "tooltip": {
         "msResolution": true,
         "shared": true,
@@ -308,15 +291,10 @@
   "templating": {
     "list": [
       {
-        "allValue": ".*",
-        "current": {
-          "selected": false,
-          "text": "andreymonitoring",
-          "value": "andreymonitoring"
-        },
+        "allValue": "",
         "datasource": "prometheus",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "label": "Namespace",
         "multi": false,
         "name": "namespace",
@@ -333,20 +311,14 @@
       },
       {
         "allValue": "",
-        "current": {
-          "selected": true,
-          "tags": [],
-          "text": "my-benchmark-work",
-          "value": "my-benchmark-work"
-        },
         "datasource": "prometheus",
         "hide": 0,
         "includeAll": false,
-        "label": "Workflow",
+        "label": "Pod",
         "multi": false,
-        "name": "workflow",
+        "name": "pod",
         "options": [],
-        "query": "label_values(kube_pod_labels{namespace=~\"$namespace\"}, label_workflows_argoproj_io_workflow)",
+        "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_monitoring=\"kubebench-prometheus\"}, pod)",
         "refresh": 1,
         "regex": "",
         "sort": 0,
@@ -359,8 +331,8 @@
     ]
   },
   "time": {
-    "from": "2018-10-16T12:17:13.501Z",
-    "to": "2018-10-16T12:20:46.493Z"
+    "from": "now-12h",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -388,7 +360,7 @@
     ]
   },
   "timezone": "utc",
-  "title": "Kubebench Workflow Dashboard",
-  "uid": "eqSbm0Aik",
-  "version": 5
+  "title": "Kubebench Monitoring",
+  "uid": "eqSbm0Aik3",
+  "version": 9
 }

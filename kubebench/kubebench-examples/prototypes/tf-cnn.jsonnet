@@ -46,14 +46,22 @@ local tfjob = {
   apiVersion: "kubeflow.org/v1alpha2",
   kind: "TFJob",
   metadata: {
-    name: name+"test11111",
+    name: name,
     namespace: namespace,
+    labels: {
+      monitoring: "kubebench-prometheus"
+    },
   },
   spec: {
     tfReplicaSpecs: {
       Worker: {
         replicas: numWorker,
         template: {
+          metadata: {
+            labels: {
+              monitoring: "kubebench-prometheus"
+              },
+          },
           spec: {
             containers: [
               {
@@ -81,6 +89,11 @@ local tfjob = {
       Ps: {
         replicas: numPs,
         template: {
+          metadata: {
+            labels: {
+              monitoring: "kubebench-prometheus"
+              },
+          },
           spec: {
             containers: [
               {
