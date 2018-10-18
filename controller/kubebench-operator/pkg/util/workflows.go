@@ -401,8 +401,6 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 		},
 	}
 
-	//controller image inside yaml ?
-
 	return result, nil
 }
 
