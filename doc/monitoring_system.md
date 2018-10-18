@@ -19,7 +19,7 @@ ks registry add kubebench github.com/kubeflow/kubebench/tree/${KB_VERSION}/kubeb
 * Install monitoring package from Kubebench registry
 
 ```
-ks pkg install kubebench/monitoring
+ks pkg install kubebench/monitoring@${KB_VERSION}
 ```
 
 * Generate all necessary components
