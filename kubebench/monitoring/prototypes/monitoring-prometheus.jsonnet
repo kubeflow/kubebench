@@ -18,5 +18,3 @@ local serverIP = std.split(std.split(serverAddress, "/")[2], ":")[0];
 
 local prometheusInstance = prometheus.parts(prometheusName, namespace, serverIP);
 prometheusInstance.list(prometheusInstance.all)
-
- 

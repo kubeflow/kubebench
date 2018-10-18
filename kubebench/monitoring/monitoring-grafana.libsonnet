@@ -196,5 +196,6 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
 
     //Create Objects
     list(obj=self.all)::k.core.v1.list.new(obj,),
+    
   },
 }

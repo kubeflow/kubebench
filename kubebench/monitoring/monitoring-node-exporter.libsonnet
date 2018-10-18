@@ -140,57 +140,12 @@ local k = import "k.libsonnet";
     },
     roleBinding:: roleBinding,
 
-    local clusterRole = {
-      apiVersion: "rbac.authorization.k8s.io/v1",
-      kind: "ClusterRole",
-      metadata: {
-        name: nodeExporterName,
-      },
-      rules: [
-        {
-          apiGroups: ["authentication.k8s.io"], 
-          resources: ["tokenreviews"],
-          verbs: ["create"],
-        },
-        {
-          apiGroups: ["authorization.k8s.io"],
-          resources: ["subjectaccessreviews"],
-          verbs: ["create"],
-        },
-      ],
-    },
-    clusterRole:: clusterRole,
-
-    local ClusterRoleBinding = {
-      apiVersion: "rbac.authorization.k8s.io/v1",
-      kind: "ClusterRoleBinding",
-      metadata: {
-        name: nodeExporterName,
-      },
-      roleRef: {
-        apiGroup: "rbac.authorization.k8s.io",
-        kind: "ClusterRole",
-        name: nodeExporterName,
-      },
-      subjects: [
-        {
-          kind: "ServiceAccount",
-          name: nodeExporterName,
-          namespace: namespace,
-        },
-      ],
-    },
-    ClusterRoleBinding:: ClusterRoleBinding,
-
-
     all:: [
       self.daemonSet,
       self.service,
       self.serviceAccount,
       self.role,
       self.roleBinding,
-      self.clusterRole,
-      self.ClusterRoleBinding,
     ],
 
     //Create Objects
