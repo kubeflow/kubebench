@@ -15,18 +15,18 @@ spec:
       name: my-experiment-volume
       persistentVolumeClaim:
         claimName: kubebench-exp-pvc
-  # secretSpecs: # optional
-  #   githubTokenSecret: # optional
-  #     secretName: my-github-token-secret
-  #     secretKey: my-github-token-secret-key
-  #   gcpCredentialsSecret: # optional
-  #     secretName: my-gcp-credentials-secret
-  #     secretKey: my-gcp-credentials-secret-key
+  secretSpecs: # optional
+    githubTokenSecret: # optional
+      secretName: my-github-token-secret
+      secretKey: my-github-token-secret-key
+    gcpCredentialsSecret: # optional
+      secretName: my-gcp-credentials-secret
+      secretKey: my-gcp-credentials-secret-key
   jobSpecs:
-    # preJob: # optional
-    #   container: # optional between "container" and "resource"
-    #     name: my-prejob
-    #     image: gcr.io/myprejob-image:latest
+    preJob: # optional
+      container: # optional between "container" and "resource"
+        name: my-prejob
+        image: gcr.io/myprejob-image:latest # change it before using
     mainJob: # mandatory
       resource: # optional between "container" and "resource"
         manifestTemplate:
@@ -38,16 +38,16 @@ spec:
         manifestParameters:
           valueFrom:
             path: abc/def/ghi.yaml
-        # createSuccessCondition: # optional
-        # createFailureCondition: # optional
-        # runSuccessCondition: # optional
-        # runFailureCondition: # optional
-        # other optional fields: "manifest" - string of raw manifest
+        createSuccessCondition: createSuccess # optional
+        createFailureCondition: createFailure # optional
+        runSuccessCondition: runSuccess # optional
+        runFailureCondition: runFailre # optional
+        #other optional fields: "manifest" - string of raw manifest
     postJob: # optional
       container: # optional between "container" and "resource"
         name: my-postjob
         image: gcr.io/kubeflow-images-public/kubebench/kubebench-example-tf-cnn-post-processor:3c75b50
   reportSpecs: # optional
-    csv: # optional, more types in the future
+    csv: # optional
         - inputPath: result.json
           outputPath: report.csv
