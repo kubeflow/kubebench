@@ -217,7 +217,6 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 	jbSpec := kbJob.Spec
 
 	postJobArgs := []string{}
-	reporterType := "csv"
 
 	mainJobKsPrototypeRef := jbSpec.Jobs.MainJob.Resource.ManifestTemplate.ValueFrom.KsonnetSpec
 	mainJobConfig := "tf-cnn/tf-cnn-dummy.yaml"
@@ -229,8 +228,9 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 		"name": "{{workflow.name}}",
 		"uid":  "{{workflow.uid}}",
 	}
-
+	reporterType := ""
 	if len(jbSpec.Report.CSV) != 0 {
+		reporterType = "csv"
 		reporterArgs = append(reporterArgs, "--input-file="+jbSpec.Report.CSV[0]["inputPath"])
 		reporterArgs = append(reporterArgs, "--output-file="+jbSpec.Report.CSV[0]["outputPath"])
 	}
