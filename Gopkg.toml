@@ -46,6 +46,10 @@ ignored = ["github.com/kubeflow/kubebench"]
   name = "k8s.io/apimachinery"
   branch = "release-1.9"
 
+[[override]]
+  name = "k8s.io/code-generator"
+  branch = "master"
+  
 [prune]
   go-tests = true
   unused-packages = true
