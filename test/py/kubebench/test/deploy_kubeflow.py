@@ -49,14 +49,18 @@ def deploy_kubeflow(test_case):
       test_dir, src_root_dir, namespace, args.github_token, api_client)
 
   # Deploy Kubeflow
-  util.run(["ks", "generate", "tf-job-operator", "tf-job-operator",
-            "--namespace=" + namespace], cwd=app_dir)
-  util.run(["ks", "generate", "argo", "kubeflow-argo", "--name=kubeflow-argo",
-            "--namespace=" + namespace], cwd=app_dir)
+  util.run(["ks", "generate", "tf-job-operator", "tf-job-operator"],
+           cwd=app_dir)
+  util.run(["ks", "generate", "argo", "kubeflow-argo", "--name=kubeflow-argo"],
+           cwd=app_dir)
+  cmd = "ks param set tf-job-operator namespace " + namespace
+  util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set tf-job-operator tfJobImage \
           gcr.io/kubeflow-images-public/tf_operator:v20180522-77375baf"
   util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set tf-job-operator tfJobVersion v1alpha1"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set kubeflow-argo namespace " + namespace
   util.run(cmd.split(), cwd=app_dir)
   apply_command = ["ks", "apply", "default",
                    "-c", "tf-job-operator", "-c", "kubeflow-argo"]
