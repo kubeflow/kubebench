@@ -19,10 +19,10 @@ metadata:
   name: kubebench-opeartor
 rules:
 - apiGroups:
-  - torchbox.com
+  - kubebench.operator
   resources:
-  - databases
-  - databases.torchbox.com
+  - kubebenchjobs.kubebench.operator
+  - kubebenchjobs
   verbs:
   - create
   - update
@@ -89,12 +89,10 @@ spec:
           secretName: config
       containers:
       - name: controller
-        image: torchbox/k8s-kubebench-opeartor:v1.0.0-alpha6
-        args:
-        - --config=/config/config.yaml
-        volumeMounts:
-        - name: config
-          mountPath: /config
+        image: #CUSTOM IMAGE HERE
+#        args:
+#        - --config=/config/config.yaml
+#g
         resources:
           limits:
             cpu: 100m
