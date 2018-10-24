@@ -2,8 +2,8 @@
 
 CURRENT=$(pwd)
 ROOT_PACKAGE="github.com/kubeflow/kubebench/contorller/kubebench-operator"
-CUSTOM_RESOURCE_NAME=""
-CUSTOM_RESOURCE_VERSION
+CUSTOM_RESOURCE_NAME="kubebenchjob"
+CUSTOM_RESOURCE_VERSION="v1"
 
 cd $GOPATH/src/k8s.io/code-generator
 
