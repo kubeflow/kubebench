@@ -49,7 +49,7 @@ local tfjob = {
     name: name,
     namespace: namespace,
     labels: {
-      monitoring: "kubebench-prometheus"
+      monitoring: "kubebench-prometheus",
     },
   },
   spec: {
@@ -59,8 +59,8 @@ local tfjob = {
         template: {
           metadata: {
             labels: {
-              monitoring: "kubebench-prometheus"
-              },
+              monitoring: "kubebench-prometheus",
+            },
           },
           spec: {
             containers: [
@@ -91,8 +91,8 @@ local tfjob = {
         template: {
           metadata: {
             labels: {
-              monitoring: "kubebench-prometheus"
-              },
+              monitoring: "kubebench-prometheus",
+            },
           },
           spec: {
             containers: [
