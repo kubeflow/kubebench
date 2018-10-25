@@ -1,24 +1,24 @@
-local k = import "k.libsonnet";
 local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench-monitoring.json";
+local k = import "k.libsonnet";
 
 {
-  parts (grafanaName, namespace, prometheusName):: {
+  parts(grafanaName, namespace, prometheusName):: {
 
     //Grafana Datasource Config
-    local grafanaDatasource = '{
-      "apiVersion": 1,
-      "datasources": [
+    local grafanaDatasource = {
+      apiVersion: 1,
+      datasources: [
         {
-          "access": "proxy",
-          "editable": true,
-          "name": "prometheus",
-          "orgId": 1,
-          "type": "prometheus",
-          "url": "http://'+prometheusName+'.'+namespace+'.svc:9090",
-          "version": 1
-        }
-      ]
-    }',
+          access: "proxy",
+          editable: true,
+          name: "prometheus",
+          orgId: 1,
+          type: "prometheus",
+          url: "http://" + prometheusName + "." + namespace + ".svc:9090",
+          version: 1,
+        },
+      ],
+    },
 
     //Grafana Datasource ConfigMap
     local grafanaDatasourceConfigMap = {
@@ -29,26 +29,26 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
         namespace: namespace,
       },
       data: {
-        "prometheus.yaml": grafanaDatasource
+        "prometheus.yaml": std.toString(grafanaDatasource),
       },
-     },
-     grafanaDatasourceConfigMap:: grafanaDatasourceConfigMap,
+    },
+    grafanaDatasourceConfigMap:: grafanaDatasourceConfigMap,
 
     //Grafana Dashboard Source Config
-    local grafanaDashboardSource = '{
-      "apiVersion": 1,
-      "providers": [
+    local grafanaDashboardSource = {
+      apiVersion: 1,
+      providers: [
         {
-          "folder": "",
-          "name": "default",
-          "options": {
-              "path": "/grafana-dashboard-definitions/default"
+          folder: "",
+          name: "default",
+          options: {
+            path: "/grafana-dashboard-definitions/default",
           },
-          "orgId": 1,
-          "type": "file"
-          }
-        ]
-    }',
+          orgId: 1,
+          type: "file",
+        },
+      ],
+    },
 
     //Grafana Dashboard Source ConfigMap
     local grafanaDashboardSourceConfigMap = {
@@ -59,13 +59,13 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
         namespace: namespace,
       },
       data: {
-        "dashboards.yaml": grafanaDashboardSource,
+        "dashboards.yaml": std.toString(grafanaDashboardSource),
       },
-     },
+    },
     grafanaDashboardSourceConfigMap:: grafanaDashboardSourceConfigMap,
 
     //Grafana Dasboard Kubebench Monitoring ConfigMap
-    local grafanaDashboardKubebenchMonitoringConfigMap = { 
+    local grafanaDashboardKubebenchMonitoringConfigMap = {
       apiVersion: "v1",
       kind: "ConfigMap",
       metadata: {
@@ -73,8 +73,8 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
         namespace: namespace,
       },
       data: {
-        "kubebench-monitoring.json": ''+grafanaDashboardKubebenchMonitoring+'',
-      }, 
+        "kubebench-monitoring.json": "" + grafanaDashboardKubebenchMonitoring + "",
+      },
     },
     grafanaDashboardKubebenchMonitoringConfigMap:: grafanaDashboardKubebenchMonitoringConfigMap,
 
@@ -113,7 +113,7 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
                 ports: [
                   {
                     containerPort: 3000,
-                    name: "http-grafana"
+                    name: "http-grafana",
                   },
                 ],
                 volumeMounts: [
@@ -126,12 +126,12 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
                     mountPath: "/etc/grafana/provisioning/dashboards",
                     name: "grafana-dashboards",
                     readOnly: false,
-                  },    
+                  },
                   {
                     mountPath: "/grafana-dashboard-definitions/default/kubebench-monitoring",
                     name: "grafana-dashboard-kubebench-monitoring",
                     readOnly: false,
-                  },  
+                  },
                 ],
               },
             ],
@@ -160,7 +160,7 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
       },
     },
     deployment:: deployment,
-  
+
     //Grafana Service
     local service = {
       apiVersion: "v1",
@@ -181,7 +181,7 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
           app: "prometheus",
           component: grafanaName,
         },
-        type: "NodePort"
+        type: "NodePort",
       },
     },
     service:: service,
@@ -195,7 +195,7 @@ local grafanaDashboardKubebenchMonitoring = import "grafana-dashboards/kubebench
     ],
 
     //Create Objects
-    list(obj=self.all)::k.core.v1.list.new(obj,),
-    
+    list(obj=self.all):: k.core.v1.list.new(obj,),
+
   },
 }

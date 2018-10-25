@@ -2,7 +2,7 @@ local k = import "k.libsonnet";
 
 {
   parts(kubeStateMetricsName, namespace):: {
-   
+
     //Kube State Metrics Deployment
     local deployment = {
       apiVersion: "apps/v1beta2",
@@ -12,14 +12,14 @@ local k = import "k.libsonnet";
         namespace: namespace,
         labels: {
           app: "prometheus",
-          component: kubeStateMetricsName
+          component: kubeStateMetricsName,
         },
       },
       spec: {
         selector: {
           matchLabels: {
             app: "prometheus",
-            component: kubeStateMetricsName
+            component: kubeStateMetricsName,
           },
         },
         template: {
@@ -28,7 +28,7 @@ local k = import "k.libsonnet";
             namespace: namespace,
             labels: {
               app: "prometheus",
-              component: kubeStateMetricsName
+              component: kubeStateMetricsName,
             },
           },
           spec: {
@@ -38,7 +38,7 @@ local k = import "k.libsonnet";
                 image: "quay.io/coreos/kube-state-metrics:v1.4.0",
                 imagePullPolicy: "Always",
                 args: [
-                  "--namespace="+namespace,
+                  "--namespace=" + namespace,
                 ],
                 ports: [
                   {
@@ -54,23 +54,23 @@ local k = import "k.libsonnet";
           },
         },
       },
-     
-    }, 
+
+    },
     deployment:: deployment,
 
-   //Kube State Metrics Service 
-   local service = {
+    //Kube State Metrics Service
+    local service = {
       apiVersion: "v1",
       kind: "Service",
       metadata: {
         annotations: {
-          "prometheus.io/scrape": "true"
+          "prometheus.io/scrape": "true",
         },
         name: kubeStateMetricsName,
         namespace: namespace,
         labels: {
           app: "prometheus",
-          component: kubeStateMetricsName
+          component: kubeStateMetricsName,
         },
       },
       spec: {
@@ -83,7 +83,7 @@ local k = import "k.libsonnet";
         ],
         selector: {
           app: "prometheus",
-          component: kubeStateMetricsName
+          component: kubeStateMetricsName,
         },
       },
     },
@@ -97,7 +97,7 @@ local k = import "k.libsonnet";
         name: kubeStateMetricsName,
         namespace: namespace,
       },
-    }, 
+    },
     serviceAccount:: serviceAccount,
 
 
@@ -233,8 +233,8 @@ local k = import "k.libsonnet";
       ],
     },
     clusterRoleBinding:: clusterRoleBinding,
-    
-   //Kube State Metrics Role
+
+    //Kube State Metrics Role
     local role = {
       apiVersion: "rbac.authorization.k8s.io/v1",
       kind: "Role",
@@ -244,7 +244,7 @@ local k = import "k.libsonnet";
       },
       rules: [
         {
-          apiGroups: [""], 
+          apiGroups: [""],
           resources: ["pods"],
           verbs: ["get"],
         },
@@ -254,7 +254,8 @@ local k = import "k.libsonnet";
           resources: ["deployments"],
           verbs: [
             "get",
-            "update"], 
+            "update",
+          ],
         },
         {
           apiGroups: ["apps"],
@@ -262,12 +263,13 @@ local k = import "k.libsonnet";
           resources: ["deployments"],
           verbs: [
             "get",
-            "update"], 
+            "update",
+          ],
         },
       ],
     },
     role:: role,
-    
+
     //Kube State Metrics Role Binding
     local roleBinding = {
       apiVersion: "rbac.authorization.k8s.io/v1",
@@ -302,7 +304,7 @@ local k = import "k.libsonnet";
     ],
 
     //Create Objects
-    list(obj=self.all)::k.core.v1.list.new(obj,),
-    
+    list(obj=self.all):: k.core.v1.list.new(obj,),
+
   },
 }

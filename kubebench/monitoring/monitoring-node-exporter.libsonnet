@@ -2,7 +2,7 @@ local k = import "k.libsonnet";
 
 {
   parts(nodeExporterName, namespace):: {
-   
+
     //Node Exporter DaemonSet
     local daemonSet = {
       apiVersion: "apps/v1beta2",
@@ -12,7 +12,7 @@ local k = import "k.libsonnet";
         namespace: namespace,
         labels: {
           app: "prometheus",
-          component: nodeExporterName
+          component: nodeExporterName,
         },
       },
       spec: {
@@ -26,7 +26,7 @@ local k = import "k.libsonnet";
             name: nodeExporterName,
             labels: {
               app: "prometheus",
-              component: nodeExporterName
+              component: nodeExporterName,
             },
           },
           spec: {
@@ -49,7 +49,7 @@ local k = import "k.libsonnet";
           },
         },
       },
-    }, 
+    },
     daemonSet:: daemonSet,
 
     //Node Exporter Service
@@ -58,13 +58,13 @@ local k = import "k.libsonnet";
       kind: "Service",
       metadata: {
         annotations: {
-          "prometheus.io/scrape": "true"
+          "prometheus.io/scrape": "true",
         },
         name: nodeExporterName,
         namespace: namespace,
         labels: {
           app: "prometheus",
-          component: nodeExporterName
+          component: nodeExporterName,
         },
       },
       spec: {
@@ -77,12 +77,12 @@ local k = import "k.libsonnet";
         ],
         selector: {
           app: "prometheus",
-          component: nodeExporterName
+          component: nodeExporterName,
         },
       },
     },
     service:: service,
-    
+
     //Node Exporter Service Account
     local serviceAccount = {
       apiVersion: "v1",
@@ -91,7 +91,7 @@ local k = import "k.libsonnet";
         name: nodeExporterName,
         namespace: namespace,
       },
-    }, 
+    },
     serviceAccount:: serviceAccount,
 
     //Node Exporter Role
@@ -104,7 +104,7 @@ local k = import "k.libsonnet";
       },
       rules: [
         {
-          apiGroups: ["authentication.k8s.io"], 
+          apiGroups: ["authentication.k8s.io"],
           resources: ["tokenreviews"],
           verbs: ["create"],
         },
@@ -116,7 +116,7 @@ local k = import "k.libsonnet";
       ],
     },
     role:: role,
-    
+
     //Node Exporter Role Binding
     local roleBinding = {
       apiVersion: "rbac.authorization.k8s.io/v1",
@@ -149,7 +149,7 @@ local k = import "k.libsonnet";
     ],
 
     //Create Objects
-    list(obj=self.all)::k.core.v1.list.new(obj,),
-    
+    list(obj=self.all):: k.core.v1.list.new(obj,),
+
   },
 }

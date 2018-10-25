@@ -1,15 +1,15 @@
 local k = import "k.libsonnet";
 
 {
-   parts(prometheusName, namespace, serverIP):: {
+  parts(prometheusName, namespace, serverIP):: {
 
-     //Port Information
-     local nodeExporterPort = 9100,
-     local kubeStateMetricsPort = 8080,
-     local kubeletMetricsPort = 10250,
+    //Port Information
+    local nodeExporterPort = 9100,
+    local kubeStateMetricsPort = 8080,
+    local kubeletMetricsPort = 10250,
 
-     //Config Map with Prometheus Config
-     local configMap = {
+    //Config Map with Prometheus Config
+    local configMap = {
       apiVersion: "v1",
       kind: "ConfigMap",
       metadata: {
@@ -17,17 +17,17 @@ local k = import "k.libsonnet";
         namespace: namespace,
       },
       data: {
-        "prometheus.yml": (importstr "prometheus.yml") %{
-          "node-exporter-ip": serverIP+":"+nodeExporterPort,
-          "kube-state-metrics-ip": serverIP+":"+kubeStateMetricsPort,
-          "kubelet-metrics-ip": serverIP+":"+kubeletMetricsPort,
+        "prometheus.yml": (importstr "prometheus.yml") % {
+          "node-exporter-ip": serverIP + ":" + nodeExporterPort,
+          "kube-state-metrics-ip": serverIP + ":" + kubeStateMetricsPort,
+          "kubelet-metrics-ip": serverIP + ":" + kubeletMetricsPort,
         },
       },
-     },
-     configMap:: configMap,
-     
-     //Prometheus Deployment
-     local deployment = {
+    },
+    configMap:: configMap,
+
+    //Prometheus Deployment
+    local deployment = {
       apiVersion: "extensions/v1beta1",
       kind: "Deployment",
       metadata: {
@@ -123,7 +123,7 @@ local k = import "k.libsonnet";
       },
     },
     serviceAccount:: serviceAccount,
-    
+
     //Prometheus Cluster Role
     local clusterRole = {
       apiVersion: "rbac.authorization.k8s.io/v1beta1",
@@ -207,7 +207,7 @@ local k = import "k.libsonnet";
     ],
 
     //Create Objects
-    list(obj=self.all)::k.core.v1.list.new(obj,),
-    
+    list(obj=self.all):: k.core.v1.list.new(obj,),
+
   },
 }
