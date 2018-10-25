@@ -110,6 +110,12 @@ local k = import "k.libsonnet";
                 image: "grafana/grafana:5.2.1",
                 imagePullPolicy: "Always",
                 name: grafanaName,
+                env: [
+                  {
+                    name: "GF_SERVER_ROOT_URL",
+                    value: "http://localhost:3000/grafana/",
+                  },
+                ],
                 ports: [
                   {
                     containerPort: 3000,
@@ -168,6 +174,17 @@ local k = import "k.libsonnet";
       metadata: {
         name: grafanaName,
         namespace: namespace,
+        annotations: {
+          "getambassador.io/config":
+            std.join("\n", [
+              "---",
+              "apiVersion: ambassador/v0",
+              "kind:  Mapping",
+              "name: grafana-ui-mapping",
+              "prefix: /grafana/",
+              "service: " + grafanaName + "." + namespace + ":3000",
+            ]),
+        },  //annotations
       },
       spec: {
         ports: [
@@ -181,7 +198,6 @@ local k = import "k.libsonnet";
           app: "prometheus",
           component: grafanaName,
         },
-        type: "NodePort",
       },
     },
     service:: service,
