@@ -1,0 +1,35 @@
+{
+   "name": "monitoring",
+   "apiVersion": "0.0.1",
+   "kind": "ksonnet.io/parts",
+   "description": "Prototypes for running Monitoring System.\n",
+   "author": "Cisco Systems, Inc.",
+   "contributors": [
+      {
+         "name": "Andrey Velichkevich",
+         "email": "avelichk@cisco.com"
+      }
+   ],
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/kubeflow/kubebench"
+   },
+   "bugs": {
+      "url": "https://github.com/kubeflow/kubebench/issues"
+   },
+   "keywords": [
+      "kubeflow",
+      "benchmark",
+      "monitoring"
+   ],
+   "quickStart": {
+      "prototype": "io.ksonnet.pkg.monitoring",
+      "componentName": "monitoring",
+      "flags": {
+         "name": "monitoring",
+         "namespace": "default"
+      },
+      "comment": "Run Monitoring System"
+   },
+   "license": "Apache 2.0"
+}

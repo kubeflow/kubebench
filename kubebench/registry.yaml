@@ -16,3 +16,6 @@ libraries:
   nfs-volume:
     version: master
     path: nfs-volume
+  monitoring:
+    version: master
+    path: monitoring
