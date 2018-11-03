@@ -404,211 +404,211 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 	return result, nil
 }
 
-func GenerateWorkflowFromParameters(parameters map[string]string) (wkflw *workflow_v1.Workflow, err error) {
-	//get rid of hardcoded fields, update types + yaml file
-	// ADD SANITY CHECK WHETHER SOMETHING IS EMPT!!!!!
-
-	reporterArgs := make([]string, 0)
-
-	postJobArgs := []string{}
-	if parameters["postJobArgs"] != "" {
-		postJobArgs = append(postJobArgs, parameters["postJobArgs"])
-	}
-	namespace := "default"
-
-	ksonnetParameters := kubebenchjob.Ksonnet{}
-	ksonnetParameters.KsonnetSpec := map[string]string{
-		"prototype": parameters["mainJobKsPrototype"],
-		"package": parameters["mainJobKsPackage"],
-		"registry": parameters["mainJobKsRegistry"],
-	}
-	mainJobConfig := parameters["mainJobConfig"]
-
-	ownerReferences := map[string]string{
-		"apiVersion": "argoproj.io/v1alpha1",
-		//		"blockOwnerDeletion": "true",
-		"kind": "Workflow",
-		"name": "{{workflow.name}}",
-		"uid":  "{{workflow.uid}}",
-	}
-
-	reporterType := ""
-	if parameters["reportType"] == "csv" {
-		reporterType = "csv"
-		reporterArgs = append(reporterArgs, "--input-file="+parameters["csvReporterInput"])
-		reporterArgs = append(reporterArgs, "--output-file="+parameters["csvReporterOutput"])
-	}
-
-	secretEnvVars := make([]apiv1.EnvVar, 0)
-	secretVols := make([]apiv1.Volume, 0)
-	secretVolMnts := make([]apiv1.VolumeMount, 0)
-
-	if parameters["githubTokenSecret"] != "" {
-
-		secretEnvVars = append(secretEnvVars, apiv1.EnvVar{
-			Name: "GITHUB_TOKEN",
-			ValueFrom: &apiv1.EnvVarSource{
-				SecretKeyRef: &apiv1.SecretKeySelector{
-					LocalObjectReference: apiv1.LocalObjectReference{
-						Name: parameters["githubTokenSecret"],
-					}, //fix!!
-					Key: parameters["githubTokenSecretKey"],
-				},
-			},
-		})
-
-		secretVols = append(secretVols, apiv1.Volume{
-			Name: kubebenchGithubTokenVol,
-			VolumeSource: apiv1.VolumeSource{
-				Secret: &apiv1.SecretVolumeSource{
-					SecretName: parameters["githubTokenSecret"],
-				},
-			},
-		})
-
-		secretVolMnts = append(secretVolMnts, apiv1.VolumeMount{
-			Name:      kubebenchGithubTokenVol,
-			MountPath: "/secret/github-token",
-		})
-	}
-
-	if parameters["gcpCredentialsSecret"] != "" {
-
-		secretEnvVars = append(secretEnvVars, apiv1.EnvVar{
-			Name:  "GOOGLE_APPLICATION_CREDENTIALS",
-			Value: "/secret/gcp-credentials/" + parameters["gcpCredentialsSecretKey"],
-		})
-
-		secretVols = append(secretVols, apiv1.Volume{
-			Name: kubebenchGcpCredsVol,
-			VolumeSource: apiv1.VolumeSource{
-				Secret: &apiv1.SecretVolumeSource{
-					SecretName: parameters["gcpCredentialsSecret",
-				},
-			},
-		})
-
-		secretVolMnts = append(secretVolMnts, apiv1.VolumeMount{
-			Name:      kubebenchGcpCredsVol,
-			MountPath: "/secret/gcp-credentials",
-		})
-	}
-
-	baseEnvVars := []apiv1.EnvVar{
-		apiv1.EnvVar{
-			Name:  "KUBEBENCH_CONFIG_ROOT",
-			Value: kubebenchConfigRoot,
-		},
-		apiv1.EnvVar{
-			Name:  "KUBEBENCH_EXP_ROOT",
-			Value: kubebenchExpRoot,
-		},
-		apiv1.EnvVar{
-			Name:  "KUBEBENCH_DATA_ROOT",
-			Value: kubebenchDataRoot,
-		},
-	}
-	// ADD THIS
-	baseVols := []apiv1.Volume{
-		apiv1.Volume{
-			Name: kubebenchConfigVol,
-			VolumeSource: apiv1.VolumeSource{
-				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
-					ClaimName: parameters["experimentConfigPvc"],
-				},
-			},
-		},
-		apiv1.Volume{
-			Name: kubebenchExpVol,
-			VolumeSource: apiv1.VolumeSource{
-				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
-					ClaimName: parameters["experimentRecordPvc"],
-				},
-			},
-		},
-	}
-
-	baseVolMnts := []apiv1.VolumeMount{
-		apiv1.VolumeMount{
-			Name:      kubebenchConfigVol,
-			MountPath: kubebenchConfigRoot,
-		},
-		apiv1.VolumeMount{
-			Name:      kubebenchExpVol,
-			MountPath: kubebenchExpRoot,
-		},
-	}
-
-	configuratorCommand := []string{
-		"configurator",
-		"--template-ref=" + CreateKeyValuePairs(mainJobKsPrototypeRef),
-		"--config=" + mainJobConfig,
-		// fix this
-		"--namespace=" + namespace,
-		"--owner-references=" + "[" + CreateKeyValuePairs(ownerReferences) + "]",
-		"--volumes=" + ConvertVolumesToString(baseVols),
-		"--volume-mounts=" + ConvertVolumeMountsToString(baseVolMnts),
-		"--env-vars=" + ConvertEnvVarsToString(append(baseEnvVars, expEnvVars(true)...)),
-		"--manifest-output=" + manifestOutput,
-		"--experiment-id-output=" + experimentIdOutput,
-	}
-
-	//controllerImage := "gcr.io/xyhuang-kubeflow/kubebench-controller:v0.3.0"
-	// controllerImage := "gcr.io/kubeflow-images-public/kubebench/kubebench-controller:3c75b50"
-	controllerImage := parameters["controllerImage"]
-	// asad
-	result := &workflow_v1.Workflow{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "argoproj.io/v1alpha1",
-			Kind:       "Workflow",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      parameters["name"],
-			Namespace: namespace,
-		},
-		Spec: workflow_v1.WorkflowSpec{
-			ServiceAccountName: parameters["serviceAccount"],
-			Entrypoint:         "kubebench-workflow",
-			Volumes:            append(baseVols, secretVols...),
-			Templates: []workflow_v1.Template{
-				workflow_v1.Template{
-					Name: "kubebench-workflow",
-					Steps: [][]workflow_v1.WorkflowStep{
-						[]workflow_v1.WorkflowStep{
-							BuildStep("run-configurator", "configurator", CreateArgumentsForString([]string{}, []string{})),
-						},
-						[]workflow_v1.WorkflowStep{
-							BuildStep("launch-main-job", "main-job", CreateArgumentsForString(
-								[]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
-						},
-						[]workflow_v1.WorkflowStep{
-							BuildStep("wait-for-main-job",
-								"main-job-monitor", CreateArgumentsForString([]string{"kf-job-manifest"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}"})),
-						},
-						[]workflow_v1.WorkflowStep{
-							BuildStep("run-post-job", "post-job", CreateArgumentsForString([]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
-						},
-						[]workflow_v1.WorkflowStep{
-							BuildStep("run-reporter", "reporter", CreateArgumentsForString([]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
-						},
-					},
-				},
-
-				BuildTemplate("configurator", controllerImage, configuratorCommand, append(secretEnvVars, baseEnvVars...), append(secretVolMnts, baseVolMnts...), CreateInputs([]string{}), CreateOutputs([]string{"kf-job-manifest", "experiment-id"}, []string{manifestOutput, experimentIdOutput})),
-
-				BuildResourceTemplate("main-job", "create", "{{inputs.parameters.kf-job-manifest}}", "status.startTime", "", CreateInputs([]string{"kf-job-manifest"}), CreateOutputs([]string{}, []string{})),
-
-				BuildResourceTemplate("main-job-monitor", "get", "{{inputs.parameters.kf-job-manifest}}", "status.completionTime", "", CreateInputs([]string{"kf-job-manifest"}), CreateOutputs([]string{}, []string{})),
-
-				BuildTemplate("post-job", parameters["postJobImage"], postJobArgs, append(baseEnvVars, expEnvVars(false)...), baseVolMnts, CreateInputs([]string{"experiment-id"}), CreateOutputs([]string{}, []string{})),
-
-				BuildTemplate("reporter", controllerImage, append([]string{"reporter", reporterType}, reporterArgs...), append(append(secretEnvVars, baseEnvVars...), expEnvVars(false)...), append(secretVolMnts, baseVolMnts...), CreateInputs([]string{"experiment-id"}), CreateOutputs([]string{}, []string{})),
-			},
-		},
-	}
-
-	return result, nil
-}
+//func GenerateWorkflowFromParameters(parameters map[string]string) (wkflw *workflow_v1.Workflow, err error) {
+//	//get rid of hardcoded fields, update types + yaml file
+//	// ADD SANITY CHECK WHETHER SOMETHING IS EMPT!!!!!
+//
+//	reporterArgs := make([]string, 0)
+//
+//	postJobArgs := []string{}
+//	if parameters["postJobArgs"] != "" {
+//		postJobArgs = append(postJobArgs, parameters["postJobArgs"])
+//	}
+//	namespace := "default"
+//
+//	ksonnetParameters := kubebenchjob.Ksonnet{}
+//	ksonnetParameters.KsonnetSpec := map[string]string{
+//		"prototype": parameters["mainJobKsPrototype"],
+//		"package": parameters["mainJobKsPackage"],
+//		"registry": parameters["mainJobKsRegistry"],
+//	}
+//	mainJobConfig := parameters["mainJobConfig"]
+//
+//	ownerReferences := map[string]string{
+//		"apiVersion": "argoproj.io/v1alpha1",
+//		//		"blockOwnerDeletion": "true",
+//		"kind": "Workflow",
+//		"name": "{{workflow.name}}",
+//		"uid":  "{{workflow.uid}}",
+//	}
+//
+//	reporterType := ""
+//	if parameters["reportType"] == "csv" {
+//		reporterType = "csv"
+//		reporterArgs = append(reporterArgs, "--input-file="+parameters["csvReporterInput"])
+//		reporterArgs = append(reporterArgs, "--output-file="+parameters["csvReporterOutput"])
+//	}
+//
+//	secretEnvVars := make([]apiv1.EnvVar, 0)
+//	secretVols := make([]apiv1.Volume, 0)
+//	secretVolMnts := make([]apiv1.VolumeMount, 0)
+//
+//	if parameters["githubTokenSecret"] != "" {
+//
+//		secretEnvVars = append(secretEnvVars, apiv1.EnvVar{
+//			Name: "GITHUB_TOKEN",
+//			ValueFrom: &apiv1.EnvVarSource{
+//				SecretKeyRef: &apiv1.SecretKeySelector{
+//					LocalObjectReference: apiv1.LocalObjectReference{
+//						Name: parameters["githubTokenSecret"],
+//					}, //fix!!
+//					Key: parameters["githubTokenSecretKey"],
+//				},
+//			},
+//		})
+//
+//		secretVols = append(secretVols, apiv1.Volume{
+//			Name: kubebenchGithubTokenVol,
+//			VolumeSource: apiv1.VolumeSource{
+//				Secret: &apiv1.SecretVolumeSource{
+//					SecretName: parameters["githubTokenSecret"],
+//				},
+//			},
+//		})
+//
+//		secretVolMnts = append(secretVolMnts, apiv1.VolumeMount{
+//			Name:      kubebenchGithubTokenVol,
+//			MountPath: "/secret/github-token",
+//		})
+//	}
+//
+//	if parameters["gcpCredentialsSecret"] != "" {
+//
+//		secretEnvVars = append(secretEnvVars, apiv1.EnvVar{
+//			Name:  "GOOGLE_APPLICATION_CREDENTIALS",
+//			Value: "/secret/gcp-credentials/" + parameters["gcpCredentialsSecretKey"],
+//		})
+//
+//		secretVols = append(secretVols, apiv1.Volume{
+//			Name: kubebenchGcpCredsVol,
+//			VolumeSource: apiv1.VolumeSource{
+//				Secret: &apiv1.SecretVolumeSource{
+//					SecretName: parameters["gcpCredentialsSecret",
+//				},
+//			},
+//		})
+//
+//		secretVolMnts = append(secretVolMnts, apiv1.VolumeMount{
+//			Name:      kubebenchGcpCredsVol,
+//			MountPath: "/secret/gcp-credentials",
+//		})
+//	}
+//
+//	baseEnvVars := []apiv1.EnvVar{
+//		apiv1.EnvVar{
+//			Name:  "KUBEBENCH_CONFIG_ROOT",
+//			Value: kubebenchConfigRoot,
+//		},
+//		apiv1.EnvVar{
+//			Name:  "KUBEBENCH_EXP_ROOT",
+//			Value: kubebenchExpRoot,
+//		},
+//		apiv1.EnvVar{
+//			Name:  "KUBEBENCH_DATA_ROOT",
+//			Value: kubebenchDataRoot,
+//		},
+//	}
+//	// ADD THIS
+//	baseVols := []apiv1.Volume{
+//		apiv1.Volume{
+//			Name: kubebenchConfigVol,
+//			VolumeSource: apiv1.VolumeSource{
+//				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+//					ClaimName: parameters["experimentConfigPvc"],
+//				},
+//			},
+//		},
+//		apiv1.Volume{
+//			Name: kubebenchExpVol,
+//			VolumeSource: apiv1.VolumeSource{
+//				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
+//					ClaimName: parameters["experimentRecordPvc"],
+//				},
+//			},
+//		},
+//	}
+//
+//	baseVolMnts := []apiv1.VolumeMount{
+//		apiv1.VolumeMount{
+//			Name:      kubebenchConfigVol,
+//			MountPath: kubebenchConfigRoot,
+//		},
+//		apiv1.VolumeMount{
+//			Name:      kubebenchExpVol,
+//			MountPath: kubebenchExpRoot,
+//		},
+//	}
+//
+//	configuratorCommand := []string{
+//		"configurator",
+//		"--template-ref=" + CreateKeyValuePairs(mainJobKsPrototypeRef),
+//		"--config=" + mainJobConfig,
+//		// fix this
+//		"--namespace=" + namespace,
+//		"--owner-references=" + "[" + CreateKeyValuePairs(ownerReferences) + "]",
+//		"--volumes=" + ConvertVolumesToString(baseVols),
+//		"--volume-mounts=" + ConvertVolumeMountsToString(baseVolMnts),
+//		"--env-vars=" + ConvertEnvVarsToString(append(baseEnvVars, expEnvVars(true)...)),
+//		"--manifest-output=" + manifestOutput,
+//		"--experiment-id-output=" + experimentIdOutput,
+//	}
+//
+//	//controllerImage := "gcr.io/xyhuang-kubeflow/kubebench-controller:v0.3.0"
+//	// controllerImage := "gcr.io/kubeflow-images-public/kubebench/kubebench-controller:3c75b50"
+//	controllerImage := parameters["controllerImage"]
+//	// asad
+//	result := &workflow_v1.Workflow{
+//		TypeMeta: metav1.TypeMeta{
+//			APIVersion: "argoproj.io/v1alpha1",
+//			Kind:       "Workflow",
+//		},
+//		ObjectMeta: metav1.ObjectMeta{
+//			Name:      parameters["name"],
+//			Namespace: namespace,
+//		},
+//		Spec: workflow_v1.WorkflowSpec{
+//			ServiceAccountName: parameters["serviceAccount"],
+//			Entrypoint:         "kubebench-workflow",
+//			Volumes:            append(baseVols, secretVols...),
+//			Templates: []workflow_v1.Template{
+//				workflow_v1.Template{
+//					Name: "kubebench-workflow",
+//					Steps: [][]workflow_v1.WorkflowStep{
+//						[]workflow_v1.WorkflowStep{
+//							BuildStep("run-configurator", "configurator", CreateArgumentsForString([]string{}, []string{})),
+//						},
+//						[]workflow_v1.WorkflowStep{
+//							BuildStep("launch-main-job", "main-job", CreateArgumentsForString(
+//								[]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
+//						},
+//						[]workflow_v1.WorkflowStep{
+//							BuildStep("wait-for-main-job",
+//								"main-job-monitor", CreateArgumentsForString([]string{"kf-job-manifest"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}"})),
+//						},
+//						[]workflow_v1.WorkflowStep{
+//							BuildStep("run-post-job", "post-job", CreateArgumentsForString([]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
+//						},
+//						[]workflow_v1.WorkflowStep{
+//							BuildStep("run-reporter", "reporter", CreateArgumentsForString([]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
+//						},
+//					},
+//				},
+//
+//				BuildTemplate("configurator", controllerImage, configuratorCommand, append(secretEnvVars, baseEnvVars...), append(secretVolMnts, baseVolMnts...), CreateInputs([]string{}), CreateOutputs([]string{"kf-job-manifest", "experiment-id"}, []string{manifestOutput, experimentIdOutput})),
+//
+//				BuildResourceTemplate("main-job", "create", "{{inputs.parameters.kf-job-manifest}}", "status.startTime", "", CreateInputs([]string{"kf-job-manifest"}), CreateOutputs([]string{}, []string{})),
+//
+//				BuildResourceTemplate("main-job-monitor", "get", "{{inputs.parameters.kf-job-manifest}}", "status.completionTime", "", CreateInputs([]string{"kf-job-manifest"}), CreateOutputs([]string{}, []string{})),
+//
+//				BuildTemplate("post-job", parameters["postJobImage"], postJobArgs, append(baseEnvVars, expEnvVars(false)...), baseVolMnts, CreateInputs([]string{"experiment-id"}), CreateOutputs([]string{}, []string{})),
+//
+//				BuildTemplate("reporter", controllerImage, append([]string{"reporter", reporterType}, reporterArgs...), append(append(secretEnvVars, baseEnvVars...), expEnvVars(false)...), append(secretVolMnts, baseVolMnts...), CreateInputs([]string{"experiment-id"}), CreateOutputs([]string{}, []string{})),
+//			},
+//		},
+//	}
+//
+//	return result, nil
+//}
 
 func GetJobName(kbJob *kubebenchjob.KubebenchJob) (name string) {
 	return kbJob.ObjectMeta.Name
