@@ -48,11 +48,11 @@ ignored = ["github.com/kubeflow/kubebench"]
 
 [[override]]
   name = "k8s.io/apimachinery"
-  branch = "release-1.9"
+  branch = "release-1.10"
 
 [[override]]
   name = "k8s.io/code-generator"
-  branch = "master"
+  branch = "release-1.10"
 
 [[override]]
   name = "github.com/json-iterator/go"
