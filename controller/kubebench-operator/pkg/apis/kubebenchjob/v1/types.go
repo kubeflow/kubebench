@@ -32,6 +32,7 @@ type KubebenchJobSpec struct {
 type VolumeSpecs struct {
 	ConfigVolume     apiv1.Volume `json:"configVolume"`
 	ExperimentVolume apiv1.Volume `json:"experimentVolume"`
+	//add data volume
 }
 
 type SecretSpecs struct {

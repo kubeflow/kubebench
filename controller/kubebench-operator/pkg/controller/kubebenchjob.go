@@ -2,15 +2,16 @@ package controller
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	argoproj "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	log "github.com/sirupsen/logrus"
 
 	workflowUtils "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/util"
 	// "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/handler"
 	kubebenchjob_v1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/apis/kubebenchjob/v1"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -85,7 +86,7 @@ func (c *KubebenchJobController) processNextItem() bool {
 
 	if !exists {
 		c.Logger.Infof("Controller.processNextItem: object deleted detected: %s", keyRaw)
-		c.handleDelete(item)
+		c.handleDelete(key)
 		c.Queue.Forget(key)
 	} else {
 		c.Logger.Infof("Controller.processNextItem: object created detected: %s", keyRaw)
@@ -97,29 +98,49 @@ func (c *KubebenchJobController) processNextItem() bool {
 }
 
 func (c *KubebenchJobController) handleCreate(obj interface{}) {
-	kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
-	result, err := workflowUtils.ConvertKubebenchJobToArgoWorkflow(kbJob)
-	if err != nil {
-		log.Fatalf("Error converting to workflow: %v", err)
-	}
+	if obj != nil {
+		kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
+		fmt.Println(kbJob)
+		result, err := workflowUtils.ConvertKubebenchJobToArgoWorkflow(kbJob)
+		if err != nil {
+			log.Fatalf("Error converting to workflow: %v", err)
+		}
 
-	workflow, err := c.Workflows.Create(result)
-	if err != nil {
-		log.Fatalf("Error submitting workflow: %v", err)
+		workflow, err := c.Workflows.Create(result)
+		if err != nil {
+			log.Fatalf("Error submitting workflow: %v", err)
+		}
+		log.Infof("Workflow successfully submitted: %v", workflow.ObjectMeta.Name)
 	}
-	log.Infof("Workflow successfully submitted: %v", workflow.ObjectMeta.Name)
 }
 
 func (c *KubebenchJobController) handleDelete(obj interface{}) {
-	kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
-	result, err := workflowUtils.ConvertKubebenchJobToArgoWorkflow(kbJob)
-	if err != nil {
-		log.Fatalf("Error converting to workflow: %v", err)
+	if obj != nil {
+		splitNames := strings.Split(obj.(string), "/")
+		name := splitNames[len(splitNames)-1]
+		workflowDeleteErr := c.Workflows.Delete(name, &meta_v1.DeleteOptions{})
+		if workflowDeleteErr != nil {
+			log.Fatalf("Error deleting workflow: %v", workflowDeleteErr)
+		}
+		log.Infof("Workflow successfully deleted: %v", name)
 	}
+	// if obj != nil {
+	// 	log.Infof("HEREEE BITCH1")
+	// 	kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
+	// 	log.Infof("HEREEE BITCH2")
+	// 	result, err := workflowUtils.ConvertKubebenchJobToArgoWorkflow(kbJob)
+	// 	log.Infof("HEREEE BITCH3")
+	// 	if err != nil {
+	// 		log.Infof("HEREEE BITCH4")
+	// 		log.Fatalf("Error converting to workflow: %v", err)
+	// 	}
 
-	workflowDeleteErr := c.Workflows.Delete(result.ObjectMeta.Name, &meta_v1.DeleteOptions{})
-	if workflowDeleteErr != nil {
-		log.Fatalf("Error deleting workflow: %v", workflowDeleteErr)
-	}
-	log.Infof("Workflow successfully deleted: %v", kbJob.ObjectMeta.Name)
+	// 	workflowDeleteErr := c.Workflows.Delete(result.ObjectMeta.Name, &meta_v1.DeleteOptions{})
+	// 	if workflowDeleteErr != nil {
+	// 		log.Infof("HEREEE BITCH5")
+	// 		log.Fatalf("Error deleting workflow: %v", workflowDeleteErr)
+	// 	}
+	// 	log.Infof("HEREEE BITCH6")
+	// 	log.Infof("Workflow successfully deleted: %v", kbJob.ObjectMeta.Name)
+	// }
 }
