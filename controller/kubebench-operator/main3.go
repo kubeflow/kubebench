@@ -9,7 +9,7 @@ import (
 
 	kubeclient "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client"
 	controllers "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/controller"
-	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/handler"
+//	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/handler"
 	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/util"
 )
 
@@ -27,7 +27,7 @@ func main() {
 		Clientset: client,
 		Informer:  teaminformer,
 		Queue:     queue,
-		Handler:   handler.KubebenchJobHandler{},
+//		Handler:   handler.KubebenchJobHandler{},
 
 		//pass correct namespace here
 		Workflows: argoClient.Workflows("default"),
