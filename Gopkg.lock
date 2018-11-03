@@ -363,8 +363,8 @@
   revision = "12444147eb1150aa5c80d2aae532cbc5b7be73d0"
 
 [[projects]]
-  branch = "release-1.9"
-  digest = "1:f70b761e75ecb4afda1c743a99d7b6f5ec80d67547f1acd5fdd44b8832739210"
+  branch = "release-1.10"
+  digest = "1:fdfdfffcb8d4304b14ff90e5ab9902604eec818a72bae73cfe645d030d78c66b"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -376,7 +376,7 @@
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
-    "pkg/apis/meta/v1alpha1",
+    "pkg/apis/meta/v1beta1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
     "pkg/fields",
@@ -410,7 +410,7 @@
     "third_party/forked/golang/reflect",
   ]
   pruneopts = "UT"
-  revision = "1926e7bb5c13e9c651830fe950cb623071bb03d2"
+  revision = "e386b2658ed20923da8cc9250e552f082899a1ee"
 
 [[projects]]
   branch = "release-7.0"
