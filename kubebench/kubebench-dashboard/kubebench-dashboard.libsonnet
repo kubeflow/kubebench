@@ -64,7 +64,7 @@
         ports: [
           {
             port: 80,
-            targetPort: 8084,
+            targetPort: 9303,
           },
         ],
         selector: {
