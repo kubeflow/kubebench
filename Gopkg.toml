@@ -38,11 +38,11 @@ ignored = ["github.com/kubeflow/kubebench"]
   name = "github.com/kubeflow/tf-operator"
   branch = "v0.3-branch"
 
-[[constraint]]
+[[override]]
   name = "k8s.io/api"
   branch = "release-1.9"
 
-[[constraint]]
+[[override]]
   name = "k8s.io/apimachinery"
   branch = "release-1.9"
 
@@ -56,7 +56,7 @@ ignored = ["github.com/kubeflow/kubebench"]
 
 [[constraint]]
   name = "github.com/argoproj/argo"
-  version = "2.0.0"
+  version = "2.2.0"
 
 [[override]]
   name = "k8s.io/kube-openapi"
