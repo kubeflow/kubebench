@@ -45,15 +45,8 @@ type TFJob struct {
 type TFJobSpec struct {
 	// CleanPodPolicy defines the policy to kill pods after TFJob is
 	// succeeded.
-	// Default to Running.
+	// Default to All.
 	CleanPodPolicy *CleanPodPolicy `json:"cleanPodPolicy,omitempty"`
-
-	// TTLSecondsAfterFinished is the TTL to clean up tf-jobs (temporary
-	// before kubernetes adds the cleanup controller).
-	// It may take extra ReconcilePeriod seconds for the cleanup, since
-	// reconcile gets called periodically.
-	// Default to infinite.
-	TTLSecondsAfterFinished *int32 `json:"ttlSecondsAfterFinished,omitempty"`
 
 	// TFReplicaSpecs is map of TFReplicaType and TFReplicaSpec
 	// specifies the TF replicas to run.
@@ -126,10 +119,6 @@ const (
 	// If there is "chief" replica type, it's the "chief worker".
 	// Else, worker:0 is the chief worker.
 	TFReplicaTypeChief TFReplicaType = "Chief"
-
-	// TFReplicaTypeMaster is the type for master worker of distributed TensorFlow.
-	// This is similar to chief, and kept just for backwards compatibility.
-	TFReplicaTypeMaster TFReplicaType = "Master"
 
 	// TFReplicaTypeEval is the type for evaluation replica in TensorFlow.
 	TFReplicaTypeEval TFReplicaType = "Evaluator"

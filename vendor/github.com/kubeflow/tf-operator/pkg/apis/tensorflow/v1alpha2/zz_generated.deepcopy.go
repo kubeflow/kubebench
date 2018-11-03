@@ -109,11 +109,6 @@ func (in *TFJobSpec) DeepCopyInto(out *TFJobSpec) {
 		*out = new(CleanPodPolicy)
 		**out = **in
 	}
-	if in.TTLSecondsAfterFinished != nil {
-		in, out := &in.TTLSecondsAfterFinished, &out.TTLSecondsAfterFinished
-		*out = new(int32)
-		**out = **in
-	}
 	if in.TFReplicaSpecs != nil {
 		in, out := &in.TFReplicaSpecs, &out.TFReplicaSpecs
 		*out = make(map[TFReplicaType]*TFReplicaSpec, len(*in))
