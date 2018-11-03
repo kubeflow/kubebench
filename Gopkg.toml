@@ -32,11 +32,11 @@ ignored = ["github.com/kubeflow/kubebench"]
 
 [[constraint]]
   name = "github.com/kubeflow/pytorch-operator"
-  branch = "master"
+  branch = "v0.3-branch"
 
 [[constraint]]
   name = "github.com/kubeflow/tf-operator"
-  branch = "master"
+  branch = "v0.3-branch"
 
 [[constraint]]
   name = "k8s.io/api"
@@ -49,7 +49,19 @@ ignored = ["github.com/kubeflow/kubebench"]
 [[override]]
   name = "k8s.io/code-generator"
   branch = "master"
-  
+
+[[override]]
+  name = "k8s.io/client-go"
+  version = "7.0"
+
+[[constraint]]
+  name = "github.com/argoproj/argo"
+  version = "2.0.0"
+
+[[override]]
+  name = "k8s.io/kube-openapi"
+  branch = "release-1.9"
+
 [prune]
   go-tests = true
   unused-packages = true

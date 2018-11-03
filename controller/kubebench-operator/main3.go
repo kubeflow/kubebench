@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	kubeclient "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client"
 	controllers "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/controller"
