@@ -22,7 +22,7 @@ Fig 1 Kubebench workflow
 
 - Get Config: the first step gets a benchmark config, which can be passed in from external storage (PVC) or DB. The benchmark config can contain both system settings (e.g. framework type/version, cluster size, etc.) and model parameters (e.g. model type, batch size, etc.). The job parses the config and produces a manifest that defines a Kubeflow job.
 
-- Run job: a Kuberflow job is created using the output above. The images used to run the job may be derived from available benchmark tools.
+- Run job: a Kubeflow job is created using the output above. The images used to run the job may be derived from available benchmark tools.
 
 - Send results: when the job is done, a single container collects the logs/outputs from finished jobs, produces the results to be reported, and then send the results to user-specified external storage (e.g. PVC or DB). This step might be optional if the benchmark job is a single container and includes result reporting by itself. However this step might be necessary for cluster based distributed trainings.
 
