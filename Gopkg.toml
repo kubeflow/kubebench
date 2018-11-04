@@ -84,5 +84,5 @@ ignored = ["github.com/kubeflow/kubebench"]
 
 [prune]
   go-tests = true
-  unused-packages = true
+#  unused-packages = true
 
