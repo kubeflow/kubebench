@@ -30,7 +30,7 @@
 
 [[constraint]]
   name = "github.com/argoproj/argo"
-  version = "2.1.0"
+  branch = "master"
 
 [[override]]
   name = "k8s.io/api"
@@ -68,3 +68,4 @@
   [[prune.project]]
     name = "github.com/argoproj/argo"
     non-go = false
+    unused-packages = false
