@@ -1,0 +1,1 @@
+{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\nexports.default = void 0;\nvar common = {\n  black: '#000',\n  white: '#fff'\n};\nvar _default = common;\nexports.default = _default;","map":null,"metadata":{},"sourceType":"script"}
