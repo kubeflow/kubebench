@@ -30,7 +30,7 @@
 
 [[constraint]]
   name = "github.com/argoproj/argo"
-  branch = "master"
+  branch = "release-2.2"
 
 [[override]]
   name = "k8s.io/api"

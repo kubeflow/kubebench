@@ -18,8 +18,8 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
-  branch = "master"
-  digest = "1:5cc90ade903aaeb2f1b2cf63f04476470deb452182cd4313841c11f1844d32bf"
+  branch = "release-2.2"
+  digest = "1:06814e2c653373033a9971d6bf2f0f681b37f4034ba29a8044a603b1ac392971"
   name = "github.com/argoproj/argo"
   packages = [
     "pkg/apis/workflow",
@@ -28,7 +28,7 @@
     "pkg/client/clientset/versioned/typed/workflow/v1alpha1",
   ]
   pruneopts = "T"
-  revision = "a53a76e9401fab701eaa150307b21a28825c97ce"
+  revision = "0a928e93dac6d8522682931a0a68c52add310cdb"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"

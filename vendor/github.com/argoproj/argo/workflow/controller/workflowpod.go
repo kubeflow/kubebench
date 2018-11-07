@@ -110,8 +110,7 @@ func (woc *wfOperationCtx) createWorkflowPod(nodeName string, mainCtr apiv1.Cont
 	mainCtr.Name = common.MainContainerName
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      nodeID,
-			Namespace: woc.wf.ObjectMeta.Namespace,
+			Name: nodeID,
 			Labels: map[string]string{
 				common.LabelKeyWorkflow:  woc.wf.ObjectMeta.Name, // Allows filtering by pods related to specific workflow
 				common.LabelKeyCompleted: "false",                // Allows filtering by incomplete workflow pods
@@ -276,13 +275,6 @@ func (woc *wfOperationCtx) newWaitContainer(tmpl *wfv1.Template) (*apiv1.Contain
 
 func (woc *wfOperationCtx) createEnvVars() []apiv1.EnvVar {
 	switch woc.controller.Config.ContainerRuntimeExecutor {
-	case common.ContainerRuntimeExecutorK8sAPI:
-		return append(execEnvVars,
-			apiv1.EnvVar{
-				Name:  common.EnvVarContainerRuntimeExecutor,
-				Value: woc.controller.Config.ContainerRuntimeExecutor,
-			},
-		)
 	case common.ContainerRuntimeExecutorKubelet:
 		return append(execEnvVars,
 			apiv1.EnvVar{
