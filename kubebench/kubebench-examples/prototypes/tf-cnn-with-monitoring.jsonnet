@@ -1,5 +1,5 @@
 // @apiVersion 0.1
-// @name io.ksonnet.pkg.kubebench-example-tfcnn
+// @name io.ksonnet.pkg.kubebench-example-tfcnn-with-monitoring
 // @description kubebench-example-tfcnn
 // @shortDescription A simple TFJob to run CNN benchmark
 // @param name string Name for the job.
