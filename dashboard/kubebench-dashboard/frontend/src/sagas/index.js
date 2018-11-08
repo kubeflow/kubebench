@@ -53,7 +53,7 @@ const submitYamlGo = function* (yaml) {
         let data = {yaml};
         const result = yield call(
             axios.post,
-            'http://127.0.0.1:9303/submit_yaml/',
+            '/dashboard/submit_yaml/',
             data,
         );
 
@@ -98,7 +98,7 @@ const submitParamsGo = function* (parameters) {
 
         const result = yield call(
             axios.post,
-            'http://127.0.0.1:9303/submit_params/',
+            '/dashboard/submit_params/',
             newParameters,
         );
         
@@ -142,7 +142,7 @@ const fetchJobsGo = function* () {
     try {
         const result = yield call(
             axios.get,
-            'http://127.0.0.1:9303/fetch_jobs/'
+            '/dashboard/fetch_jobs/'
         );
 
         return result.data;
@@ -185,7 +185,7 @@ const deleteJobGo = function* (name) {
         let data = {name};
         const result = yield call(
             axios.post,
-            'http://127.0.0.1:9303/delete_job/',
+            '/dashboard/delete_job/',
             data,
         );
 

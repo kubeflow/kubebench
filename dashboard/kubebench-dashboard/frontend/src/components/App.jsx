@@ -9,6 +9,8 @@ import GenerateFromParameters from './GenerateFromParameters';
 import Watch from './Watch';
 
 import  { Route, Link } from 'react-router-dom';
+import { Menu, Icon } from 'antd';
+import "antd/dist/antd.css";
 
 
 const styles = {
@@ -24,22 +26,33 @@ const App = (props) => {
     return (
         <div className={classes.root}>
             <Header />
+            <Menu
+                // selectedKeys={[this.state.current]}
+                mode="horizontal"
+            >
+                <Menu.Item key="yaml">
+                    <Link to="/dashboard/">
+                        <Icon type="file-text" />
+                        Generate from YAML
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="param">
+                    <Link to="/dashboard/defaults">
+                        <Icon type="ordered-list" />
+                        Generate from parameters
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="watch">
+                    <Link to="/dashboard/monitor">
+                        <Icon type="eye" />
+                        Monitor
+                    </Link>
+                </Menu.Item>
+            </Menu>
 
-            <ul>
-                <li>
-                    <Link to="/">Generate from YAML</Link>
-                </li>
-                <li>
-                    <Link to="/defaults">Generate from parameters</Link>
-                </li>
-                <li>
-                    <Link to="/watch">Watch</Link>
-                </li>
-            </ul>
-
-            <Route exact path="/" component={GenerateFromYaml} />
-            <Route path="/defaults" component={GenerateFromParameters} />
-            <Route path="/watch" component={Watch} />
+            <Route exact path="/dashboard/" component={GenerateFromYaml} />
+            <Route path="/dashboard/defaults" component={GenerateFromParameters} />
+            <Route path="/dashboard/monitor" component={Watch} />
         </div>
     )
 };

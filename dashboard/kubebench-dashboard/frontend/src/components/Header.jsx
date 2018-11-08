@@ -23,7 +23,7 @@ const Header = (props) => {
             <AppBar position={"static"} color={"primary"}>
                 <Toolbar>
                     <Typography variant={"display1"} color={"inherit"} className={classes.grow}>
-                        <strong>KB Dashboard</strong>
+                        <strong>Kubebench Dashboard</strong>
                     </Typography>
                 </Toolbar>
             </AppBar>

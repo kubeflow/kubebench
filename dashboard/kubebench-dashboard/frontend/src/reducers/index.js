@@ -2,59 +2,58 @@ import * as ActionTypes from '../actions';
 // import { combineReducers } from 'redux';
 
 const initialState = {
-    yaml: `
-    apiVersion: kubebench.operator/v1
-    kind: KubebenchJob
-    metadata:
-      name: kubebench-job
-      namespace: default
-    spec:
-      serviceAccount: default
-      volumeSpecs:
-        configVolume:
-          name: my-config-volume
-          persistentVolumeClaim:
-            claimName: kubebench-config-pvc
-        experimentVolume:
-          name: my-experiment-volume
-          persistentVolumeClaim:
-            claimName: kubebench-exp-pvc
-      secretSpecs: # optional
-        githubTokenSecret: # optional
-          secretName: my-github-token-secret
-          secretKey: my-github-token-secret-key
-        gcpCredentialsSecret: # optional
-          secretName: my-gcp-credentials-secret
-          secretKey: my-gcp-credentials-secret-key
-      jobSpecs:
-        preJob: # optional
-          container: # optional between "container" and "resource"
-            name: my-prejob
-            image: gcr.io/myprejob-image:latest # change it before using
-        mainJob: # mandatory
-          resource: # optional between "container" and "resource"
-            manifestTemplate:
-              valueFrom:
-                ksonnet: # optional, more types in the future
-                  prototype: kubebench-example-tfcnn
-                  package: kubebench-examples
-                  registry: github.com/kubeflow/kubebench/tree/master/kubebench
-            manifestParameters:
-              valueFrom:
-                path: abc/def/ghi.yaml
-            createSuccessCondition: createSuccess # optional
-            createFailureCondition: createFailure # optional
-            runSuccessCondition: runSuccess # optional
-            runFailureCondition: runFailre # optional
-            #other optional fields: "manifest" - string of raw manifest
-        postJob: # optional
-          container: # optional between "container" and "resource"
-            name: my-postjob
-            image: gcr.io/kubeflow-images-public/kubebench/kubebench-example-tf-cnn-post-processor:3c75b50
-      reportSpecs: # optional
-        csv: # optional
-            - inputPath: result.json
-              outputPath: report.csv`,
+    yaml: `apiVersion: kubebench.operator/v1
+kind: KubebenchJob
+metadata:
+  name: kubebench-job
+  namespace: default
+spec:
+  serviceAccount: default
+  volumeSpecs:
+    configVolume:
+      name: my-config-volume
+      persistentVolumeClaim:
+        claimName: kubebench-config-pvc
+    experimentVolume:
+      name: my-experiment-volume
+      persistentVolumeClaim:
+        claimName: kubebench-exp-pvc
+  # secretSpecs: # optional
+  #   githubTokenSecret: # optional
+  #     secretName: my-github-token-secret
+  #     secretKey: my-github-token-secret-key
+  #   gcpCredentialsSecret: # optional
+  #     secretName: my-gcp-credentials-secret
+  #     secretKey: my-gcp-credentials-secret-key
+  jobSpecs:
+    preJob: # optional
+      container: # optional between "container" and "resource"
+        name: my-prejob
+        image: gcr.io/myprejob-image:latest # change it before using
+    mainJob: # mandatory
+      resource: # optional between "container" and "resource"
+        manifestTemplate:
+          valueFrom:
+            ksonnet: # optional, more types in the future
+              name: kubebench-example-tfcnn-with-monitoring
+              package: kubebench-examples
+              registry: /kubebench/config/registry/kubebench
+        manifestParameters:
+          valueFrom:
+            path: tf-cnn/tf-cnn-dummy.yaml
+        createSuccessCondition: createSuccess # optional
+        createFailureCondition: createFailure # optional
+        runSuccessCondition: runSuccess # optional
+        runFailureCondition: runFailure # optional
+        #other optional fields: "manifest" - string of raw manifest
+    postJob: # optional
+      container: # optional between "container" and "resource"
+        name: my-postjob
+        image: gcr.io/kubeflow-images-public/kubebench/kubebench-example-tf-cnn-post-processor:3c75b50
+  reportSpecs: # optional
+    csv: # optional
+        - inputPath: result.json
+          outputPath: report.csv`,
     loading: false,
     snackOpen: false,
     snackText: '',
@@ -65,6 +64,10 @@ const initialState = {
     currentName: '',
     currentLinks: ['First link', 'Second link'],
     parameters: [
+        {
+            name: "General section",
+            description: "section",
+        },
         {
             name: "name",
             value: "kubebench-job",
@@ -79,6 +82,10 @@ const initialState = {
             name: "serviceAccount",
             value: "default",
             description: "The service account used to run the job",
+        },
+        {
+            name: "Secrets section",
+            description: "section",
         },
         {
             name: "githubTokenSecret",
@@ -101,6 +108,10 @@ const initialState = {
             description: "Key of GCP credentials secret",
         },
         {
+            name: "Main job section",
+            description: "section",
+        },
+        {
             name: "mainJobKsPrototype",
             value: "kubebench-example-tfcnn",
             description: "The Ksonnet prototype of the job being benchmarked",
@@ -121,6 +132,10 @@ const initialState = {
             description: "Path to the config of the benchmarked job",
         },
         {
+            name: "Volumes section",
+            description: "section",
+        },
+        {
             name: "experimentConfigPvc",
             value: "kubebench-config-pvc",
             description: "Configuration PVC",
@@ -134,6 +149,10 @@ const initialState = {
             name: "experimentRecordPvc",
             value: "kubebench-exp-pvc",
             description: "Experiment PVC",
+        },
+        {
+            name: "Post job section",
+            description: "section",
         },
         {
             name: "postJobImage",

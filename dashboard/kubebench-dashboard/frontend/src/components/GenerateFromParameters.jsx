@@ -47,6 +47,12 @@ const styles = theme => ({
         padding: theme.spacing.unit / 2,
         verticalAlign: "middle",
     },
+    section: {
+        padding: theme.spacing.unit,
+    },
+    parameter: {
+        padding: theme.spacing.unit / 2,
+    }
 });
 
 
@@ -69,27 +75,41 @@ const GenerateFromParameters = (props) => {
             {props.loading && <LinearProgress className={classes.progress}/>}
             {
                 props.parameters.map((param, i) => {
-                return (
-                    <div key={i}>
-                        <Grid container>
-                            <Grid item xs={12} sm={3}>
-                                <Typography>
-                                    <Tooltip title={param.description}>
-                                        <HelpOutlineIcon className={classes.help} color={"primary"}/>
-                                    </Tooltip>
-                                    {param.name}
-                                </Typography>
+                    if (param.description === "section") {
+                        return (
+                            <div key={i} className={classes.section}>
+                                <Grid container>
+                                    <Grid item xs={12} sm={12}>
+                                        <Typography variant="h6">
+                                            {param.name}
+                                        </Typography>
+                                        <hr />
+                                    </Grid>
+                                </Grid>
+                            </div>
+                        )
+                    }
+                    return (
+                        <div key={i} className={classes.parameter}>
+                            <Grid container>
+                                <Grid item xs={12} sm={3}>
+                                    <Typography>
+                                        <Tooltip title={param.description}>
+                                            <HelpOutlineIcon className={classes.help} color={"secondary"}/>
+                                        </Tooltip>
+                                        {param.name}
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={8}>
+                                    <TextField
+                                        className={classes.textField}
+                                        value={param.value}
+                                        onChange={onFieldChange(param.name)}
+                                        />
+                                </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={8}>
-                                <TextField
-                                    className={classes.textField}
-                                    value={param.value}
-                                    onChange={onFieldChange(param.name)}
-                                    />
-                            </Grid>
-                        </Grid>
-                    </div>
-                )
+                        </div>
+                    )
                 })
             }
             <div className={classes.submit}>

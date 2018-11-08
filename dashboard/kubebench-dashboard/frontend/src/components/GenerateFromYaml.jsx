@@ -59,7 +59,7 @@ const GenerateFromYaml = (props) => {
             {props.loading && <LinearProgress className={classes.progress}/>}
             <div className={classes.editor}>
                 <AceEditor
-                    mode="javascript"
+                    mode="text"
                     theme="tomorrow"
                     value={props.yaml}
                     onChange={onYamlChange}

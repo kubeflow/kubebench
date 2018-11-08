@@ -1,7 +1,7 @@
-FROM golang:onbuild
-RUN mkdir /app/
-ADD . /app/
-WORKDIR /app
-RUN go build -o main .
+FROM golang
+
+ADD . /go/src/github.com/kubeflow/kubebench/dashboard
+RUN go install github.com/kubeflow/kubebench/dashboard
+
+ENTRYPOINT /go/bin/dashboard
 EXPOSE 9303
-CMD ["/app/main"]

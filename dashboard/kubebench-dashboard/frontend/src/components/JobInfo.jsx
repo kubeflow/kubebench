@@ -45,8 +45,8 @@ const JobInfo = (props) => {
                 </Typography>
                 <Typography variant="subtitle1" id="simple-modal-description">
                     <ul>
-                        <li><a href={`/argo/workflows/default/${props.name}`}>Argo</a></li>
-                        <li><a href={`/grafana/workflows/default/${props.name}`}>Grafana</a></li>
+                        <li><a href={`/argo/workflows/default/${props.name}`} target={"_blank"}>Argo</a></li>
+                        <li><a href={`/grafana/d/eqSbm0Aik3/kubebench-monitoring`} target={"_blank"}>Grafana</a></li>
                     </ul>
                 </Typography>
                 <Button variant="contained" color={"primary"} className={classes.button} onClick={deleteJob}>

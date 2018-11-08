@@ -3,7 +3,6 @@ package client
 import (
 	"flag"
 	"os"
-	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
@@ -17,15 +16,23 @@ import (
 var config = parseKubernetesConfig()
 
 func parseKubernetesConfig() *restclient.Config {
-	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
+	// if home := homeDir(); home != "" {
+	// 	kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	// } else {
+	// 	kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	// }
+	kubeconfig := flag.String("kubeconfig", "", "Path to a kube config. Only required if out-of-cluster.")
 	flag.Parse()
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	var err error
+	var config *restclient.Config
+	if *kubeconfig != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	} else {
+		config, err = restclient.InClusterConfig()
+	}
+
+	// config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		log.Fatalf("getClusterConfig: %v", err)
 	}

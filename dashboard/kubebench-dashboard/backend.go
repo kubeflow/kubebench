@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 
-	log "github.com/Sirupsen/logrus"
 	argoproj "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	"github.com/ghodss/yaml"
 	kbjob "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/apis/kubebenchjob/v1"
@@ -16,10 +14,10 @@ import (
 	kubebench "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned/typed/kubebenchjob/v1"
 	"github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/util"
 	utils "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/util"
+	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 var (
@@ -36,11 +34,7 @@ var (
 
 func parseKubernetesConfig() *restclient.Config {
 
-	//think over ere
-	home := homeDir()
-	path := filepath.Join(home, ".kube", "config")
-
-	config, err := clientcmd.BuildConfigFromFlags("", path)
+	config, err := restclient.InClusterConfig()
 	if err != nil {
 		log.Fatalf("getClusterConfig: %v", err)
 	}
@@ -104,13 +98,13 @@ func main() {
 
 	kubebenchJobs = kbJobClient.KubebenchJobs("default")
 
-	// indexServer := http.FileServer(http.Dir("frontend/build/"))
-	// http.Handle("/", indexServer)
-	http.HandleFunc("/", mainHandler)
-	http.HandleFunc("/submit_yaml/", submitYamlHandler)
-	http.HandleFunc("/submit_params/", submitParamHandler)
-	http.HandleFunc("/fetch_jobs/", fetchJobsHandler)
-	http.HandleFunc("/delete_job/", deleteJobHandler)
+	frontend := http.FileServer(http.Dir("/go/src/github.com/kubeflow/kubebench/dashboard/kubebench-dashboard/frontend/build/"))
+	http.Handle("/dashboard/", http.StripPrefix("/dashboard/", frontend))
+	// http.HandleFunc("/", mainHandler)
+	http.HandleFunc("/dashboard/submit_yaml/", submitYamlHandler)
+	http.HandleFunc("/dashboard/submit_params/", submitParamHandler)
+	http.HandleFunc("/dashboard/fetch_jobs/", fetchJobsHandler)
+	http.HandleFunc("/dashboard/delete_job/", deleteJobHandler)
 	log.Println("Listening on", ":"+port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
