@@ -64,7 +64,7 @@ spec:
         "Success": true,
     },
     jobsList: [
-        
+
     ],
     filteredJobsList: [
     ],
@@ -305,9 +305,17 @@ const rootReducer = (state = initialState, action) => {
         case ActionTypes.FILTER_JOBS:
             const jobs = state.jobsList.slice();
             const newList = jobs.filter(job => job.name.includes(action.filter));
+
+            const avTypes = Object.assign({}, state.filterType);
+            var typeKeys = Object.keys(avTypes);
+
+            var avFilters = typeKeys.filter((key) => {
+                return avTypes[key]
+            });
+            const filteredJobs = newList.filter(job => avFilters.includes(job.status));
             return {
                 ...state,
-                filteredJobsList: newList,
+                filteredJobsList: filteredJobs,
                 filter: action.filter,
             };
 
