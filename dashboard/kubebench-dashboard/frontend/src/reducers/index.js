@@ -64,8 +64,16 @@ spec:
         "Succeeded": true,
     },
     jobsList: [
+        {
+            name: 'Job 1',
+            status: 'Running',
+        },
     ],
     filteredJobsList: [
+        {
+            name: 'Job 1',
+            status: 'Running',
+        },
     ],
     modalOpen: false,
     currentId: null,

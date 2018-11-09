@@ -80,7 +80,7 @@ const GenerateFromYaml = (props) => {
 
             <Snackbar
                 anchorOrigin={{
-                    vertical: 'bottom',
+                    vertical: 'top',
                     horizontal: 'center',
                 }}
                 open={props.snackOpen}
