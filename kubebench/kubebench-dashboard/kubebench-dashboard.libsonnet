@@ -55,7 +55,8 @@
               "apiVersion: ambassador/v0",
               "kind:  Mapping",
               "name: kubebench-dashboard-ui-mapping",
-              "prefix: /",
+              "prefix: /dashboard/",
+              "rewrite: /dashboard/",
               "service: " + params.name + "." + params.namespace,
             ]),
         },  //annotations

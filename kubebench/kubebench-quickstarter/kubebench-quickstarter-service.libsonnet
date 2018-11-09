@@ -167,6 +167,17 @@ local k = import "k.libsonnet";
       metadata: {
         name: name,
         namespace: namespace,
+        annotations: {
+          "getambassador.io/config":
+            std.join("\n", [
+              "---",
+              "apiVersion: ambassador/v0",
+              "kind:  Mapping",
+              "name: kubebench-nfs-ui-mapping",
+              "prefix: /",
+              "service: " + name + "." + namespace,
+            ]),
+        },  //annotations
       },
       spec: {
         type: serviceType,
