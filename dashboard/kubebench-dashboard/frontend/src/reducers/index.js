@@ -64,9 +64,24 @@ spec:
         "Success": true,
     },
     jobsList: [
-
+        {
+            name: "Job 1",
+            status: "Running",
+        },
+        {
+            name: "Job 2",
+            status: "Failed",
+        },
     ],
     filteredJobsList: [
+        {
+            name: "Job 1",
+            status: "Running",
+        },
+        {
+            name: "Job 2",
+            status: "Failed",
+        },
     ],
     modalOpen: false,
     currentId: null,

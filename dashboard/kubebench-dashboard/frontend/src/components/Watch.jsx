@@ -58,6 +58,7 @@ const styles = theme => ({
 class Watch extends React.Component {
     componentDidMount() {
         // this.props.fetchJobs()
+        console.log('Mounted')
     }
 
     onFilter = event => {
@@ -78,6 +79,7 @@ class Watch extends React.Component {
 
     render () {
         const { classes } = this.props;
+        console.log(this.props)
         return (
             <div className={classes.root}>
                 <h1>Monitor</h1>
