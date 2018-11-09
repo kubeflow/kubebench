@@ -64,32 +64,9 @@ spec:
         "Success": true,
     },
     jobsList: [
-        {
-            name: "Job 1", 
-            status: "Running",
-        },
-        {
-            name: "Job 2", 
-            status: "Failed",
-        },
-        {
-            name: "Job 3", 
-            status: "Running",
-        },
+        
     ],
     filteredJobsList: [
-        {
-            name: "Job 1", 
-            status: "Running",
-        },
-        {
-            name: "Job 2", 
-            status: "Failed",
-        },
-        {
-            name: "Job 3", 
-            status: "Running",
-        },
     ],
     modalOpen: false,
     currentId: null,
@@ -364,6 +341,7 @@ const rootReducer = (state = initialState, action) => {
                 loading: false,
                 snackOpen: true,
                 snackText: action.text,
+                modalOpen: false,
             };
         case ActionTypes.DELETE_FAILURE: 
             return {

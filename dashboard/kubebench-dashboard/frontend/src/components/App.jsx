@@ -31,28 +31,28 @@ const App = (props) => {
                 mode="horizontal"
             >
                 <Menu.Item key="yaml">
-                    <Link to="/dashboard/">
+                    <Link to="/">
                         <Icon type="file-text" />
                         Generate from YAML
                     </Link>
                 </Menu.Item>
                 <Menu.Item key="param">
-                    <Link to="/dashboard/defaults">
+                    <Link to="/defaults">
                         <Icon type="ordered-list" />
                         Generate from parameters
                     </Link>
                 </Menu.Item>
                 <Menu.Item key="watch">
-                    <Link to="/dashboard/monitor">
+                    <Link to="/monitor">
                         <Icon type="eye" />
                         Monitor
                     </Link>
                 </Menu.Item>
             </Menu>
 
-            <Route exact path="/dashboard/" component={GenerateFromYaml} />
-            <Route path="/dashboard/defaults" component={GenerateFromParameters} />
-            <Route path="/dashboard/monitor" component={Watch} />
+            <Route exact path="/" component={GenerateFromYaml} />
+            <Route path="/defaults/" component={GenerateFromParameters} />
+            <Route path="/monitor/" component={Watch} />
         </div>
     )
 };

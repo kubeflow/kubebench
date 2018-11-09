@@ -30,7 +30,7 @@ const theme = createMuiTheme({
 
 ReactDOM.render(
     <Provider store={store}>
-        <Router>
+        <Router basename="/dashboard/">
             <MuiThemeProvider theme={theme}>
                 <CssBaseline />
                 <App />

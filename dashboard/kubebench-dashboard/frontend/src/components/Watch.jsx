@@ -49,8 +49,8 @@ const styles = theme => ({
         marginRight: theme.spacing.unit,
     },
     filter: {
-        float: 'left',
-        display: 'inline-block',
+        margin: '0 auto',
+        textAlign: 'center',
     },
 });
 
