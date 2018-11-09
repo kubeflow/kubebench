@@ -13,8 +13,13 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import Snackbar from '@material-ui/core/Snackbar';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
+import TextField from '@material-ui/core/TextField';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 
-import { openModal, closeModal, fetchJobs, closeSnack } from "../actions";
+
+import { openModal, closeModal, fetchJobs, closeSnack, filterJobs, changeType } from "../actions";
 
 import JobInfo from './JobInfo'
 
@@ -39,12 +44,24 @@ const styles = theme => ({
     close: {
         padding: theme.spacing.unit / 2,
     },
+    textField: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
+    },
+    filter: {
+        float: 'left',
+        display: 'inline-block',
+    },
 });
 
 
 class Watch extends React.Component {
     componentDidMount() {
-        this.props.fetchJobs()
+        // this.props.fetchJobs()
+    }
+
+    onFilter = event => {
+        this.props.filterJobs(event.target.value);
     }
 
     open = (id) => event => {
@@ -55,13 +72,48 @@ class Watch extends React.Component {
         this.props.deleteJob(name)
     }
 
+    handleType = (name) => event => {
+        this.props.changeType(name, event.target.checked);
+    }
+
     render () {
         const { classes } = this.props;
         return (
             <div className={classes.root}>
-                <h1>Watch</h1>
+                <h1>Monitor</h1>
                 <hr />
                 {this.props.loading && <LinearProgress className={classes.progress}/>}
+                <div className={classes.filter}>
+                    <FormGroup row>
+                        <TextField
+                            id="outlined-name"
+                            label="Name"
+                            className={classes.textField}
+                            value={this.props.filter}
+                            onChange={this.onFilter}
+                            margin="normal"
+                            variant="outlined"
+                        />
+                        {
+                                Object.keys(this.props.filterType).map((filter, i) => {
+                                return(
+                                    <FormControlLabel
+                                        key={i}
+                                        control={
+                                            <Switch
+                                            checked={this.props.filterType[filter]}
+                                            onChange={this.handleType(filter)}
+                                            value={filter}
+                                            color={"secondary"}
+                                            />
+                                        }
+                                        label={filter}
+                                    />
+                                );
+                            })
+                        }
+                    </FormGroup>
+                </div>
                 <List component="nav">
                     {this.props.jobs.map((job, i) => {
                         let icon;
@@ -115,13 +167,15 @@ class Watch extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        jobs: state.jobsList,
+        jobs: state.filteredJobsList,
         modalOpen: state.modalOpen,
         currentId: state.current,
         name: state.currentName,
         loading: state.loading,
         snackOpen: state.snackOpen,
-        snackText: state.snackText
+        snackText: state.snackText,
+        filter: state.filter,
+        filterType: state.filterType,
     };
 };
 
@@ -130,4 +184,4 @@ Watch.propTypes = {
 };
 
 
-export default connect(mapStateToProps, { openModal, closeModal, fetchJobs, closeSnack })(withStyles(styles)(Watch));
+export default connect(mapStateToProps, { openModal, closeModal, fetchJobs, closeSnack, filterJobs, changeType })(withStyles(styles)(Watch));

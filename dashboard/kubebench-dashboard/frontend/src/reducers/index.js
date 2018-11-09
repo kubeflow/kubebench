@@ -57,7 +57,39 @@ spec:
     loading: false,
     snackOpen: false,
     snackText: '',
+    filter: '',
+    filterType: {
+        "Running": true,
+        "Failed": true,
+        "Success": true,
+    },
     jobsList: [
+        {
+            name: "Job 1", 
+            status: "Running",
+        },
+        {
+            name: "Job 2", 
+            status: "Failed",
+        },
+        {
+            name: "Job 3", 
+            status: "Running",
+        },
+    ],
+    filteredJobsList: [
+        {
+            name: "Job 1", 
+            status: "Running",
+        },
+        {
+            name: "Job 2", 
+            status: "Failed",
+        },
+        {
+            name: "Job 3", 
+            status: "Running",
+        },
     ],
     modalOpen: false,
     currentId: null,
@@ -290,6 +322,34 @@ const rootReducer = (state = initialState, action) => {
                 loading: false,
                 snackOpen: true,
                 snackText: action.error,
+            };
+
+        // FILTER 
+        case ActionTypes.FILTER_JOBS:
+            const jobs = state.jobsList.slice();
+            const newList = jobs.filter(job => job.name.includes(action.filter));
+            return {
+                ...state,
+                filteredJobsList: newList,
+                filter: action.filter,
+            };
+
+        // FILTER TYPE
+        case ActionTypes.CHANGE_TYPE:
+            const types = Object.assign({}, state.filterType)
+            types[action.filter] = action.checked;
+            var keys = Object.keys(types);
+
+            var filters = keys.filter((key) => {
+                return types[key]
+            });
+            const jobsList = state.jobsList.slice();
+            const filtered = jobsList.filter(job => filters.includes(job.status));
+            // types[action.type] = 
+            return {
+                ...state,
+                filterType: types,
+                filteredJobsList: filtered,
             };
 
         // DELETE

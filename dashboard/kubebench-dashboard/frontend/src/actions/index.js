@@ -23,6 +23,9 @@ export const FETCH_JOB_REQUEST = "FETCH_JOB_REQUEST";
 export const FETCH_JOB_SUCCESS = "FETCH_JOB_SUCCESS";
 export const FETCH_JOB_FAILURE = "FETCH_JOB_FAILURE";
 
+export const FILTER_JOBS = "FILTER_JOBS";
+export const CHANGE_TYPE = "CHANGE_TYPE";
+
 
 export const changeYaml = (yaml) => {
     return {
@@ -87,3 +90,18 @@ export const fetchJobs = () => {
         loading: true,
     }
 }
+
+export const filterJobs = (filter) => {
+    return {
+        type: FILTER_JOBS,
+        filter,
+    };
+};
+
+export const changeType = (filter, checked) => {
+    return {
+        type: CHANGE_TYPE,
+        filter,
+        checked,
+    };
+};
