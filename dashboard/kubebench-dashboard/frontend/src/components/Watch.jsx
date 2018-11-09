@@ -57,8 +57,7 @@ const styles = theme => ({
 
 class Watch extends React.Component {
     componentDidMount() {
-        // this.props.fetchJobs()
-        console.log('Mounted')
+        this.props.fetchJobs()
     }
 
     onFilter = event => {

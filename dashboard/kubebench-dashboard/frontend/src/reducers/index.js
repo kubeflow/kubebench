@@ -61,27 +61,11 @@ spec:
     filterType: {
         "Running": true,
         "Failed": true,
-        "Success": true,
+        "Succeeded": true,
     },
     jobsList: [
-        {
-            name: "Job 1",
-            status: "Running",
-        },
-        {
-            name: "Job 2",
-            status: "Failed",
-        },
     ],
     filteredJobsList: [
-        {
-            name: "Job 1",
-            status: "Running",
-        },
-        {
-            name: "Job 2",
-            status: "Failed",
-        },
     ],
     modalOpen: false,
     currentId: null,
@@ -306,6 +290,7 @@ const rootReducer = (state = initialState, action) => {
             return {
                 ...state,
                 jobsList: action.jobsList,
+                filteredJobsList: action.jobsList,
                 loading: false,
             };
         case ActionTypes.FETCH_JOB_FAILURE:
