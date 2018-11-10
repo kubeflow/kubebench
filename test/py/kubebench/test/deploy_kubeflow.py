@@ -58,7 +58,7 @@ def deploy_kubeflow(test_case):
   cmd = "ks param set tf-job-operator tfJobImage \
           gcr.io/kubeflow-images-public/tf_operator:v20180522-77375baf"
   util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks param set tf-job-operator tfJobVersion v1alpha1"
+  cmd = "ks param set tf-job-operator tfJobVersion v1alpha2"
   util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set kubeflow-argo namespace " + namespace
   util.run(cmd.split(), cwd=app_dir)
