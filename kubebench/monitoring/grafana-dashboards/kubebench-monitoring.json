@@ -313,7 +313,7 @@
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "POD memory Usage",
+      "title": "POD memory usage",
       "tooltip": {
         "shared": true,
         "sort": 0,
