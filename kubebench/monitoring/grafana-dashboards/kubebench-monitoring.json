@@ -303,7 +303,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by(pod_name) (container_memory_usage_bytes{image!=\"\", namespace=\"$namespace\", pod_name=~\"$pod\", container_name!=\"POD\"})",
+          "expr": "sum by(pod_name) (container_memory_usage_bytes{image!=\"\", exported_namespace=\"$namespace\", pod_name=~\"$pod\", container_name!=\"POD\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Pod name: {{ pod_name }}",
@@ -569,7 +569,7 @@
         "multi": true,
         "name": "pod",
         "options": [],
-        "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_monitoring=\"kubebench-prometheus\"}, pod)",
+        "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_monitoring=\"kubebench-prometheus\"}, exported_pod)",
         "refresh": 2,
         "regex": "",
         "sort": 0,
