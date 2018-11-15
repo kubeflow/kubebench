@@ -11,22 +11,20 @@ local k = import "k.libsonnet";
         name: nodeExporterName,
         namespace: namespace,
         labels: {
-          app: "prometheus",
-          component: nodeExporterName,
+          "k8s-app": "node-exporter",
         },
       },
       spec: {
         selector: {
           matchLabels: {
-            app: "prometheus",
+            "k8s-app": "node-exporter",
           },
         },
         template: {
           metadata: {
             name: nodeExporterName,
             labels: {
-              app: "prometheus",
-              component: nodeExporterName,
+              "k8s-app": "node-exporter",
             },
           },
           spec: {
@@ -57,14 +55,10 @@ local k = import "k.libsonnet";
       apiVersion: "v1",
       kind: "Service",
       metadata: {
-        annotations: {
-          "prometheus.io/scrape": "true",
-        },
         name: nodeExporterName,
         namespace: namespace,
         labels: {
-          app: "prometheus",
-          component: nodeExporterName,
+          "k8s-app": "node-exporter",
         },
       },
       spec: {
@@ -76,12 +70,37 @@ local k = import "k.libsonnet";
           },
         ],
         selector: {
-          app: "prometheus",
-          component: nodeExporterName,
+          "k8s-app": "node-exporter",
         },
       },
     },
     service:: service,
+
+    //Node Exporter Service Monitor
+    local serviceMonitor = {
+      apiVersion: "monitoring.coreos.com/v1",
+      kind: "ServiceMonitor",
+      metadata: {
+        labels: {
+          "k8s-app": "node-exporter",
+        },
+        name: "node-exporter",
+        namespace: namespace,
+      },
+      spec: {
+        selector: {
+          matchLabels: {
+            "k8s-app": "node-exporter",
+          },
+        },
+        endpoints: [
+          {
+            port: "http-node-exp",
+          },
+        ],
+      },
+    },
+    serviceMonitor:: serviceMonitor,
 
     //Node Exporter Service Account
     local serviceAccount = {
@@ -143,6 +162,7 @@ local k = import "k.libsonnet";
     all:: [
       self.daemonSet,
       self.service,
+      self.serviceMonitor,
       self.serviceAccount,
       self.role,
       self.roleBinding,

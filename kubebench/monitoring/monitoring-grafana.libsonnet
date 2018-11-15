@@ -84,8 +84,7 @@ local k = import "k.libsonnet";
       kind: "Deployment",
       metadata: {
         labels: {
-          app: "prometheus",
-          component: grafanaName,
+          "k8s-app": "grafana",
         },
         name: grafanaName,
         namespace: namespace,
@@ -93,21 +92,19 @@ local k = import "k.libsonnet";
       spec: {
         selector: {
           matchLabels: {
-            app: "prometheus",
-            component: grafanaName,
+            "k8s-app": "grafana",
           },
         },
         template: {
           metadata: {
             labels: {
-              app: "prometheus",
-              component: grafanaName,
+              "k8s-app": "grafana",
             },
           },
           spec: {
             containers: [
               {
-                image: "grafana/grafana:5.2.1",
+                image: "grafana/grafana:5.2.4",
                 imagePullPolicy: "Always",
                 name: grafanaName,
                 env: [
@@ -195,8 +192,7 @@ local k = import "k.libsonnet";
           },
         ],
         selector: {
-          app: "prometheus",
-          component: grafanaName,
+          "k8s-app": "grafana",
         },
       },
     },
