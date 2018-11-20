@@ -83,7 +83,7 @@
         name: params.name,
         namespace: params.namespace,
       },
-    }, 
+    },
     serviceAccount:: serviceAccount,
 
     //Dashboard Role
