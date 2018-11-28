@@ -207,16 +207,16 @@
                     template: "setup-cluster",
                   },
                 ],
-                // [
-                //   {
-                //     name: "build-kubebench-controller",
-                //     template: "build-kubebench-controller",
-                //   },
-                //   {
-                //     name: "build-kubebench-examples",
-                //     template: "build-kubebench-examples",
-                //   },
-                // ],
+                [
+                  {
+                    name: "build-kubebench-controller",
+                    template: "build-kubebench-controller",
+                  },
+                  {
+                    name: "build-kubebench-examples",
+                    template: "build-kubebench-examples",
+                  },
+                ],
                 [
                   {
                     name: "deploy-kubeflow",
