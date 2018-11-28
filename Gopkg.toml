@@ -24,11 +24,33 @@
 #   go-tests = true
 #   unused-packages = true
 
-ignored = ["github.com/kubeflow/kubebench"]
+[[constraint]]
+  branch = "master"
+  name = "github.com/ghodss/yaml"
 
 [[constraint]]
-  name = "github.com/ghodss/yaml"
-  version = "1.0.0"
+  name = "github.com/argoproj/argo"
+  branch = "release-2.2"
+
+[[override]]
+  name = "k8s.io/api"
+  branch = "release-1.10"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  branch = "release-1.10"
+
+[[override]]
+  name = "k8s.io/client-go"
+  version = "v7.0.0"
+
+[[override]]
+  name = "k8s.io/code-generator"
+  branch = "release-1.10"
+
+[[override]]
+  name = "k8s.io/kube-openapi"
+  branch = "release-1.10"
 
 [[constraint]]
   name = "github.com/kubeflow/pytorch-operator"
@@ -38,14 +60,12 @@ ignored = ["github.com/kubeflow/kubebench"]
   name = "github.com/kubeflow/tf-operator"
   branch = "master"
 
-[[constraint]]
-  name = "k8s.io/api"
-  branch = "release-1.9"
-
-[[constraint]]
-  name = "k8s.io/apimachinery"
-  branch = "release-1.9"
-
 [prune]
-  go-tests = true
-  unused-packages = true
+   unused-packages = true
+   go-tests = true
+   non-go = true
+
+  [[prune.project]]
+    name = "github.com/argoproj/argo"
+    non-go = false
+    unused-packages = false

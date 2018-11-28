@@ -229,12 +229,12 @@
                     template: "wait-for-kubeflow-deployment",
                   },
                 ],
-                [
-                  {
-                    name: "test-kubebench-job",
-                    template: "test-kubebench-job",
-                  },
-                ],
+                // [
+                //   {
+                //     name: "test-kubebench-job",
+                //     template: "test-kubebench-job",
+                //   },
+                // ],
               ],
             },
             {
