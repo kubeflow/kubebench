@@ -1,6 +1,6 @@
 local k = import "k.libsonnet";
-local prometheusCRD = import "prometheusCRD.libsonnet";
-local serviceMonitorCRD = import "serviceMonitorCRD.libsonnet";
+local prometheusCRD = import "prometheus-crd.libsonnet";
+local serviceMonitorCRD = import "service-monitor-crd.libsonnet";
 
 {
   parts(prometheusOperatorName, namespace):: {
