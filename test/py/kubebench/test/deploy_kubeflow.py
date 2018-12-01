@@ -77,7 +77,7 @@ def deploy_kubeflow(test_case):
     # Verify that the TfJob operator is actually deployed.
   tf_job_deployment_name = "tf-job-operator-v1beta1"
   logging.info("Verifying TfJob controller started.")
-  util.wait_for_deployment(api_client, namespace, tf_job_deployment_name)
+  util.wait_for_deployment(api_client, "default", tf_job_deployment_name)
 
   # Verify that the Argo operator is deployed.
   argo_deployment_name = "workflow-controller"
