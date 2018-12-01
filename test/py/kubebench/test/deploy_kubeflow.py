@@ -62,7 +62,7 @@ def deploy_kubeflow(test_case):
   # util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set kubeflow-argo namespace " + namespace
   util.run(cmd.split(), cwd=app_dir)
-  apply_command = ["ks", "apply", "default",
+  apply_command = ["ks", "apply", namespace,
                    "-c", "tf-job-operator", "-c", "kubeflow-argo"]
   if args.as_gcloud_user:
     account = deploy_utils.get_gcp_identity()
