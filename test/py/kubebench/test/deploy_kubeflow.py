@@ -75,7 +75,7 @@ def deploy_kubeflow(test_case):
     apply_command.append("--as=" + account)
   util.run(apply_command, cwd=app_dir)
 
-  # change the namespace to default to set up nfs-volume and nfs-server and verify tf-job and argo deployment
+  # change the namespace to default to set up nfs-volume and nfs-server
   namespace = "default"
 
     # Verify that the TfJob operator is actually deployed.
