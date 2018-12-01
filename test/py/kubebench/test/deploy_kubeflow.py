@@ -53,8 +53,8 @@ def deploy_kubeflow(test_case):
            cwd=app_dir)
   util.run(["ks", "generate", "argo", "kubeflow-argo", "--name=kubeflow-argo"],
            cwd=app_dir)
-  # cmd = "ks param set tf-job-operator namespace " + namespace
-  # util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set tf-job-operator namespace " + namespace
+  util.run(cmd.split(), cwd=app_dir)
   # cmd = "ks param set tf-job-operator tfJobImage \
   #         gcr.io/kubeflow-images-public/tf_operator:v20180522-77375baf"
   # util.run(cmd.split(), cwd=app_dir)
@@ -74,15 +74,15 @@ def deploy_kubeflow(test_case):
     apply_command.append("--as=" + account)
   util.run(apply_command, cwd=app_dir)
 
-  # Verify that the Argo operator is deployed.
-  argo_deployment_name = "workflow-controller"
-  logging.info("Verifying Argo controller started.")
-  util.wait_for_deployment(api_client, namespace, argo_deployment_name)
-
     # Verify that the TfJob operator is actually deployed.
   tf_job_deployment_name = "tf-job-operator-v1beta1"
   logging.info("Verifying TfJob controller started.")
   util.wait_for_deployment(api_client, namespace, tf_job_deployment_name)
+
+  # Verify that the Argo operator is deployed.
+  argo_deployment_name = "workflow-controller"
+  logging.info("Verifying Argo controller started.")
+  util.wait_for_deployment(api_client, namespace, argo_deployment_name)
 
   # change the namespace to default to set up nfs-volume and nfs-server
   namespace = "default"
