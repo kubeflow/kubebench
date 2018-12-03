@@ -53,16 +53,15 @@ def deploy_kubeflow(test_case):
            cwd=app_dir)
   util.run(["ks", "generate", "argo", "kubeflow-argo", "--name=kubeflow-argo"],
            cwd=app_dir)
-  # cmd = "ks param set tf-job-operator namespace " + namespace
-  # util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set tf-job-operator namespace " + namespace
+  util.run(cmd.split(), cwd=app_dir)
   # cmd = "ks param set tf-job-operator tfJobImage \
   #         gcr.io/kubeflow-images-public/tf_operator:v20180522-77375baf"
   # util.run(cmd.split(), cwd=app_dir)
-  # cmd = "ks param set tf-job-operator tfJobVersion v1beta1"
-  # util.run(cmd.split(), cwd=app_dir)
-  # cmd = "ks param set kubeflow-argo namespace " + namespace
-  # util.run(cmd.split(), cwd=app_dir)
-
+  cmd = "ks param set tf-job-operator tfJobVersion v1beta1"
+  util.run(cmd.split(), cwd=app_dir)
+  cmd = "ks param set kubeflow-argo namespace " + namespace
+  util.run(cmd.split(), cwd=app_dir)
   apply_command = ["ks", "apply", "default",
                    "-c", "tf-job-operator", "-c", "kubeflow-argo"]
   if args.as_gcloud_user:
@@ -75,10 +74,7 @@ def deploy_kubeflow(test_case):
     apply_command.append("--as=" + account)
   util.run(apply_command, cwd=app_dir)
 
-  # change the namespace to default to set up nfs-volume and nfs-server
-  namespace = "default"
-
-    # Verify that the TfJob operator is actually deployed.
+  # Verify that the TfJob operator is actually deployed.
   tf_job_deployment_name = "tf-job-operator-v1beta1"
   logging.info("Verifying TfJob controller started.")
   util.wait_for_deployment(api_client, namespace, tf_job_deployment_name)
@@ -87,6 +83,9 @@ def deploy_kubeflow(test_case):
   argo_deployment_name = "workflow-controller"
   logging.info("Verifying Argo controller started.")
   util.wait_for_deployment(api_client, namespace, argo_deployment_name)
+
+  # change the namespace to default to set up nfs-volume and nfs-server
+  namespace = "default"
 
   deploy_utils.set_clusterrole(namespace)
 
