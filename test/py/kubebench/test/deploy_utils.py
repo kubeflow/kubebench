@@ -99,7 +99,7 @@ def setup_ks_app(test_dir, src_root_dir, namespace, github_token, api_client):
   util.run(["ks", "init", app_name], cwd=test_dir)
 
   # Set the default namespace.
-  util.run(["ks", "env", "set", "default", "--namespace=" + namespace_name], cwd=test_dir)
+  util.run(["ks", "env", "set", "default", "--namespace=" + namespace_name], cwd=app_dir)
 
   # Add required registries
   registries = {
