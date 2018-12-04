@@ -19,3 +19,6 @@ libraries:
   monitoring:
     version: master
     path: monitoring
+  kubebench-dashboard:
+    version: master
+    path: kubebench-dashboard

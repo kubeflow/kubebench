@@ -1,90 +1,29 @@
 local k = import "k.libsonnet";
 
 {
-  parts(prometheusName, namespace, serverIP):: {
+  parts(prometheusName, namespace):: {
 
-    //Port Information
-    local nodeExporterPort = 9100,
-    local kubeStateMetricsPort = 8080,
-    local kubeletMetricsPort = 10250,
-
-    //Config Map with Prometheus Config
-    local configMap = {
-      apiVersion: "v1",
-      kind: "ConfigMap",
+    //Prometheus Custom CRD
+    local prometheusCustomCRD = {
+      apiVersion: "monitoring.coreos.com/v1",
+      kind: "Prometheus",
       metadata: {
         name: prometheusName,
         namespace: namespace,
-      },
-      data: {
-        "prometheus.yml": (importstr "prometheus.yml") % {
-          "node-exporter-ip": serverIP + ":" + nodeExporterPort,
-          "kube-state-metrics-ip": serverIP + ":" + kubeStateMetricsPort,
-          "kubelet-metrics-ip": serverIP + ":" + kubeletMetricsPort,
+        labels: {
+          prometheus: prometheusName,
         },
-      },
-    },
-    configMap:: configMap,
-
-    //Prometheus Deployment
-    local deployment = {
-      apiVersion: "extensions/v1beta1",
-      kind: "Deployment",
-      metadata: {
-        name: prometheusName,
-        namespace: namespace,
       },
       spec: {
-        selector: {
-          matchLabels: {
-            app: "prometheus",
-          },
-        },
-        template: {
-          metadata: {
-            annotations: {
-              "prometheus.io/scrape": "true",
-            },
-            labels: {
-              app: "prometheus",
-            },
-            name: prometheusName,
-            namespace: namespace,
-          },
-          spec: {
-            containers: [
-              {
-                image: "quay.io/prometheus/prometheus",
-                imagePullPolicy: "Always",
-                name: prometheusName,
-                ports: [
-                  {
-                    containerPort: 9090,
-                    name: "http-prometheus",
-                  },
-                ],
-                volumeMounts: [
-                  {
-                    mountPath: "/etc/prometheus",
-                    name: "config-volume",
-                  },
-                ],
-              },
-            ],
-            serviceAccountName: prometheusName,
-            volumes: [
-              {
-                name: "config-volume",
-                configMap: {
-                  name: prometheusName,
-                },
-              },
-            ],
-          },
-        },
+        baseImage: "quay.io/prometheus/prometheus",
+        replicas: 1,
+        serviceAccountName: prometheusName,
+        serviceMonitorNamespaceSelector: {},
+        serviceMonitorSelector: {},
+        version: "v2.5.0",
       },
     },
-    deployment:: deployment,
+    prometheusCustomCRD:: prometheusCustomCRD,
 
     //Prometheus Service
     local service = {
@@ -92,7 +31,7 @@ local k = import "k.libsonnet";
       kind: "Service",
       metadata: {
         labels: {
-          name: prometheusName,
+          prometheus: prometheusName,
         },
         name: prometheusName,
         namespace: namespace,
@@ -100,15 +39,14 @@ local k = import "k.libsonnet";
       spec: {
         ports: [
           {
-            name: prometheusName,
+            name: "http-prometheus",
             port: 9090,
-            protocol: "TCP",
           },
         ],
         selector: {
           app: "prometheus",
+          prometheus: prometheusName,
         },
-        type: "NodePort",
       },
     },
     service:: service,
@@ -197,13 +135,60 @@ local k = import "k.libsonnet";
     },
     clusterRoleBinding:: clusterRoleBinding,
 
+    //Service Monitor Kubelet Metrics
+    local serviceMonitorKubelet = {
+      apiVersion: "monitoring.coreos.com/v1",
+      kind: "ServiceMonitor",
+      metadata: {
+        labels: {
+          "k8s-app": "kubelet",
+        },
+        name: "kubelet",
+        namespace: namespace,
+      },
+      spec: {
+        endpoints: [
+          {
+            bearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+            interval: "30s",
+            port: "https-metrics",
+            scheme: "https",
+            tlsConfig: {
+              insecureSkipVerify: true,
+            },
+          },
+          {
+            bearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token",
+            interval: "30s",
+            path: "/metrics/cadvisor",
+            port: "https-metrics",
+            scheme: "https",
+            tlsConfig: {
+              insecureSkipVerify: true,
+            },
+          },
+        ],
+        namespaceSelector: {
+          matchNames: [
+            "kube-system",
+          ],
+        },
+        selector: {
+          matchLabels: {
+            "k8s-app": "kubelet",
+          },
+        },
+      },
+    },
+    serviceMonitorKubelet:: serviceMonitorKubelet,
+
     all:: [
-      self.configMap,
-      self.deployment,
+      self.prometheusCustomCRD,
       self.service,
       self.serviceAccount,
       self.clusterRole,
       self.clusterRoleBinding,
+      self.serviceMonitorKubelet,
     ],
 
     //Create Objects
