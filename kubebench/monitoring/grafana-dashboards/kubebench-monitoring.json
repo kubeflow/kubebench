@@ -16,9 +16,252 @@
   "gnetId": null,
   "graphTooltip": 1,
   "id": 2,
-  "iteration": 1539823260550,
+  "iteration": 1541730521094,
   "links": [],
   "panels": [
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "format": "percent",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": true,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 11,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "(sum(node_memory_MemTotal_bytes) - sum(node_memory_MemFree_bytes+node_memory_Buffers_bytes+node_memory_Cached_bytes) ) / sum(node_memory_MemTotal_bytes) * 100",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "65, 90",
+      "title": "Cluster memory usage",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "format": "percent",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": true,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 12,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(sum by (pod_name)( rate(container_cpu_usage_seconds_total{image!=\"\", pod_name=~\"$pod\", container_name!=\"POD\"}[1m]) ))\n",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "65, 90",
+      "title": "Cluster CPU usage",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "prometheus",
+      "format": "percent",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": true,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 13,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "(sum(node_filesystem_size_bytes{device=\"tmpfs\"}) - sum(node_filesystem_free_bytes{device=\"tmpfs\"}) ) / sum(node_filesystem_size_bytes{device=\"tmpfs\"}) * 100",
+          "format": "time_series",
+          "hide": false,
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "65, 90",
+      "title": "Cluster filesystem usage",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
     {
       "aliasColors": {},
       "bars": false,
@@ -27,13 +270,15 @@
       "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
-        "h": 9,
-        "w": 24,
+        "h": 11,
+        "w": 8,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "id": 7,
+      "interval": "",
       "legend": {
+        "alignAsTable": true,
         "avg": false,
         "current": false,
         "max": false,
@@ -41,8 +286,8 @@
         "rightSide": false,
         "show": true,
         "sideWidth": null,
-        "total": false,
-        "values": false
+        "total": true,
+        "values": true
       },
       "lines": true,
       "linewidth": 1,
@@ -58,17 +303,17 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by(container_name) (container_memory_usage_bytes{image!=\"\", namespace=\"$namespace\", pod_name=\"$pod\", container_name!=\"POD\"})",
+          "expr": "sum by(pod_name) (container_memory_usage_bytes{image!=\"\", exported_namespace=\"$namespace\", pod_name=~\"$pod\", container_name!=\"POD\"})",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "Container: {{ container_name }}",
+          "legendFormat": "Pod name: {{ pod_name }}",
           "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Memory Usage",
+      "title": "POD memory usage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -84,7 +329,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "decbytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -113,15 +358,16 @@
       "datasource": "prometheus",
       "fill": 1,
       "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 9
+        "h": 11,
+        "w": 8,
+        "x": 8,
+        "y": 8
       },
       "id": 9,
+      "interval": "",
       "legend": {
-        "alignAsTable": false,
-        "avg": false,
+        "alignAsTable": true,
+        "avg": true,
         "current": false,
         "max": false,
         "min": false,
@@ -129,7 +375,7 @@
         "show": true,
         "sideWidth": null,
         "total": false,
-        "values": false
+        "values": true
       },
       "lines": true,
       "linewidth": 1,
@@ -145,17 +391,17 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (container_name)( rate(container_cpu_usage_seconds_total{container_name!=\"POD\", image!=\"\",pod_name=\"$pod\"}[1m] ) )",
+          "expr": "sum by (pod_name)( rate(container_cpu_usage_seconds_total{container_name!=\"POD\", image!=\"\",pod_name=~\"$pod\"}[1m] ) )",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "Container: {{container_name}}",
+          "legendFormat": "Pod name: {{pod_name}}",
           "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeShift": null,
-      "title": "CPU Usage",
+      "title": "Pod CPU usage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -171,7 +417,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "percent",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -206,10 +452,10 @@
         "threshold2Color": "rgba(234, 112, 112, 0.22)"
       },
       "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 18
+        "h": 11,
+        "w": 8,
+        "x": 16,
+        "y": 8
       },
       "id": 5,
       "isNew": false,
@@ -221,7 +467,7 @@
         "hideZero": false,
         "max": false,
         "min": false,
-        "rightSide": true,
+        "rightSide": false,
         "show": true,
         "total": false,
         "values": true
@@ -244,7 +490,7 @@
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
-          "legendFormat": "Instance: {{instance}}",
+          "legendFormat": "Device: {{device}}",
           "refId": "A"
         }
       ],
@@ -310,16 +556,21 @@
         "useTags": false
       },
       {
-        "allValue": "",
+        "allValue": "tf-cnn-dummy.*",
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": "prometheus",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Pod",
-        "multi": false,
+        "multi": true,
         "name": "pod",
         "options": [],
-        "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_monitoring=\"kubebench-prometheus\"}, pod)",
-        "refresh": 1,
+        "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_monitoring=\"kubebench-prometheus\"}, exported_pod)",
+        "refresh": 2,
         "regex": "",
         "sort": 0,
         "tagValuesQuery": "",
@@ -362,5 +613,5 @@
   "timezone": "utc",
   "title": "Kubebench Monitoring",
   "uid": "eqSbm0Aik3",
-  "version": 9
+  "version": 79
 }

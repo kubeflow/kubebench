@@ -11,15 +11,13 @@ local k = import "k.libsonnet";
         name: kubeStateMetricsName,
         namespace: namespace,
         labels: {
-          app: "prometheus",
-          component: kubeStateMetricsName,
+          "k8s-app": "kube-state-metrics",
         },
       },
       spec: {
         selector: {
           matchLabels: {
-            app: "prometheus",
-            component: kubeStateMetricsName,
+            "k8s-app": "kube-state-metrics",
           },
         },
         template: {
@@ -27,8 +25,7 @@ local k = import "k.libsonnet";
             name: kubeStateMetricsName,
             namespace: namespace,
             labels: {
-              app: "prometheus",
-              component: kubeStateMetricsName,
+              "k8s-app": "kube-state-metrics",
             },
           },
           spec: {
@@ -54,7 +51,6 @@ local k = import "k.libsonnet";
           },
         },
       },
-
     },
     deployment:: deployment,
 
@@ -63,14 +59,10 @@ local k = import "k.libsonnet";
       apiVersion: "v1",
       kind: "Service",
       metadata: {
-        annotations: {
-          "prometheus.io/scrape": "true",
-        },
         name: kubeStateMetricsName,
         namespace: namespace,
         labels: {
-          app: "prometheus",
-          component: kubeStateMetricsName,
+          "k8s-app": "kube-state-metrics",
         },
       },
       spec: {
@@ -82,12 +74,37 @@ local k = import "k.libsonnet";
           },
         ],
         selector: {
-          app: "prometheus",
-          component: kubeStateMetricsName,
+          "k8s-app": "kube-state-metrics",
         },
       },
     },
     service:: service,
+
+    //Kube State Metrics Service Monitor
+    local serviceMonitor = {
+      apiVersion: "monitoring.coreos.com/v1",
+      kind: "ServiceMonitor",
+      metadata: {
+        labels: {
+          "k8s-app": "kube-state-metrics",
+        },
+        name: "kube-state-metrics",
+        namespace: namespace,
+      },
+      spec: {
+        selector: {
+          matchLabels: {
+            "k8s-app": "kube-state-metrics",
+          },
+        },
+        endpoints: [
+          {
+            port: "http-kube-st-m",
+          },
+        ],
+      },
+    },
+    serviceMonitor:: serviceMonitor,
 
     //Kube State Metrics Serivce Account
     local serviceAccount = {
@@ -99,7 +116,6 @@ local k = import "k.libsonnet";
       },
     },
     serviceAccount:: serviceAccount,
-
 
     //Kube State Metrics Cluster Role
     local clusterRole = {
@@ -296,6 +312,7 @@ local k = import "k.libsonnet";
     all:: [
       self.deployment,
       self.service,
+      self.serviceMonitor,
       self.serviceAccount,
       self.clusterRole,
       self.clusterRoleBinding,

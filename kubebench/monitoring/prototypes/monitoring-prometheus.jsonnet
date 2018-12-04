@@ -13,8 +13,5 @@ local namespace = if params.namespace == "null" then env.namespace else params.n
 
 local prometheusName = import "param://name";
 
-local serverAddress = env.server;
-local serverIP = std.split(std.split(serverAddress, "/")[2], ":")[0];
-
-local prometheusInstance = prometheus.parts(prometheusName, namespace, serverIP);
+local prometheusInstance = prometheus.parts(prometheusName, namespace);
 prometheusInstance.list(prometheusInstance.all)
