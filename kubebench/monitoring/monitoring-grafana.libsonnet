@@ -84,8 +84,7 @@ local k = import "k.libsonnet";
       kind: "Deployment",
       metadata: {
         labels: {
-          app: "prometheus",
-          component: grafanaName,
+          "k8s-app": "grafana",
         },
         name: grafanaName,
         namespace: namespace,
@@ -93,23 +92,27 @@ local k = import "k.libsonnet";
       spec: {
         selector: {
           matchLabels: {
-            app: "prometheus",
-            component: grafanaName,
+            "k8s-app": "grafana",
           },
         },
         template: {
           metadata: {
             labels: {
-              app: "prometheus",
-              component: grafanaName,
+              "k8s-app": "grafana",
             },
           },
           spec: {
             containers: [
               {
-                image: "grafana/grafana:5.2.1",
+                image: "grafana/grafana:5.2.4",
                 imagePullPolicy: "Always",
                 name: grafanaName,
+                env: [
+                  {
+                    name: "GF_SERVER_ROOT_URL",
+                    value: "http://localhost:3000/grafana/",
+                  },
+                ],
                 ports: [
                   {
                     containerPort: 3000,
@@ -168,6 +171,17 @@ local k = import "k.libsonnet";
       metadata: {
         name: grafanaName,
         namespace: namespace,
+        annotations: {
+          "getambassador.io/config":
+            std.join("\n", [
+              "---",
+              "apiVersion: ambassador/v0",
+              "kind:  Mapping",
+              "name: grafana-ui-mapping",
+              "prefix: /grafana/",
+              "service: " + grafanaName + "." + namespace + ":3000",
+            ]),
+        },  //annotations
       },
       spec: {
         ports: [
@@ -178,10 +192,8 @@ local k = import "k.libsonnet";
           },
         ],
         selector: {
-          app: "prometheus",
-          component: grafanaName,
+          "k8s-app": "grafana",
         },
-        type: "NodePort",
       },
     },
     service:: service,
