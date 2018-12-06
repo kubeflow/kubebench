@@ -119,7 +119,7 @@ const GenerateFromParameters = (props) => {
             </div>
             <Snackbar
                 anchorOrigin={{
-                    vertical: 'bottom',
+                    vertical: 'top',
                     horizontal: 'center',
                 }}
                 open={props.snackOpen}

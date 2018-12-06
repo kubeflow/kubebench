@@ -7,6 +7,9 @@ import Button from "@material-ui/core/Button";
 import { deleteJob } from '../actions';
 import {connect} from 'react-redux';
 
+import CallSplit from '@material-ui/icons/CallSplit';
+import FolderIcon from '@material-ui/icons/Folder'
+import InsertChart from '@material-ui/icons/InsertChart'
 
 
 const styles = theme => ({
@@ -16,10 +19,18 @@ const styles = theme => ({
         backgroundColor: theme.palette.background.paper,
         boxShadow: theme.shadows[5],
         padding: theme.spacing.unit * 4,
+        textAlign: 'center'
     },
     modal: {
         top: '40%',
         left: '40%',
+    },
+    button: {
+        margin: theme.spacing.unit,
+        width: '50%',
+    },
+    extraIcon: {
+        marginRight: theme.spacing.unit,
     }
 });
 
@@ -40,19 +51,34 @@ const JobInfo = (props) => {
             className={classes.modal}
         >
             <div className={classes.paper}>
-                <Typography variant="h6" id="modal-title">
+                <Typography variant="h3" id="modal-title">
                     { props.name }
                 </Typography>
                 <Typography variant="subtitle1" id="simple-modal-description">
-                    <ul>
-                        <li><a href={`/argo/workflows/default/${props.name}`} target={"_blank"}>Argo</a></li>
-                        <li><a href={`/grafana/d/eqSbm0Aik3/kubebench-monitoring`} target={"_blank"}>Grafana</a></li>
-                        <li><a href={`/`} target={"_blank"}>NFS</a></li>
-                    </ul>
+                    <a href={`/argo/workflows/default/${props.name}`} target={"_blank"}>
+                        <Button variant="extendedFab" aria-label="Delete" className={classes.button} color={"secondary"}>
+                            <CallSplit className={classes.extraIcon} />
+                            Workflow
+                        </Button>
+                    </a>
+                    <br />
+                    <a href={`/grafana/d/eqSbm0Aik3/kubebench-monitoring`} target={"_blank"}>
+                        <Button variant="extendedFab" className={classes.button} color={"secondary"}>
+                            <InsertChart className={classes.extraIcon} />
+                            Metrics
+                        </Button>
+                    </a>
+                    <br />
+                    <a href={`/`} target={"_blank"}>
+                        <Button variant="extendedFab" className={classes.button} color={"secondary"}>
+                            <FolderIcon className={classes.extraIcon} />
+                            NFS
+                        </Button>
+                    </a>
+                    <Button variant="extendedFab" className={classes.button} color={"primary"} onClick={deleteJob}>
+                        Delete
+                    </Button>
                 </Typography>
-                <Button variant="contained" color={"primary"} className={classes.button} onClick={deleteJob}>
-                    Delete
-                </Button>
             </div>
         </Modal>
     );

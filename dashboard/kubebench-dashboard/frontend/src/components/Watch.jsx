@@ -17,6 +17,7 @@ import TextField from '@material-ui/core/TextField';
 import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
+import Button from '@material-ui/core/Button';
 
 
 import { openModal, closeModal, fetchJobs, closeSnack, filterJobs, changeType } from "../actions";
@@ -52,13 +53,16 @@ const styles = theme => ({
         margin: '0 auto',
         textAlign: 'center',
     },
+    button: {
+        margin: theme.spacing.unit / 2,
+        padding: theme.spacing.unit / 2,
+    }
 });
 
 
 class Watch extends React.Component {
     componentDidMount() {
-        // this.props.fetchJobs()
-        console.log('Mounted')
+        this.props.fetchJobs();
     }
 
     onFilter = event => {
@@ -70,7 +74,11 @@ class Watch extends React.Component {
     }
 
     deleteJob = (name) => {
-        this.props.deleteJob(name)
+        this.props.deleteJob(name);
+    }
+
+    update = (event) => {
+        this.props.fetchJobs();
     }
 
     handleType = (name) => event => {
@@ -79,7 +87,6 @@ class Watch extends React.Component {
 
     render () {
         const { classes } = this.props;
-        console.log(this.props)
         return (
             <div className={classes.root}>
                 <h1>Monitor</h1>
@@ -115,6 +122,9 @@ class Watch extends React.Component {
                             })
                         }
                     </FormGroup>
+                    <Button color={"secondary"} onClick={this.update} variant={"raised"}>
+                        Update
+                    </Button>
                 </div>
                 <List component="nav">
                     {this.props.jobs.map((job, i) => {

@@ -61,32 +61,18 @@ spec:
     filterType: {
         "Running": true,
         "Failed": true,
-        "Success": true,
+        "Succeeded": true,
     },
     jobsList: [
-        {
-            name: "Job 1",
-            status: "Running",
-        },
-        {
-            name: "Job 2",
-            status: "Failed",
-        },
     ],
     filteredJobsList: [
-        {
-            name: "Job 1",
-            status: "Running",
-        },
-        {
-            name: "Job 2",
-            status: "Failed",
-        },
     ],
     modalOpen: false,
     currentId: null,
     currentName: '',
-    currentLinks: ['First link', 'Second link'],
+    currentLinks: [
+
+    ],
     parameters: [
         {
             name: "General section",
@@ -113,8 +99,8 @@ spec:
         },
         {
             name: "githubTokenSecret",
-            description: "",
-            value: "GitHub token secret",
+            value: "",
+            description: "GitHub token secret",
         },
         {
             name: "githubTokenSecretKey",
@@ -123,8 +109,8 @@ spec:
         },
         {
             name: "gcpCredentialsSecret",
-            value: "GCP credentials secret",
-            description: "",
+            value: "",
+            description: "GCP credentials secret",
         },
         {
             name: "gcpCredentialsSecretKey",
@@ -137,7 +123,7 @@ spec:
         },
         {
             name: "mainJobKsPrototype",
-            value: "kubebench-example-tfcnn",
+            value: "kubebench-example-tfcnn-with-monitoring",
             description: "The Ksonnet prototype of the job being benchmarked",
         },
         {
@@ -147,7 +133,7 @@ spec:
         },
         {
             name: "mainJobKsRegistry",
-            value: "github.com/kubeflow/kubebench/tree/master/kubebench",
+            value: "/kubebench/config/registry/kubebench",
             description: "The Ksonnet registry of the job being benchmarked",
         },
         {
@@ -306,6 +292,7 @@ const rootReducer = (state = initialState, action) => {
             return {
                 ...state,
                 jobsList: action.jobsList,
+                filteredJobsList: action.jobsList,
                 loading: false,
             };
         case ActionTypes.FETCH_JOB_FAILURE:
