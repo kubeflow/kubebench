@@ -332,7 +332,7 @@
                 srcDir + "/build/images/operator/build_image.sh",
                 srcDir,
                 srcDir + "/build/images/operator/Dockerfile",
-                "kubebench-controller",
+                "kubebench-operator",
                 versionTag,
               ],
               workingDir=srcDir,
