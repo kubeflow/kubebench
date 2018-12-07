@@ -23,7 +23,7 @@ BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 
 echo "Copy source and Dockerfile to build directory"
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
-cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
+cp -r ${SRC_DIR}/operator ${BUILD_DIR}/operator
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 
 echo "Change working directory to ${BUILD_DIR}"
