@@ -1,11 +1,5 @@
-FROM golang:1.8 AS build
+FROM golang
+ADD ./../.. /go/src/github.com/kubeflow/kubebench
+RUN go install 	github.com/kubeflow/kubebench/controller/kubebench-operator
 
-WORKDIR /go/src/app
-COPY . .
-
-RUN env CGO_ENABLED=0 go build -a -o /kubebenchjob-controller
-
-FROM scratch
-
-COPY --from=build /kubebenchjob-controller /kubebenchjob-controller
-ENTRYPOINT ./kubebenchjob-controller
+ENTRYPOINT /go/bin/kubebench-operator
