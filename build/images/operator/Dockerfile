@@ -1,5 +1,6 @@
 FROM golang
-COPY ../../ /go/src/github.com/kubeflow/kubebench
-RUN go install 	github.com/kubeflow/kubebench/controller/kubebench-operator
+COPY operator /app/operator
+RUN go install 	/app/operator
 
+RUN /app/operator
 ENTRYPOINT /go/bin/kubebench-operator
