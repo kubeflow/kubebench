@@ -124,23 +124,5 @@ func (c *KubebenchJobController) handleDelete(obj interface{}) {
 		}
 		log.Infof("Workflow successfully deleted: %v", name)
 	}
-	// if obj != nil {
-	// 	log.Infof("HEREEE BITCH1")
-	// 	kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
-	// 	log.Infof("HEREEE BITCH2")
-	// 	result, err := workflowUtils.ConvertKubebenchJobToArgoWorkflow(kbJob)
-	// 	log.Infof("HEREEE BITCH3")
-	// 	if err != nil {
-	// 		log.Infof("HEREEE BITCH4")
-	// 		log.Fatalf("Error converting to workflow: %v", err)
-	// 	}
 
-	// 	workflowDeleteErr := c.Workflows.Delete(result.ObjectMeta.Name, &meta_v1.DeleteOptions{})
-	// 	if workflowDeleteErr != nil {
-	// 		log.Infof("HEREEE BITCH5")
-	// 		log.Fatalf("Error deleting workflow: %v", workflowDeleteErr)
-	// 	}
-	// 	log.Infof("HEREEE BITCH6")
-	// 	log.Infof("Workflow successfully deleted: %v", kbJob.ObjectMeta.Name)
-	// }
 }

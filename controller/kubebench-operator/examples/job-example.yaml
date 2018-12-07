@@ -15,13 +15,13 @@ spec:
       name: my-experiment-volume
       persistentVolumeClaim:
         claimName: kubebench-exp-pvc
-  secretSpecs: # optional
-    githubTokenSecret: # optional
-      secretName: my-github-token-secret
-      secretKey: my-github-token-secret-key
-    gcpCredentialsSecret: # optional
-      secretName: my-gcp-credentials-secret
-      secretKey: my-gcp-credentials-secret-key
+  # secretSpecs: # optional
+  #   githubTokenSecret: # optional
+  #     secretName: my-github-token-secret
+  #     secretKey: my-github-token-secret-key
+  #   gcpCredentialsSecret: # optional
+  #     secretName: my-gcp-credentials-secret
+  #     secretKey: my-gcp-credentials-secret-key
   jobSpecs:
     preJob: # optional
       container: # optional between "container" and "resource"
@@ -32,16 +32,16 @@ spec:
         manifestTemplate:
           valueFrom:
             ksonnet: # optional, more types in the future
-              prototype: kubebench-example-tfcnn
+              name: kubebench-example-tfcnn-with-monitoring
               package: kubebench-examples
-              registry: github.com/kubeflow/kubebench/tree/master/kubebench
+              registry: /kubebench/config/registry/kubebench
         manifestParameters:
           valueFrom:
-            path: abc/def/ghi.yaml
+            path: tf-cnn/tf-cnn-dummy.yaml
         createSuccessCondition: createSuccess # optional
         createFailureCondition: createFailure # optional
         runSuccessCondition: runSuccess # optional
-        runFailureCondition: runFailre # optional
+        runFailureCondition: runFailure # optional
         #other optional fields: "manifest" - string of raw manifest
     postJob: # optional
       container: # optional between "container" and "resource"
