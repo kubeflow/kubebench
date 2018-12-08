@@ -329,9 +329,9 @@
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
               "build-kubebench-operator",
               [
-                srcDir + "/build/images/operator/build_image.sh",
+                srcDir + "/build/images/kubebench-operator/build_image.sh",
                 srcDir,
-                srcDir + "/build/images/operator/Dockerfile",
+                srcDir + "/build/images/kubebench-operator/Dockerfile",
                 "kubebench-operator",
                 versionTag,
               ],

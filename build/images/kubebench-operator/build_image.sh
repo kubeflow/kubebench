@@ -23,14 +23,14 @@ BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 
 echo "Copy source and Dockerfile to build directory"
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
-cp -r ${SRC_DIR}/operator ${BUILD_DIR}/operator
+cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 
 echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
 echo "Build go binary"
-GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/operator
+GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/kubebench-operator
 
 echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
