@@ -233,12 +233,6 @@
                     template: "wait-for-kubeflow-deployment",
                   },
                 ],
-                // [
-                //   {
-                //     name: "test-kubebench-job",
-                //     template: "test-kubebench-job",
-                //   },
-                // ],
               ],
             },
             {
@@ -379,7 +373,7 @@
               "bash",
               "-c",
               "rm -rf " + testDir,
-            ]),  // delete test dir
+            ]),  
           ],  // templates
         },
       },  // e2e
