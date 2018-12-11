@@ -1,0 +1,6 @@
+FROM golang
+ADD . /go/src/github.com/kubeflow/kubebench
+RUN go install 	github.com/kubeflow/kubebench/dashboard/kubebench-dashboard
+
+ENTRYPOINT /go/bin/kubebench-dashboard
+EXPOSE 9303
