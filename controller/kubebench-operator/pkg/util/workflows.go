@@ -483,9 +483,9 @@ func GenerateJobFromParameters(parameters map[string]string) (job *kubebenchjob.
 			ManifestTemplate: kubebenchjob.TemplateSpec{
 				ValueFrom: kubebenchjob.Ksonnet{
 					KsonnetSpec: map[string]string{
-						"prototype": mainJobKsPrototype,
-						"package":   mainJobKsPackage,
-						"registry":  mainJobKsRegistry,
+						"name":     mainJobKsPrototype,
+						"package":  mainJobKsPackage,
+						"registry": mainJobKsRegistry,
 					},
 				},
 			},
