@@ -1,8 +1,8 @@
 package util
 
 import (
-	kubebenchjobclientset "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned"
-	kubebenchjobinformer_v1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/informers/externalversions/kubebenchjob/v1"
+	kubebenchjobclientset "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned"
+	kubebenchjobinformer_v1 "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/kubebenchjob/v1"
 	log "github.com/sirupsen/logrus"
 	api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

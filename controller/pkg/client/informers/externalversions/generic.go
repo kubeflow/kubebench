@@ -20,7 +20,8 @@ package externalversions
 
 import (
 	"fmt"
-	v1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/apis/kubebenchjob/v1"
+
+	v1 "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

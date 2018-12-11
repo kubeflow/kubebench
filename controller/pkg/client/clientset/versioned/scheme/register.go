@@ -17,7 +17,7 @@ limitations under the License.
 package scheme
 
 import (
-	kubebenchv1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/apis/kubebenchjob/v1"
+	kubebenchv1 "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

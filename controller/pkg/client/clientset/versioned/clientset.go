@@ -18,7 +18,7 @@ package versioned
 
 import (
 	glog "github.com/golang/glog"
-	kubebenchv1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned/typed/kubebenchjob/v1"
+	kubebenchv1 "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned/typed/kubebenchjob/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

@@ -17,9 +17,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned"
-	kubebenchv1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned/typed/kubebenchjob/v1"
-	fakekubebenchv1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned/typed/kubebenchjob/v1/fake"
+	clientset "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned"
+	kubebenchv1 "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned/typed/kubebenchjob/v1"
+	fakekubebenchv1 "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned/typed/kubebenchjob/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

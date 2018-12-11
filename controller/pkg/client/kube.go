@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	argoproj "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
-	kubebenchjobclientset "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned"
+	kubebenchjobclientset "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned"
 )
 
 var config = parseKubernetesConfig()

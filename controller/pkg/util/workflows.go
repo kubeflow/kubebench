@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	workflow_v1 "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
-	kubebenchjob "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/apis/kubebenchjob/v1"
+	kubebenchjob "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

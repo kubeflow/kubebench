@@ -19,11 +19,12 @@ limitations under the License.
 package internalinterfaces
 
 import (
-	versioned "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned"
+	time "time"
+
+	versioned "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	cache "k8s.io/client-go/tools/cache"
-	time "time"
 )
 
 type NewInformerFunc func(versioned.Interface, time.Duration) cache.SharedIndexInformer

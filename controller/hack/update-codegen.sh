@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CURRENT=$(pwd)
-ROOT_PACKAGE="github.com/kubeflow/kubebench/controller/kubebench-operator"
+ROOT_PACKAGE="github.com/kubeflow/kubebench/controller"
 CUSTOM_RESOURCE_NAME="kubebenchjob"
 CUSTOM_RESOURCE_VERSION="v1"
 

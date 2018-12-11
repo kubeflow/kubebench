@@ -19,8 +19,8 @@ limitations under the License.
 package kubebench
 
 import (
-	internalinterfaces "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/informers/externalversions/internalinterfaces"
-	v1 "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/informers/externalversions/kubebenchjob/v1"
+	internalinterfaces "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/kubebenchjob/v1"
 )
 
 // Interface provides access to each of this group's versions.

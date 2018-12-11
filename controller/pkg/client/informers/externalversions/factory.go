@@ -19,16 +19,17 @@ limitations under the License.
 package externalversions
 
 import (
-	versioned "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/informers/externalversions/internalinterfaces"
-	kubebenchjob "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/informers/externalversions/kubebenchjob"
+	reflect "reflect"
+	sync "sync"
+	time "time"
+
+	versioned "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/internalinterfaces"
+	kubebenchjob "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/kubebenchjob"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
-	reflect "reflect"
-	sync "sync"
-	time "time"
 )
 
 type sharedInformerFactory struct {

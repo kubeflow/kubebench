@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	internalinterfaces "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

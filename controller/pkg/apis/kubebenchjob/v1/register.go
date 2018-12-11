@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	kubebenchjob "github.com/kubeflow/kubebench/controller/kubebench-operator/pkg/apis/kubebenchjob"
+	kubebenchjob "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob"
 )
 
 // GroupVersion is the identifier for the API which includes
