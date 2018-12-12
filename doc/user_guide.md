@@ -180,8 +180,7 @@ The followings show an example Kubebench directory.
 ```
 /kubebench
 ├── config
-│   └── tf-cnn
-│       └── tf-cnn-dummy.yaml
+│   └── tf-cnn-dummy.yaml
 ├── data
 │   └── train_data.tfrecords
 └── experiments
