@@ -336,7 +336,7 @@
               workingDir=srcDir,
             ),  // build-kubebench-operator
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
-              "build-kubebench-operator",
+              "build-kubebench-dashboard",
               [
                 srcDir + "/build/images/dashboard/build_image.sh",
                 srcDir,
