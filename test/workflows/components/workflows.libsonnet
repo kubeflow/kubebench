@@ -334,18 +334,7 @@
                 versionTag,
               ],
               workingDir=srcDir,
-            ),  // build-kubebench-operator
-            // $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
-            //   "build-kubebench-dashboard",
-            //   [
-            //     srcDir + "/build/images/dashboard/build_image.sh",
-            //     srcDir,
-            //     srcDir + "/build/images/dashboard/Dockerfile",
-            //     "kubebench-dashboard",
-            //     versionTag,
-            //   ],
-            //   workingDir=srcDir,
-            // ),  // build-kubebench-dashboard
+            ), 
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
               "build-kubebench-examples",
               [
