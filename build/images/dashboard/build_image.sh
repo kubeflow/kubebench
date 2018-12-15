@@ -30,7 +30,7 @@ echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
 echo "Build go binaries"
-GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/dashboard/kubebench-dashboard
+GOOS=linux CGO_ENABLED=0 go build -o kubebench-dashboard github.com/kubeflow/kubebench/dashboard/kubebench-dashboard/backend.go 
 
 echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
