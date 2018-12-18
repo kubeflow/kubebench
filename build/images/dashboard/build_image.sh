@@ -24,7 +24,7 @@ BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 echo "Copy source and Dockerfile to build directory"
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
 mkdir -p ${BUILD_DIR}/dashboard/kubebench-dashboard
-cp -r ${SRC_DIR}/dashboard/kubebench-dashboard/ ${BUILD_DIR}/dashboard/kubebench-dashboard/
+cp -r ${SRC_DIR}/dashboard/kubebench-dashboard/ ${BUILD_DIR}/dashboard
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 ls -la ${BUILD_DIR}/dashboard/kubebench-dashboard/
 
