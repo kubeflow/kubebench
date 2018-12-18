@@ -25,7 +25,7 @@ echo "Copy source and Dockerfile to build directory"
 ls -la ${SRC_DIR}/dashboard
 ls -la ${SRC_DIR}/dashboard/kubebench-dashboard/
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
-cp -r ${SRC_DIR}/dashboard ${BUILD_DIR}/dashboard
+cp -r ${SRC_DIR}/dashboard/kubebench-dashboard/ ${BUILD_DIR}/dashboard/kubebench-dashboard/
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 ls -la github.com/kubeflow/kubebench/dashboard/kubebench-dashboard/
 echo "Change working directory to ${BUILD_DIR}"
