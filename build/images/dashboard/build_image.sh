@@ -22,8 +22,9 @@ mkdir -p ${GOPATH}/src/github.com/kubeflow/kubebench
 BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 
 echo "Copy source and Dockerfile to build directory"
+ls -la ${BUILD_DIR}
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
-cp -r ${SRC_DIR}/dashboard/kubebench-dashboard ${BUILD_DIR}/dashboard/kubebench-dashboard
+cp -r ${SRC_DIR}/dashboard ${BUILD_DIR}/dashboard
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 
 echo "Change working directory to ${BUILD_DIR}"
