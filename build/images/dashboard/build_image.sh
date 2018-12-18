@@ -22,18 +22,17 @@ mkdir -p ${GOPATH}/src/github.com/kubeflow/kubebench
 BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 
 echo "Copy source and Dockerfile to build directory"
-ls -la ${SRC_DIR}/dashboard
-ls -la ${SRC_DIR}/dashboard/kubebench-dashboard/
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
-mkdir -p ${BUILD_DIR}/dashboard
+mkdir -p ${BUILD_DIR}/dashboard/kubebench-dashboard
 cp -r ${SRC_DIR}/dashboard/kubebench-dashboard/ ${BUILD_DIR}/dashboard/kubebench-dashboard/
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 ls -la ${BUILD_DIR}/dashboard/kubebench-dashboard/
+
 echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
 echo "Build go binaries"
-GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/dashboard/kubebench-dashboard/backend.go
+GOOS=linux CGO_ENABLED=0 go build -o kubebench-dashboard dashboard/kubebench-dashboard/backend.go
 
 echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
