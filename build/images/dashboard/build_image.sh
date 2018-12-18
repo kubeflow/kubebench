@@ -23,12 +23,15 @@ BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 
 echo "Copy source and Dockerfile to build directory"
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
-mkdir -p ${BUILD_DIR}/dashboard/kubebench-dashboard
-cp -r ${SRC_DIR}/dashboard/kubebench-dashboard/ ${BUILD_DIR}/dashboard
+mkdir -p ${BUILD_DIR}/dashboard/
+cp -r ${SRC_DIR}/dashboard/kubebench-dashboard ${BUILD_DIR}/dashboard
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 
 echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
+
+ls github.com/kubeflow/kubebench/dashboard
+ls github.com/kubeflow/kubebench/kubebench-dashboard
 
 echo "Build go binaries"
 GOOS=linux CGO_ENABLED=0 go build -o kubebench-dashboard github.com/kubeflow/kubebench/dashboard/kubebench-dashboard/backend.go
