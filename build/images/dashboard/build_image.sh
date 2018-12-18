@@ -34,7 +34,7 @@ echo "${GOPATH}"
 ls -la ${BUILD_DIR}/dashboard/kubebench-dashboard
 
 echo "Build go binaries"
-GOOS=linux CGO_ENABLED=0 go build -o kubebench-dashboard github.com/kubeflow/kubebench/dashboard/kubebench-dashboard/backend.go
+GOOS=linux CGO_ENABLED=0 go build -o kubebench-dashboard github.com/kubeflow/kubebench/dashboard/kubebench-dashboard
 
 echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
