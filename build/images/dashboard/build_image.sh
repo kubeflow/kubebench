@@ -30,6 +30,7 @@ cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
+echo "${GOPATH}"
 ls -la ${BUILD_DIR}/dashboard/kubebench-dashboard
 
 echo "Build go binaries"
