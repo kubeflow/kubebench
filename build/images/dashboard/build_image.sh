@@ -30,8 +30,9 @@ cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
-ls github.com/kubeflow/kubebench/dashboard
-ls github.com/kubeflow/kubebench/kubebench-dashboard
+ls -la ${BUILD_DIR}/dashboard
+ls -la ${BUILD_DIR}/kubebench-dashboard
+ls -la ${BUILD_DIR}/kubebench-dashboard/kubebench-dashboard
 
 echo "Build go binaries"
 GOOS=linux CGO_ENABLED=0 go build -o kubebench-dashboard github.com/kubeflow/kubebench/dashboard/kubebench-dashboard/backend.go
