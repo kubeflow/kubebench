@@ -31,6 +31,12 @@ ls -la ${BUILD_DIR}/dashboard/kubebench-dashboard/
 echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
+echo "${BUILD_DIR}"
+echo "BUILD_DIR"
+ls -la ${BUILD_DIR}
+echo "DASHBOARD"
+ls -la dashboard/kubebench-dashboard/
+
 echo "Build go binaries"
 GOOS=linux CGO_ENABLED=0 go build -o kubebench-dashboard dashboard/kubebench-dashboard/backend.go
 
