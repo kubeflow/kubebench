@@ -25,6 +25,7 @@ echo "Copy source and Dockerfile to build directory"
 cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
 mkdir -p ${BUILD_DIR}/dashboard/
 cp -r ${SRC_DIR}/dashboard/kubebench-dashboard ${BUILD_DIR}/dashboard
+cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 
 echo "Change working directory to ${BUILD_DIR}"
