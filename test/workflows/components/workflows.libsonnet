@@ -216,6 +216,14 @@
                     name: "build-kubebench-examples",
                     template: "build-kubebench-examples",
                   },
+                  {
+                    name: "build-kubebench-operator",
+                    template: "build-kubebench-operator",
+                  },
+                  {
+                    name: "build-kubebench-dashboard",
+                    template: "build-kubebench-dashboard",
+                  },
                 ],
                 [
                   {
@@ -322,6 +330,28 @@
               ],
               workingDir=srcDir,
             ),  // build-kubebench-controller
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
+              "build-kubebench-operator",
+              [
+                srcDir + "/build/images/kubebench-operator/build_image.sh",
+                srcDir,
+                srcDir + "/build/images/kubebench-operator/Dockerfile",
+                "kubebench-operator",
+                versionTag,
+              ],
+              workingDir=srcDir,
+            ),  // build-kubebench-operator
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
+              "build-kubebench-dashboard",
+              [
+                srcDir + "/build/images/dashboard/build_image.sh",
+                srcDir,
+                srcDir + "/build/images/dashboard/Dockerfile",
+                "kubebench-dashboard",
+                versionTag,
+              ],
+              workingDir=srcDir,
+            ),  // build-kubebench-dashboard
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
               "build-kubebench-examples",
               [
