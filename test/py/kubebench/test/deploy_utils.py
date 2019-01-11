@@ -110,8 +110,8 @@ def setup_ks_app(test_dir, src_root_dir, namespace, github_token, api_client):
     util.run(["ks", "registry", "add", r, registries[r]], cwd=app_dir)
 
   # Install required packages
-  packages = ["kubeflow/core", "kubeflow/argo", "kubebench/kubebench-job",
-              "kubebench/nfs-server", "kubebench/nfs-volume", "kubeflow/tf-training"]
+  packages = ["kubeflow/common", "kubeflow/argo", "kubeflow/tf-training",
+              "kubeflow/kubebench", "kubebench/nfs-server", "kubebench/nfs-volume"]
   for p in packages:
     util.run(["ks", "pkg", "install", p], cwd=app_dir)
 
