@@ -4,18 +4,9 @@ libraries:
   kubebench-examples:
     version: master
     path: kubebench-examples
-  kubebench-job:
-    version: master
-    path: kubebench-job
   kubebench-quickstarter:
     version: master
     path: kubebench-quickstarter
-  nfs-server:
-    version: master
-    path: nfs-server
-  nfs-volume:
-    version: master
-    path: nfs-volume
   monitoring:
     version: master
     path: monitoring
