@@ -51,7 +51,7 @@ NOTE: the quick start guide serves as a demo that helps you quickly go through a
     ```bash
     JOB_NAME="my-benchmark"
 
-    ks pkg install kubebench/kubebench-job@${KB_VERSION}
+    ks pkg install kubeflow/kubebench@${KB_VERSION}
     ks generate kubebench-job ${JOB_NAME}
 
     ks apply ${KB_ENV} -c ${JOB_NAME}
