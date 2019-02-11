@@ -179,6 +179,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:1f31098969a680a25253af667ac1a95e6f06ecaa9fcef869ccb97fb4871ac9f4"
+  name = "github.com/kubeflow/mpi-operator"
+  packages = ["pkg/apis/kubeflow/v1alpha1"]
+  pruneopts = "NUT"
+  revision = "c3f672d4f25a69f3d3ba95d78ae145a26bad249c"
+
+[[projects]]
+  branch = "master"
   digest = "1:b41d3b6cdfa3a8718c3a4e68e507ba53fc86b7798c57e928d84714b0db46ab44"
   name = "github.com/kubeflow/pytorch-operator"
   packages = ["pkg/apis/pytorch/v1alpha2"]
@@ -486,6 +494,7 @@
     "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1",
     "github.com/ghodss/yaml",
     "github.com/golang/glog",
+    "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha1",
     "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2",
     "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha2",
     "github.com/sirupsen/logrus",
