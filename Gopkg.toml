@@ -60,6 +60,10 @@
   name = "github.com/kubeflow/tf-operator"
   branch = "master"
 
+[[constraint]]
+  name = "github.com/kubeflow/mpi-operator"
+  branch = "master"
+
 [prune]
    unused-packages = true
    go-tests = true

@@ -36,6 +36,8 @@ func (mmf *ManifestModifierFactory) NewManifestModifier() (ManifestModifierInter
 		m = &TFJobManifestModifier{}
 	case "PyTorchJob":
 		m = &PyTorchJobManifestModifier{}
+	case "MPIJob":
+		m = &MPIJobManifestModifier{}
 	case "Job":
 		m = &JobManifestModifier{}
 	default:
