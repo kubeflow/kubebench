@@ -85,6 +85,9 @@ NOTE: the quick start guide serves as a demo that helps you quickly go through a
     curl https://raw.githubusercontent.com/kubeflow/kubebench/master/scripts/uninstall_quickstarter.sh | bash
     ```
 
+## Other Examples
+  - [MPI Job Example](examples/src/mpi/README.md)
+
 ## Design Document
 
 For additional information about motivation and design for this project please refer to [kubebench_design.md](./doc/kubebench_design.md)
