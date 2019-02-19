@@ -58,8 +58,6 @@ def deploy_kubeflow(test_case):
   # cmd = "ks param set tf-job-operator tfJobImage \
   #         gcr.io/kubeflow-images-public/tf_operator:v20180522-77375baf"
   # util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks param set tf-job-operator tfJobVersion v1beta1"
-  util.run(cmd.split(), cwd=app_dir)
   cmd = "ks param set kubeflow-argo namespace " + namespace
   util.run(cmd.split(), cwd=app_dir)
   apply_command = ["ks", "apply", "default",
@@ -75,7 +73,7 @@ def deploy_kubeflow(test_case):
   util.run(apply_command, cwd=app_dir)
 
   # Verify that the TfJob operator is actually deployed.
-  tf_job_deployment_name = "tf-job-operator-v1beta1"
+  tf_job_deployment_name = "tf-job-operator"
   logging.info("Verifying TfJob controller started.")
   util.wait_for_deployment(api_client, namespace, tf_job_deployment_name)
 

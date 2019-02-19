@@ -62,7 +62,7 @@
       // The name of test cluster
       local clusterName = "kubebench-e2e-" + std.substr(name, std.length(name) - 4, 4);
       // The Kubernetes version of test cluster
-      local clusterVersion = "1.10";
+      local clusterVersion = "1.11";
       // Container build information
       local registry = params.registry;
       local versionTag = if params.versionTag != null then
