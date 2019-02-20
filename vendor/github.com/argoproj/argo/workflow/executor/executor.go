@@ -25,12 +25,12 @@ import (
 	artifact "github.com/argoproj/argo/workflow/artifacts"
 	"github.com/argoproj/argo/workflow/artifacts/artifactory"
 	"github.com/argoproj/argo/workflow/artifacts/git"
+	"github.com/argoproj/argo/workflow/artifacts/hdfs"
 	"github.com/argoproj/argo/workflow/artifacts/http"
 	"github.com/argoproj/argo/workflow/artifacts/raw"
 	"github.com/argoproj/argo/workflow/artifacts/s3"
 	"github.com/argoproj/argo/workflow/common"
 	argofile "github.com/argoproj/pkg/file"
-	"github.com/fsnotify/fsnotify"
 	log "github.com/sirupsen/logrus"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,6 +40,8 @@ import (
 
 // WorkflowExecutor is program which runs as the init/wait container
 type WorkflowExecutor struct {
+	common.ResourceInterface
+
 	PodName            string
 	Template           wfv1.Template
 	ClientSet          kubernetes.Interface
@@ -50,8 +52,10 @@ type WorkflowExecutor struct {
 
 	// memoized container ID to prevent multiple lookups
 	mainContainerID string
+	// memoized configmaps
+	memoizedConfigMaps map[string]string
 	// memoized secrets
-	memoizedSecrets map[string]string
+	memoizedSecrets map[string][]byte
 	// list of errors that occurred during execution.
 	// the first of these is used as the overall message of the node
 	errors []error
@@ -87,7 +91,8 @@ func NewExecutor(clientset kubernetes.Interface, podName, namespace, podAnnotati
 		Namespace:          namespace,
 		PodAnnotationsPath: podAnnotationsPath,
 		RuntimeExecutor:    cre,
-		memoizedSecrets:    map[string]string{},
+		memoizedConfigMaps: map[string]string{},
+		memoizedSecrets:    map[string][]byte{},
 		errors:             []error{},
 	}
 }
@@ -253,6 +258,10 @@ func (we *WorkflowExecutor) saveArtifact(tempOutArtDir string, mainCtrID string,
 			}
 			artifactoryURL.Path = path.Join(artifactoryURL.Path, fileName)
 			art.Artifactory.URL = artifactoryURL.String()
+		} else if we.Template.ArchiveLocation.HDFS != nil {
+			shallowCopy := *we.Template.ArchiveLocation.HDFS
+			art.HDFS = &shallowCopy
+			art.HDFS.Path = path.Join(art.HDFS.Path, fileName)
 		} else {
 			return errors.Errorf(errors.CodeBadRequest, "Unable to determine path to store %s. Archive location provided no information", art.Name)
 		}
@@ -393,6 +402,10 @@ func (we *WorkflowExecutor) SaveLogs() (*wfv1.Artifact, error) {
 		}
 		artifactoryURL.Path = path.Join(artifactoryURL.Path, fileName)
 		art.Artifactory.URL = artifactoryURL.String()
+	} else if we.Template.ArchiveLocation.HDFS != nil {
+		shallowCopy := *we.Template.ArchiveLocation.HDFS
+		art.HDFS = &shallowCopy
+		art.HDFS.Path = path.Join(art.HDFS.Path, fileName)
 	} else {
 		return nil, errors.Errorf(errors.CodeBadRequest, "Unable to determine path to store %s. Archive location provided no information", art.Name)
 	}
@@ -415,15 +428,16 @@ func (we *WorkflowExecutor) InitDriver(art wfv1.Artifact) (artifact.ArtifactDriv
 		var secretKey string
 
 		if art.S3.AccessKeySecret.Name != "" {
-			var err error
-			accessKey, err = we.getSecrets(we.Namespace, art.S3.AccessKeySecret.Name, art.S3.AccessKeySecret.Key)
+			accessKeyBytes, err := we.GetSecrets(we.Namespace, art.S3.AccessKeySecret.Name, art.S3.AccessKeySecret.Key)
 			if err != nil {
 				return nil, err
 			}
-			secretKey, err = we.getSecrets(we.Namespace, art.S3.SecretKeySecret.Name, art.S3.SecretKeySecret.Key)
+			accessKey = string(accessKeyBytes)
+			secretKeyBytes, err := we.GetSecrets(we.Namespace, art.S3.SecretKeySecret.Name, art.S3.SecretKeySecret.Key)
 			if err != nil {
 				return nil, err
 			}
+			secretKey = string(secretKeyBytes)
 		}
 
 		driver := s3.S3ArtifactDriver{
@@ -441,44 +455,47 @@ func (we *WorkflowExecutor) InitDriver(art wfv1.Artifact) (artifact.ArtifactDriv
 	if art.Git != nil {
 		gitDriver := git.GitArtifactDriver{}
 		if art.Git.UsernameSecret != nil {
-			username, err := we.getSecrets(we.Namespace, art.Git.UsernameSecret.Name, art.Git.UsernameSecret.Key)
+			usernameBytes, err := we.GetSecrets(we.Namespace, art.Git.UsernameSecret.Name, art.Git.UsernameSecret.Key)
 			if err != nil {
 				return nil, err
 			}
-			gitDriver.Username = username
+			gitDriver.Username = string(usernameBytes)
 		}
 		if art.Git.PasswordSecret != nil {
-			password, err := we.getSecrets(we.Namespace, art.Git.PasswordSecret.Name, art.Git.PasswordSecret.Key)
+			passwordBytes, err := we.GetSecrets(we.Namespace, art.Git.PasswordSecret.Name, art.Git.PasswordSecret.Key)
 			if err != nil {
 				return nil, err
 			}
-			gitDriver.Password = password
+			gitDriver.Password = string(passwordBytes)
 		}
 		if art.Git.SSHPrivateKeySecret != nil {
-			sshPrivateKey, err := we.getSecrets(we.Namespace, art.Git.SSHPrivateKeySecret.Name, art.Git.SSHPrivateKeySecret.Key)
+			sshPrivateKeyBytes, err := we.GetSecrets(we.Namespace, art.Git.SSHPrivateKeySecret.Name, art.Git.SSHPrivateKeySecret.Key)
 			if err != nil {
 				return nil, err
 			}
-			gitDriver.SSHPrivateKey = sshPrivateKey
+			gitDriver.SSHPrivateKey = string(sshPrivateKeyBytes)
 		}
 
 		return &gitDriver, nil
 	}
 	if art.Artifactory != nil {
-		username, err := we.getSecrets(we.Namespace, art.Artifactory.UsernameSecret.Name, art.Artifactory.UsernameSecret.Key)
+		usernameBytes, err := we.GetSecrets(we.Namespace, art.Artifactory.UsernameSecret.Name, art.Artifactory.UsernameSecret.Key)
 		if err != nil {
 			return nil, err
 		}
-		password, err := we.getSecrets(we.Namespace, art.Artifactory.PasswordSecret.Name, art.Artifactory.PasswordSecret.Key)
+		passwordBytes, err := we.GetSecrets(we.Namespace, art.Artifactory.PasswordSecret.Name, art.Artifactory.PasswordSecret.Key)
 		if err != nil {
 			return nil, err
 		}
 		driver := artifactory.ArtifactoryArtifactDriver{
-			Username: username,
-			Password: password,
+			Username: string(usernameBytes),
+			Password: string(passwordBytes),
 		}
 		return &driver, nil
 
+	}
+	if art.HDFS != nil {
+		return hdfs.CreateDriver(we, art.HDFS)
 	}
 	if art.Raw != nil {
 		return &raw.RawArtifactDriver{}, nil
@@ -508,8 +525,48 @@ func (we *WorkflowExecutor) getPod() (*apiv1.Pod, error) {
 	return pod, nil
 }
 
-// getSecrets retrieves a secret value and memoizes the result
-func (we *WorkflowExecutor) getSecrets(namespace, name, key string) (string, error) {
+// GetNamespace returns the namespace
+func (we *WorkflowExecutor) GetNamespace() string {
+	return we.Namespace
+}
+
+// GetConfigMapKey retrieves a configmap value and memoizes the result
+func (we *WorkflowExecutor) GetConfigMapKey(namespace, name, key string) (string, error) {
+	cachedKey := fmt.Sprintf("%s/%s/%s", namespace, name, key)
+	if val, ok := we.memoizedConfigMaps[cachedKey]; ok {
+		return val, nil
+	}
+	configmapsIf := we.ClientSet.CoreV1().ConfigMaps(namespace)
+	var configmap *apiv1.ConfigMap
+	var err error
+	_ = wait.ExponentialBackoff(retry.DefaultRetry, func() (bool, error) {
+		configmap, err = configmapsIf.Get(name, metav1.GetOptions{})
+		if err != nil {
+			log.Warnf("Failed to get configmap '%s': %v", name, err)
+			if !retry.IsRetryableKubeAPIError(err) {
+				return false, err
+			}
+			return false, nil
+		}
+		return true, nil
+	})
+	if err != nil {
+		return "", errors.InternalWrapError(err)
+	}
+	// memoize all keys in the configmap since it's highly likely we will need to get a
+	// subsequent key in the configmap (e.g. username + password) and we can save an API call
+	for k, v := range configmap.Data {
+		we.memoizedConfigMaps[fmt.Sprintf("%s/%s/%s", namespace, name, k)] = v
+	}
+	val, ok := we.memoizedConfigMaps[cachedKey]
+	if !ok {
+		return "", errors.Errorf(errors.CodeBadRequest, "configmap '%s' does not have the key '%s'", name, key)
+	}
+	return val, nil
+}
+
+// GetSecrets retrieves a secret value and memoizes the result
+func (we *WorkflowExecutor) GetSecrets(namespace, name, key string) ([]byte, error) {
 	cachedKey := fmt.Sprintf("%s/%s/%s", namespace, name, key)
 	if val, ok := we.memoizedSecrets[cachedKey]; ok {
 		return val, nil
@@ -529,16 +586,16 @@ func (we *WorkflowExecutor) getSecrets(namespace, name, key string) (string, err
 		return true, nil
 	})
 	if err != nil {
-		return "", errors.InternalWrapError(err)
+		return []byte{}, errors.InternalWrapError(err)
 	}
 	// memoize all keys in the secret since it's highly likely we will need to get a
 	// subsequent key in the secret (e.g. username + password) and we can save an API call
 	for k, v := range secret.Data {
-		we.memoizedSecrets[fmt.Sprintf("%s/%s/%s", namespace, name, k)] = string(v)
+		we.memoizedSecrets[fmt.Sprintf("%s/%s/%s", namespace, name, k)] = v
 	}
 	val, ok := we.memoizedSecrets[cachedKey]
 	if !ok {
-		return "", errors.Errorf(errors.CodeBadRequest, "secret '%s' does not have the key '%s'", name, key)
+		return []byte{}, errors.Errorf(errors.CodeBadRequest, "secret '%s' does not have the key '%s'", name, key)
 	}
 	return val, nil
 }
@@ -736,19 +793,38 @@ func (we *WorkflowExecutor) waitMainContainerStart() (string, error) {
 	}
 }
 
+func watchFileChanges(ctx context.Context, pollInterval time.Duration, filePath string) <-chan struct{} {
+	res := make(chan struct{})
+	go func() {
+		defer close(res)
+
+		var modTime *time.Time
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+
+			file, err := os.Stat(filePath)
+			if err != nil {
+				log.Fatal(err)
+			}
+			newModTime := file.ModTime()
+			if modTime != nil && !modTime.Equal(file.ModTime()) {
+				res <- struct{}{}
+			}
+			modTime = &newModTime
+			time.Sleep(pollInterval)
+		}
+	}()
+	return res
+}
+
 // monitorAnnotations starts a goroutine which monitors for any changes to the pod annotations.
 // Emits an event on the returned channel upon any updates
 func (we *WorkflowExecutor) monitorAnnotations(ctx context.Context) <-chan struct{} {
 	log.Infof("Starting annotations monitor")
-	// Create a fsnotify watcher on the local annotations file to listen for updates from the Downward API
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = watcher.Add(we.PodAnnotationsPath)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	// Create a channel to listen for a SIGUSR2. Upon receiving of the signal, we force reload our annotations
 	// directly from kubernetes API. The controller uses this to fast-track notification of annotations
@@ -761,12 +837,12 @@ func (we *WorkflowExecutor) monitorAnnotations(ctx context.Context) <-chan struc
 	// Create a channel which will notify a listener on new updates to the annotations
 	annotationUpdateCh := make(chan struct{})
 
+	annotationChanges := watchFileChanges(ctx, 10*time.Second, we.PodAnnotationsPath)
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				log.Infof("Annotations monitor stopped")
-				_ = watcher.Close()
 				signal.Stop(sigs)
 				close(sigs)
 				close(annotationUpdateCh)
@@ -775,7 +851,7 @@ func (we *WorkflowExecutor) monitorAnnotations(ctx context.Context) <-chan struc
 				log.Infof("Received update signal. Reloading annotations from API")
 				annotationUpdateCh <- struct{}{}
 				we.setExecutionControl()
-			case <-watcher.Events:
+			case <-annotationChanges:
 				log.Infof("%s updated", we.PodAnnotationsPath)
 				err := we.LoadExecutionControl()
 				if err != nil {

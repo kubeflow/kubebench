@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -37,28 +38,20 @@ import (
 	"github.com/argoproj/argo/workflow/validate"
 )
 
-func NewDynamicWorkflowClient(config *rest.Config) (dynamic.Interface, error) {
-	dynClientPool := dynamic.NewDynamicClientPool(config)
-	return dynClientPool.ClientForGroupVersionKind(wfv1.SchemaGroupVersionKind)
-}
-
 // NewWorkflowInformer returns the workflow informer used by the controller. This is actually
 // a custom built UnstructuredInformer which is in actuality returning unstructured.Unstructured
 // objects. We no longer return WorkflowInformer due to:
 // https://github.com/kubernetes/kubernetes/issues/57705
 // https://github.com/argoproj/argo/issues/632
 func NewWorkflowInformer(cfg *rest.Config, ns string, resyncPeriod time.Duration, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	dclient, err := NewDynamicWorkflowClient(cfg)
+	dclient, err := dynamic.NewForConfig(cfg)
 	if err != nil {
 		panic(err)
 	}
-	resource := &metav1.APIResource{
-		Name:         workflow.Plural,
-		SingularName: workflow.Singular,
-		Namespaced:   true,
-		Group:        workflow.Group,
-		Version:      "v1alpha1",
-		ShortNames:   []string{"wf"},
+	resource := schema.GroupVersionResource{
+		Group:    workflow.Group,
+		Version:  "v1alpha1",
+		Resource: "workflows",
 	}
 	informer := unstructutil.NewFilteredUnstructuredInformer(
 		resource,
@@ -139,13 +132,14 @@ func IsWorkflowCompleted(wf *wfv1.Workflow) bool {
 
 // SubmitOpts are workflow submission options
 type SubmitOpts struct {
-	Name           string   // --name
-	GenerateName   string   // --generate-name
-	InstanceID     string   // --instanceid
-	Entrypoint     string   // --entrypoint
-	Parameters     []string // --parameter
-	ParameterFile  string   // --parameter-file
-	ServiceAccount string   // --serviceaccount
+	Name           string                 // --name
+	GenerateName   string                 // --generate-name
+	InstanceID     string                 // --instanceid
+	Entrypoint     string                 // --entrypoint
+	Parameters     []string               // --parameter
+	ParameterFile  string                 // --parameter-file
+	ServiceAccount string                 // --serviceaccount
+	OwnerReference *metav1.OwnerReference // useful if your custom controller creates argo workflow resources
 }
 
 // SubmitWorkflow validates and submit a single workflow and override some of the fields of the workflow
@@ -240,6 +234,10 @@ func SubmitWorkflow(wfIf v1alpha1.WorkflowInterface, wf *wfv1.Workflow, opts *Su
 	if opts.Name != "" {
 		wf.ObjectMeta.Name = opts.Name
 	}
+	if opts.OwnerReference != nil {
+		wf.SetOwnerReferences(append(wf.GetOwnerReferences(), *opts.OwnerReference))
+	}
+
 	err := validate.ValidateWorkflow(wf)
 	if err != nil {
 		return nil, err
@@ -419,7 +417,7 @@ func FormulateResubmitWorkflow(wf *wfv1.Workflow, memoized bool) (*wfv1.Workflow
 			// NOTE: NodeRunning shouldn't really happen except in weird scenarios where controller
 			// mismanages state (e.g. panic when operating on a workflow)
 		default:
-			return nil, errors.InternalErrorf("Workflow cannot be resubmitted with nodes in %s phase", node, node.Phase)
+			return nil, errors.InternalErrorf("Workflow cannot be resubmitted with node %s in %s phase", node, node.Phase)
 		}
 	}
 	return &newWF, nil
@@ -467,7 +465,7 @@ func RetryWorkflow(kubeClient kubernetes.Interface, wfClient v1alpha1.WorkflowIn
 			// do not add this status to the node. pretend as if this node never existed.
 		default:
 			// Do not allow retry of workflows with pods in Running/Pending phase
-			return nil, errors.InternalErrorf("Workflow cannot be retried with nodes in %s phase", node, node.Phase)
+			return nil, errors.InternalErrorf("Workflow cannot be retried with node %s in %s phase", node, node.Phase)
 		}
 		if node.Type == wfv1.NodeTypePod {
 			log.Infof("Deleting pod: %s", node.ID)

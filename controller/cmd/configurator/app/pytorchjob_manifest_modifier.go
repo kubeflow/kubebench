@@ -16,7 +16,7 @@ package app
 
 import (
 	"github.com/ghodss/yaml"
-	pytorchjobv1alpha2 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1alpha2"
+	pytorchjobv1beta1 "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,7 +29,7 @@ func (mm *PyTorchJobManifestModifier) ModifyManifest(manifest []byte, modSpec Ma
 	if err != nil {
 		return nil, err
 	}
-	var pyTorchJob pytorchjobv1alpha2.PyTorchJob
+	var pyTorchJob pytorchjobv1beta1.PyTorchJob
 	if err := yaml.Unmarshal(manifest, &pyTorchJob); err != nil {
 		log.Errorf("Failed to unmarshal manifest: %s", manifest)
 		return nil, err

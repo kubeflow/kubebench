@@ -30,6 +30,9 @@ type WorkflowControllerConfig struct {
 	// ExecutorResources specifies the resource requirements that will be used for the executor sidecar
 	ExecutorResources *apiv1.ResourceRequirements `json:"executorResources,omitempty"`
 
+	// KubeConfig specifies a kube config file for the wait & init containers
+	KubeConfig *KubeConfig `json:"kubeConfig,omitempty"`
+
 	// ContainerRuntimeExecutor specifies the container runtime interface to use, default is docker
 	ContainerRuntimeExecutor string `json:"containerRuntimeExecutor,omitempty"`
 
@@ -57,6 +60,24 @@ type WorkflowControllerConfig struct {
 	MetricsConfig metrics.PrometheusConfig `json:"metricsConfig,omitempty"`
 
 	TelemetryConfig metrics.PrometheusConfig `json:"telemetryConfig,omitempty"`
+
+	// Parallelism limits the max total parallel workflows that can execute at the same time
+	Parallelism int `json:"parallelism,omitempty"`
+}
+
+// KubeConfig is used for wait & init sidecar containers to communicate with a k8s apiserver by a outofcluster method,
+// it is used when the workflow controller is in a different cluster with the workflow workloads
+type KubeConfig struct {
+	// SecretName of the kubeconfig secret
+	// may not be empty if kuebConfig specified
+	SecretName string `json:"secretName"`
+	// SecretKey of the kubeconfig in the secret
+	// may not be empty if kubeConfig specified
+	SecretKey string `json:"secretKey"`
+	// VolumeName of kubeconfig, default to 'kubeconfig'
+	VolumeName string `json:"volumeName,omitempty"`
+	// MountPath of the kubeconfig secret, default to '/kube/config'
+	MountPath string `json:"mountPath,omitempty"`
 }
 
 // ArtifactRepository represents a artifact repository in which a controller will store its artifacts
@@ -67,6 +88,8 @@ type ArtifactRepository struct {
 	S3 *S3ArtifactRepository `json:"s3,omitempty"`
 	// Artifactory stores artifacts to JFrog Artifactory
 	Artifactory *ArtifactoryArtifactRepository `json:"artifactory,omitempty"`
+	// HDFS stores artifacts in HDFS
+	HDFS *HDFSArtifactRepository `json:"hdfs,omitempty"`
 }
 
 // S3ArtifactRepository defines the controller configuration for an S3 artifact repository
@@ -86,6 +109,17 @@ type ArtifactoryArtifactRepository struct {
 	wfv1.ArtifactoryAuth `json:",inline"`
 	// RepoURL is the url for artifactory repo.
 	RepoURL string `json:"repoURL,omitempty"`
+}
+
+// HDFSArtifactRepository defines the controller configuration for an HDFS artifact repository
+type HDFSArtifactRepository struct {
+	wfv1.HDFSConfig `json:",inline"`
+
+	// PathFormat is defines the format of path to store a file. Can reference workflow variables
+	PathFormat string `json:"pathFormat,omitempty"`
+
+	// Force copies a file forcibly even if it exists (default: false)
+	Force bool `json:"force,omitempty"`
 }
 
 // ResyncConfig reloads the controller config from the configmap
@@ -114,6 +148,7 @@ func (wfc *WorkflowController) updateConfig(cm *apiv1.ConfigMap) error {
 		return errors.Errorf(errors.CodeBadRequest, "ConfigMap '%s' does not have executorImage", wfc.configMap)
 	}
 	wfc.Config = config
+	wfc.throttler.SetParallelism(config.Parallelism)
 	return nil
 }
 
