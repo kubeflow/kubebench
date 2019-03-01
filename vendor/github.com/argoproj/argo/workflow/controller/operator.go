@@ -103,7 +103,12 @@ func newWorkflowOperationCtx(wf *wfv1.Workflow, wfc *WorkflowController) *wfOper
 // TODO: an error returned by this method should result in requeuing the workflow to be retried at a
 // later time
 func (woc *wfOperationCtx) operate() {
-	defer woc.persistUpdates()
+	defer func() {
+		if woc.wf.Status.Completed() {
+			_ = woc.killDaemonedChildren("")
+		}
+		woc.persistUpdates()
+	}()
 	defer func() {
 		if r := recover(); r != nil {
 			if rerr, ok := r.(error); ok {
@@ -437,7 +442,8 @@ func (woc *wfOperationCtx) podReconciliation() error {
 				woc.addOutputsToScope("workflow", node.Outputs, nil)
 				woc.updated = true
 			}
-			if woc.wf.Status.Nodes[pod.ObjectMeta.Name].Completed() {
+			node := woc.wf.Status.Nodes[pod.ObjectMeta.Name]
+			if node.Completed() && !node.IsDaemoned() {
 				woc.completedPods[pod.ObjectMeta.Name] = true
 			}
 		}
@@ -495,6 +501,31 @@ func (woc *wfOperationCtx) countActivePods(boundaryIDs ...string) int64 {
 	return activePods
 }
 
+// countActiveChildren counts the number of active (Pending/Running) children nodes of parent parentName
+func (woc *wfOperationCtx) countActiveChildren(boundaryIDs ...string) int64 {
+	var boundaryID = ""
+	if len(boundaryIDs) > 0 {
+		boundaryID = boundaryIDs[0]
+	}
+	var activeChildren int64
+	// if we care about parallelism, count the active pods at the template level
+	for _, node := range woc.wf.Status.Nodes {
+		if boundaryID != "" && node.BoundaryID != boundaryID {
+			continue
+		}
+		switch node.Type {
+		case wfv1.NodeTypePod, wfv1.NodeTypeSteps, wfv1.NodeTypeDAG:
+		default:
+			continue
+		}
+		switch node.Phase {
+		case wfv1.NodePending, wfv1.NodeRunning:
+			activeChildren++
+		}
+	}
+	return activeChildren
+}
+
 // getAllWorkflowPods returns all pods related to the current workflow
 func (woc *wfOperationCtx) getAllWorkflowPods() (*apiv1.PodList, error) {
 	options := metav1.ListOptions{
@@ -526,7 +557,12 @@ func assessNodeStatus(pod *apiv1.Pod, node *wfv1.NodeStatus) *wfv1.NodeStatus {
 		newPhase = wfv1.NodeSucceeded
 		newDaemonStatus = &f
 	case apiv1.PodFailed:
-		newPhase, message = inferFailedReason(pod)
+		// ignore pod failure for daemoned steps
+		if node.IsDaemoned() {
+			newPhase = wfv1.NodeSucceeded
+		} else {
+			newPhase, message = inferFailedReason(pod)
+		}
 		newDaemonStatus = &f
 	case apiv1.PodRunning:
 		newPhase = wfv1.NodeRunning
@@ -548,8 +584,8 @@ func assessNodeStatus(pod *apiv1.Pod, node *wfv1.NodeStatus) *wfv1.NodeStatus {
 					return nil
 				}
 			}
-			// proceed to mark node status as succeeded (and daemoned)
-			newPhase = wfv1.NodeSucceeded
+			// proceed to mark node status as running (and daemoned)
+			newPhase = wfv1.NodeRunning
 			t := true
 			newDaemonStatus = &t
 			log.Infof("Processing ready daemon pod: %v", pod.ObjectMeta.SelfLink)
@@ -734,9 +770,10 @@ func inferFailedReason(pod *apiv1.Pod) (wfv1.NodePhase, string) {
 		}
 		errMsg := fmt.Sprintf("failed with exit code %d", ctr.State.Terminated.ExitCode)
 		if ctr.Name != common.MainContainerName {
-			if ctr.State.Terminated.ExitCode == 137 {
+			if ctr.State.Terminated.ExitCode == 137 || ctr.State.Terminated.ExitCode == 143 {
 				// if the sidecar was SIGKILL'd (exit code 137) assume it was because argoexec
 				// forcibly killed the container, which we ignore the error for.
+				// Java code 143 is a normal exit 128 + 15 https://github.com/elastic/elasticsearch/issues/31847
 				log.Infof("Ignoring %d exit code of sidecar '%s'", ctr.State.Terminated.ExitCode, ctr.Name)
 				continue
 			}
@@ -867,7 +904,8 @@ func (woc *wfOperationCtx) getLastChildNode(node *wfv1.NodeStatus) (*wfv1.NodeSt
 // nodeName is the name to be used as the name of the node, and boundaryID indicates which template
 // boundary this node belongs to.
 func (woc *wfOperationCtx) executeTemplate(templateName string, args wfv1.Arguments, nodeName string, boundaryID string) (*wfv1.NodeStatus, error) {
-	woc.log.Debugf("Evaluating node %s: template: %s", nodeName, templateName)
+	woc.log.Debugf("Evaluating node %s: template: %s, boundaryID: %s", nodeName, templateName, boundaryID)
+
 	node := woc.getNodeByName(nodeName)
 	if node != nil && node.Completed() {
 		woc.log.Debugf("Node %s already completed", nodeName)
@@ -993,7 +1031,8 @@ func (woc *wfOperationCtx) markWorkflowPhase(phase wfv1.NodePhase, markCompleted
 
 	switch phase {
 	case wfv1.NodeSucceeded, wfv1.NodeFailed, wfv1.NodeError:
-		if markCompleted {
+		// wait for all daemon nodes to get terminated before marking workflow completed
+		if markCompleted && !woc.hasDaemonNodes() {
 			woc.log.Infof("Marking workflow completed")
 			woc.wf.Status.FinishedAt = metav1.Time{Time: time.Now().UTC()}
 			if woc.wf.ObjectMeta.Labels == nil {
@@ -1003,6 +1042,15 @@ func (woc *wfOperationCtx) markWorkflowPhase(phase wfv1.NodePhase, markCompleted
 			woc.updated = true
 		}
 	}
+}
+
+func (woc *wfOperationCtx) hasDaemonNodes() bool {
+	for _, node := range woc.wf.Status.Nodes {
+		if node.IsDaemoned() {
+			return true
+		}
+	}
+	return false
 }
 
 func (woc *wfOperationCtx) markWorkflowRunning() {
@@ -1112,16 +1160,17 @@ func (woc *wfOperationCtx) checkParallelism(tmpl *wfv1.Template, node *wfv1.Node
 				return ErrParallelismReached
 			}
 		}
+		fallthrough
 	default:
 		// if we are about to execute a pod, make our parent hasn't reached it's limit
-		if boundaryID != "" {
+		if boundaryID != "" && (node == nil || (node.Phase != wfv1.NodePending && node.Phase != wfv1.NodeRunning)) {
 			boundaryNode := woc.wf.Status.Nodes[boundaryID]
 			boundaryTemplate := woc.wf.GetTemplate(boundaryNode.TemplateName)
 			if boundaryTemplate.Parallelism != nil {
-				templateActivePods := woc.countActivePods(boundaryID)
-				woc.log.Debugf("counted %d/%d active pods in boundary %s", templateActivePods, *boundaryTemplate.Parallelism, boundaryID)
-				if templateActivePods >= *boundaryTemplate.Parallelism {
-					woc.log.Infof("template (node %s) active pod parallelism reached %d/%d", boundaryID, templateActivePods, *boundaryTemplate.Parallelism)
+				activeSiblings := woc.countActiveChildren(boundaryID)
+				woc.log.Debugf("counted %d/%d active children in boundary %s", activeSiblings, *boundaryTemplate.Parallelism, boundaryID)
+				if activeSiblings >= *boundaryTemplate.Parallelism {
+					woc.log.Infof("template (node %s) active children parallelism reached %d/%d", boundaryID, activeSiblings, *boundaryTemplate.Parallelism)
 					return ErrParallelismReached
 				}
 			}
@@ -1147,8 +1196,17 @@ func (woc *wfOperationCtx) executeContainer(nodeName string, tmpl *wfv1.Template
 func (woc *wfOperationCtx) getOutboundNodes(nodeID string) []string {
 	node := woc.wf.Status.Nodes[nodeID]
 	switch node.Type {
-	case wfv1.NodeTypePod, wfv1.NodeTypeSkipped, wfv1.NodeTypeSuspend, wfv1.NodeTypeTaskGroup:
+	case wfv1.NodeTypePod, wfv1.NodeTypeSkipped, wfv1.NodeTypeSuspend:
 		return []string{node.ID}
+	case wfv1.NodeTypeTaskGroup:
+		if len(node.Children) == 0 {
+			return []string{node.ID}
+		}
+		outboundNodes := make([]string, 0)
+		for _, child := range node.Children {
+			outboundNodes = append(outboundNodes, woc.getOutboundNodes(child)...)
+		}
+		return outboundNodes
 	case wfv1.NodeTypeRetry:
 		numChildren := len(node.Children)
 		if numChildren > 0 {
@@ -1248,7 +1306,7 @@ func (woc *wfOperationCtx) addOutputsToScope(prefix string, outputs *wfv1.Output
 		if scope != nil {
 			scope.addArtifactToScope(key, art)
 		}
-		woc.addArtifactToGlobalScope(art)
+		woc.addArtifactToGlobalScope(art, scope)
 	}
 }
 
@@ -1355,7 +1413,7 @@ func (woc *wfOperationCtx) addParamToGlobalScope(param wfv1.Parameter) {
 
 // addArtifactToGlobalScope exports any desired node outputs to the global scope
 // Optionally adds to a local scope if supplied
-func (woc *wfOperationCtx) addArtifactToGlobalScope(art wfv1.Artifact) {
+func (woc *wfOperationCtx) addArtifactToGlobalScope(art wfv1.Artifact, scope *wfScope) {
 	if art.GlobalName == "" {
 		return
 	}
@@ -1369,6 +1427,9 @@ func (woc *wfOperationCtx) addArtifactToGlobalScope(art wfv1.Artifact) {
 				art.Path = ""
 				if !reflect.DeepEqual(woc.wf.Status.Outputs.Artifacts[i], art) {
 					woc.wf.Status.Outputs.Artifacts[i] = art
+					if scope != nil {
+						scope.addArtifactToScope(globalArtName, art)
+					}
 					woc.log.Infof("overwriting %s: %v", globalArtName, art)
 					woc.updated = true
 				}
@@ -1384,6 +1445,9 @@ func (woc *wfOperationCtx) addArtifactToGlobalScope(art wfv1.Artifact) {
 	art.Path = ""
 	woc.log.Infof("setting %s: %v", globalArtName, art)
 	woc.wf.Status.Outputs.Artifacts = append(woc.wf.Status.Outputs.Artifacts, art)
+	if scope != nil {
+		scope.addArtifactToScope(globalArtName, art)
+	}
 	woc.updated = true
 }
 
@@ -1414,9 +1478,10 @@ func (woc *wfOperationCtx) executeResource(nodeName string, tmpl *wfv1.Template,
 		return node
 	}
 	mainCtr := apiv1.Container{
-		Image:   woc.controller.executorImage(),
-		Command: []string{"argoexec"},
-		Args:    []string{"resource", tmpl.Resource.Action},
+		Image:           woc.controller.executorImage(),
+		ImagePullPolicy: woc.controller.executorImagePullPolicy(),
+		Command:         []string{"argoexec"},
+		Args:            []string{"resource", tmpl.Resource.Action},
 		VolumeMounts: []apiv1.VolumeMount{
 			volumeMountPodMetadata,
 		},

@@ -16,7 +16,7 @@ package app
 
 import (
 	"github.com/ghodss/yaml"
-	tfjobv1alpha2 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1alpha2"
+	tfjobv1beta1 "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1beta1"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,7 +29,7 @@ func (mm *TFJobManifestModifier) ModifyManifest(manifest []byte, modSpec Manifes
 	if err != nil {
 		return nil, err
 	}
-	var tfJob tfjobv1alpha2.TFJob
+	var tfJob tfjobv1beta1.TFJob
 	if err := yaml.Unmarshal(manifest, &tfJob); err != nil {
 		log.Errorf("Failed to unmarshal manifest: %s", manifest)
 		return nil, err

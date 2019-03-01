@@ -30,23 +30,23 @@
 
 [[constraint]]
   name = "github.com/argoproj/argo"
-  branch = "release-2.2"
+  branch = "master"
 
 [[override]]
   name = "k8s.io/api"
-  branch = "release-1.10"
+  version = "kubernetes-1.12.0"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  branch = "release-1.10"
+  version = "kubernetes-1.12.0"
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "v7.0.0"
+  version = "kubernetes-1.12.0"
 
 [[override]]
   name = "k8s.io/code-generator"
-  branch = "release-1.10"
+  version = "kubernetes-1.12.0"
 
 [[override]]
   name = "k8s.io/kube-openapi"
@@ -65,9 +65,9 @@
   branch = "master"
 
 [prune]
-   unused-packages = true
-   go-tests = true
-   non-go = true
+  unused-packages = true
+  go-tests = true
+  non-go = true
 
   [[prune.project]]
     name = "github.com/argoproj/argo"
