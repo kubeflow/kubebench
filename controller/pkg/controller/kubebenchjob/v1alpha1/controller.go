@@ -1,4 +1,4 @@
-package controller
+package v1alpha1
 
 import (
 	"fmt"
@@ -8,9 +8,8 @@ import (
 	argoproj "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1alpha1"
 	workflowUtils "github.com/kubeflow/kubebench/controller/pkg/util"
-	// "github.com/kubeflow/kubebench/controller/pkg/handler"
-	kubebenchjob_v1 "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -99,7 +98,7 @@ func (c *KubebenchJobController) processNextItem() bool {
 
 func (c *KubebenchJobController) handleCreate(obj interface{}) {
 	if obj != nil {
-		kbJob := obj.(*kubebenchjob_v1.KubebenchJob)
+		kbJob := obj.(*v1alpha1.KubebenchJob)
 		fmt.Println(kbJob)
 		result, err := workflowUtils.ConvertKubebenchJobToArgoWorkflow(kbJob)
 		if err != nil {

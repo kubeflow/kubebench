@@ -6,10 +6,9 @@ import (
 	"syscall"
 
 	kubeclient "github.com/kubeflow/kubebench/controller/pkg/client"
-	controllers "github.com/kubeflow/kubebench/controller/pkg/controller"
+	controllerv1alpha1 "github.com/kubeflow/kubebench/controller/pkg/controller/kubebenchjob/v1alpha1"
 	log "github.com/sirupsen/logrus"
 
-	// "github.com/kubeflow/kubebench/controller/pkg/handler"
 	"github.com/kubeflow/kubebench/controller/pkg/util"
 )
 
@@ -22,12 +21,11 @@ func main() {
 
 	argoClient := kubeclient.GetArgoClient()
 
-	controller := controllers.KubebenchJobController{
+	controller := controllerv1alpha1.KubebenchJobController{
 		Logger:    log.NewEntry(log.New()),
 		Clientset: client,
 		Informer:  teaminformer,
 		Queue:     queue,
-		// Handler:   handler.KubebenchJobHandler{},
 
 		//pass correct namespace here
 		Workflows: argoClient.Workflows("default"),
