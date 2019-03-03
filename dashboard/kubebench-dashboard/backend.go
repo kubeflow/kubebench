@@ -8,10 +8,10 @@ import (
 
 	argoproj "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1"
 	"github.com/ghodss/yaml"
-	kbjob "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1"
+	kbjob "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1alpha1"
 	kubeclient "github.com/kubeflow/kubebench/controller/pkg/client"
 	kubebenchjobclientset "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned"
-	kubebench "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned/typed/kubebenchjob/v1"
+	kubebench "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned/typed/kubebenchjob/v1alpha1"
 	"github.com/kubeflow/kubebench/controller/pkg/util"
 	utils "github.com/kubeflow/kubebench/controller/pkg/util"
 	log "github.com/sirupsen/logrus"
