@@ -24,8 +24,14 @@
   packages = [
     "pkg/apis/workflow",
     "pkg/apis/workflow/v1alpha1",
+    "pkg/client/clientset/versioned",
     "pkg/client/clientset/versioned/scheme",
     "pkg/client/clientset/versioned/typed/workflow/v1alpha1",
+    "pkg/client/informers/externalversions",
+    "pkg/client/informers/externalversions/internalinterfaces",
+    "pkg/client/informers/externalversions/workflow",
+    "pkg/client/informers/externalversions/workflow/v1alpha1",
+    "pkg/client/listers/workflow/v1alpha1",
   ]
   pruneopts = "T"
   revision = "baa3e622121e66c9fec7c612c88027b7cacbd1b2"
@@ -107,6 +113,14 @@
   packages = ["."]
   pruneopts = "NUT"
   revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
+
+[[projects]]
+  branch = "master"
+  digest = "1:b7cb6054d3dff43b38ad2e92492f220f57ae6087ee797dca298139776749ace8"
+  name = "github.com/golang/groupcache"
+  packages = ["lru"]
+  pruneopts = "NUT"
+  revision = "5b532d6fd5efaf7fa130d4e859a2fde0fc3a9e1b"
 
 [[projects]]
   digest = "1:63ccdfbd20f7ccd2399d0647a7d100b122f79c13bb83da9660b1598396fd9f62"
@@ -505,7 +519,7 @@
   version = "kubernetes-1.12.0"
 
 [[projects]]
-  digest = "1:bc1b24794fababade27071268c8fe27b5dd0e4be16e1eed99e96ae7458445fb3"
+  digest = "1:34df66519afa7708dcfa77d011a38235d7204622119c4fb6645295963f8f4447"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -560,6 +574,7 @@
     "tools/clientcmd/api/v1",
     "tools/metrics",
     "tools/pager",
+    "tools/record",
     "tools/reference",
     "transport",
     "util/buffer",
@@ -647,9 +662,13 @@
   analyzer-version = 1
   input-imports = [
     "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1",
+    "github.com/argoproj/argo/pkg/client/clientset/versioned",
     "github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1",
+    "github.com/argoproj/argo/pkg/client/informers/externalversions",
+    "github.com/argoproj/argo/pkg/client/informers/externalversions/workflow/v1alpha1",
+    "github.com/argoproj/argo/pkg/client/listers/workflow/v1alpha1",
     "github.com/ghodss/yaml",
-    "github.com/golang/glog",
+    "github.com/imdario/mergo",
     "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha1",
     "github.com/kubeflow/pytorch-operator/pkg/apis/pytorch/v1beta1",
     "github.com/kubeflow/tf-operator/pkg/apis/tensorflow/v1beta1",
@@ -664,6 +683,7 @@
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
     "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/apimachinery/pkg/runtime/serializer/json",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/wait",
@@ -673,10 +693,12 @@
     "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/testing",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/tools/record",
     "k8s.io/client-go/util/flowcontrol",
     "k8s.io/client-go/util/workqueue",
     "k8s.io/code-generator/cmd/client-gen",
