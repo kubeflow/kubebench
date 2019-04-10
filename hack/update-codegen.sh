@@ -18,7 +18,7 @@ SCRIPT_DIR=$(dirname $0)
 ROOT_PKG="github.com/kubeflow/kubebench"
 CODEGEN_PATH="$GOPATH/src/$ROOT_PKG/vendor/k8s.io/code-generator"
 CRD_NAME="kubebenchjob"
-CRD_VERSIONS="v1alpha1"
+CRD_VERSIONS="v1alpha1,v1alpha2"
 
 $CODEGEN_PATH/generate-groups.sh all \
   "$ROOT_PKG/controller/pkg/client" \
