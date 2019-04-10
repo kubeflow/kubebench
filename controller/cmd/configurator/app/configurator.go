@@ -16,131 +16,87 @@ package app
 
 import (
 	"encoding/json"
-	"path"
-	"regexp"
+	"io/ioutil"
+	"os"
 	"strings"
-	"time"
 
-	"github.com/ghodss/yaml"
 	log "github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/kubeflow/kubebench/controller/pkg/util"
-)
-
-const (
-	experimentIDEnvName = "KUBEBENCH_EXP_ID"
+	"github.com/kubeflow/kubebench/controller/pkg/constants"
+	"github.com/kubeflow/kubebench/controller/pkg/workflowagent/configurator/common"
+	"github.com/kubeflow/kubebench/controller/pkg/workflowagent/configurator/manifestgen"
+	"github.com/kubeflow/kubebench/controller/pkg/workflowagent/configurator/manifestmod"
 )
 
 type Configurator struct {
-	FileOperator      FileOperatorInterface
-	ManifestGenerator ManifestGeneratorInterface
-	ManifestModifier  ManifestModifierInterface
+	fileOperator FileOperatorInterface
 }
 
-func (c *Configurator) Run(options *AppOption) error {
+func NewConfigurator(fo FileOperatorInterface) *Configurator {
+	configurator := &Configurator{fileOperator: fo}
+	return configurator
+}
 
-	config := options.Config
-	namespace := options.Namespace
-	manifestOutput := options.ManifestOutput
-	experimentIDOutput := options.ExperimentIDOutput
-	var ksPrototypeRef KsPrototypeRef
-	if err := json.Unmarshal([]byte(options.TemplateRef), &ksPrototypeRef); err != nil {
-		log.Errorf("Cannot unmarshal value: %s", options.TemplateRef)
-		return err
-	}
-	var ownerReferences []metav1.OwnerReference
-	if err := json.Unmarshal([]byte(options.OwnerReferences), &ownerReferences); err != nil {
-		log.Errorf("Cannot unmarshal value: %s", options.OwnerReferences)
-		return err
-	}
-	var volumes []corev1.Volume
-	if err := json.Unmarshal([]byte(options.Volumes), &volumes); err != nil {
-		log.Errorf("Cannot unmarshal value: %s", options.Volumes)
-		return err
-	}
-	var volumeMounts []corev1.VolumeMount
-	if err := json.Unmarshal([]byte(options.VolumeMounts), &volumeMounts); err != nil {
-		log.Errorf("Cannot unmarshal value: %s", options.VolumeMounts)
-		return err
-	}
-	var envVars []corev1.EnvVar
-	if err := json.Unmarshal([]byte(options.EnvVars), &envVars); err != nil {
-		log.Errorf("Cannot unmarshal value: %s", options.EnvVars)
+func (c *Configurator) Run(opt *AppOption) error {
+
+	var configSpec common.ConfiguratorInput
+
+	if err := json.Unmarshal([]byte(opt.InputParams), &configSpec); err != nil {
+		log.Errorf("Cannot unmarshal config spec: %s", opt.InputParams)
 		return err
 	}
 
-	// Read and parse config
-	parametersRaw, err := c.FileOperator.ReadConfig(config)
-	if err != nil {
-		log.Errorf("Failed to read runner config: %s", err)
-		return err
-	}
-	var parameters map[string]interface{}
-	if err := yaml.Unmarshal(parametersRaw, &parameters); err != nil {
-		log.Errorf("Could not parse job parameters; Error: %s\n", err)
-		return err
-	}
-
-	// Generate experiment ID
-	// trim the config file name, replace invalid characters, add timestamps and random id
-	experimentName := strings.TrimSuffix(path.Base(config), path.Ext(config))
-	experimentName = strings.ToLower(experimentName)
-	experimentName = regexp.MustCompile("[^a-zA-Z0-9-.]").ReplaceAllString(experimentName, "-")
-	experimentID := experimentName + "-" + time.Now().Format("200601021504") + "-" + util.RandString(4)
-	// modify environment variable with experiment id
-	for i, env := range envVars {
-		if env.Name == experimentIDEnvName {
-			envVars[i].Value = experimentID
-		}
-	}
-
-	// Generate manifest
-	manifest, err := c.ManifestGenerator.GenerateManifest(ksPrototypeRef, parameters)
+	// Generate manifest from the manifest source
+	genSpec := configSpec.ManifestGenSpec
+	manifest, err := manifestgen.NewManifestGenerator(genSpec).GenerateManifest()
 	if err != nil {
 		log.Errorf("Failed to generate manifest: %s", err)
 		return err
 	}
 
-	// Modify manifest
-	modSpec := ManifestModSpec{
-		Name:            experimentID,
-		Namespace:       namespace,
-		OwnerReferences: ownerReferences,
-		Volumes:         volumes,
-		VolumeMounts:    volumeMounts,
-		EnvVars:         envVars,
+	// Modify the manifest as specified by the kubebench job
+	modSpec := configSpec.ManifestModSpec
+	// If the namespace in the ManifestModSpec is empty valued, replace it with
+	// configurator's own namespace which is same as the workflow. This is for
+	// cases when the ManifestModSpec is created before namespace is set.
+	if err := replaceEmptyNamespace(modSpec); err != nil {
+		log.Errorf("Failed to replace empty namespace: %s", err)
+		return err
 	}
-	manifest, err = c.ManifestModifier.ModifyManifest(manifest, modSpec)
+	modifiedManifest, err := manifestmod.NewManifestModifier(modSpec).ModifyManifest(manifest)
 	if err != nil {
 		log.Errorf("Failed to modify manifest: %s", err)
 		return err
 	}
 
+	// Initialize experiment
+	experimentID := os.Getenv(constants.ExpIDEnvName)
+	err = c.fileOperator.InitExperiment(experimentID, map[string][]byte{})
+	if err != nil {
+		log.Errorf("Failed to initialize experiment: %s", err)
+		return err
+	}
 	// Write outputs
 	outputsMap := map[string][]byte{
-		experimentIDOutput: []byte(experimentID),
-		manifestOutput:     manifest,
+		opt.OutputFile: modifiedManifest,
 	}
-	err = c.FileOperator.WriteOutputs(outputsMap)
+	err = c.fileOperator.WriteOutputs(outputsMap)
 	if err != nil {
 		log.Errorf("Failed to write outputs: %s", err)
 		return err
 	}
 
-	// Initialize experiment
-	_, configFilename := path.Split(config)
-	_, manifestFilename := path.Split(manifestOutput)
-	outputsMap = map[string][]byte{
-		configFilename:   parametersRaw,
-		manifestFilename: manifest,
-	}
-	err = c.FileOperator.InitExperiment(experimentID, outputsMap)
-	if err != nil {
-		log.Errorf("Failed to initialize experiment: %s", err)
-		return err
-	}
+	return nil
+}
 
+// replaceEmptyNamespace replaces an empty-valued namespace with local namespace
+func replaceEmptyNamespace(modSpec *common.ManifestModSpec) error {
+	if modSpec.Namespace == "" {
+		data, err := ioutil.ReadFile(constants.NamespaceFile)
+		if err != nil {
+			return err
+		}
+		modSpec.Namespace = strings.Trim(string(data), " \n")
+	}
 	return nil
 }
