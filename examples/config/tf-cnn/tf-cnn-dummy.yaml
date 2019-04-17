@@ -1,6 +1,6 @@
 name: tf-cnn-dummy
 args: null
-image: gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-runner-cpu:v20180909-1
+image: gcr.io/kubeflow-images-public/kubebench/kubebench-example-tf-cnn-runner-cpu:v0.4.0-13-g262c593
 num_worker: 1
 num_ps: 0
 batch_size: 2
