@@ -3,7 +3,7 @@
 // @description kubebench-example-tfcnn
 // @shortDescription A simple TFJob to run CNN benchmark
 // @param name string Name for the job.
-// @optionalParam image string gcr.io/xyhuang-kubeflow/kubebench-example-tfcnn-runner-cpu:v20180909-1 Image
+// @optionalParam image string gcr.io/kubeflow-images-public/kubebench/kubebench-example-tf-cnn-runner-cpu:v0.4.0-13-g262c593 Image
 // @optionalParam num_worker number 1 Number of workders
 // @optionalParam num_ps number 1 Number of parameter servers
 // @optionalParam args string null Other arguments
