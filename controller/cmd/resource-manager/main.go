@@ -13,6 +13,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"io"
 	"io/ioutil"
@@ -27,13 +28,18 @@ import (
 func run(opt *app.AppOption) error {
 
 	// create input reader
+	var inputData []byte
+	var err error
+	inputData = []byte(opt.InputData)
 	inputFile := opt.InputFile
-	inputReader, err := os.Open(inputFile)
-	if err != nil {
-		log.Errorf("Failed to open input file: %s", inputFile)
-		return err
+	if inputFile != "" {
+		inputData, err = ioutil.ReadFile(inputFile)
+		if err != nil {
+			log.Errorf("Failed to read input file: %s", inputFile)
+			return err
+		}
 	}
-	defer inputReader.Close()
+	inputReader := bytes.NewReader(inputData)
 
 	// create output writer
 	outputFile := opt.OutputFile

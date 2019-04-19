@@ -59,7 +59,7 @@ func (m *ResourceManager) Run(opt *AppOption) error {
 			log.Errorf("Failed to get resource objects: %s", err)
 			return err
 		}
-		results, err := resourceClient.Create(resourceObjects)
+		results, err := resourceClient.Create(resourceObjects, opt.NumCopies)
 		if err != nil {
 			log.Errorf("Failed to run resource client: %s", err)
 			return err

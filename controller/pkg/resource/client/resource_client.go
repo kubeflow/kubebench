@@ -51,34 +51,41 @@ func NewResourceClient(config *rest.Config) (*ResourceClient, error) {
 }
 
 // Create creates a list of resources to k8s cluster
-func (rc *ResourceClient) Create(resources []*unstructured.Unstructured) ([]*common.ResourceRef, error) {
+func (rc *ResourceClient) Create(resources []*unstructured.Unstructured, numCopies int) ([]*common.ResourceRef, error) {
 	var results []*common.ResourceRef
-	for _, r := range resources {
-		ref := common.NewResourceRefFromUnstructured(r)
-		kvgn := ref.SprintKindVersionGroupName()
-		ns := ref.Namespace
-		log.Infof("Creating resource: %s in namespace: %s", kvgn, ns)
-		apiRes, err := rc.getAPIResource(ref)
-		if err != nil {
-			return results, err
+	for i := 0; i < numCopies; i++ {
+		for _, r := range resources {
+			rcopy := r.DeepCopy()
+			if name := rcopy.GetName(); numCopies > 1 && name != "" {
+				rcopy.SetGenerateName(name + "-")
+				rcopy.SetName("")
+			}
+			ref := common.NewResourceRefFromUnstructured(rcopy)
+			kvgn := ref.SprintKindVersionGroupName()
+			ns := ref.Namespace
+			log.Infof("Creating resource: %s in namespace: %s", kvgn, ns)
+			apiRes, err := rc.getAPIResource(ref)
+			if err != nil {
+				return results, err
+			}
+			gvr := schema.GroupVersionResource{
+				Group:    ref.Group,
+				Version:  ref.Version,
+				Resource: apiRes.Name,
+			}
+			var resIf dynamic.ResourceInterface
+			if apiRes.Namespaced {
+				resIf = rc.dynamicClient.Resource(gvr).Namespace(ns)
+			} else {
+				resIf = rc.dynamicClient.Resource(gvr)
+			}
+			res, err := resIf.Create(rcopy, metav1.CreateOptions{})
+			if err != nil {
+				log.Errorf("Failed to create resource %s: %s", kvgn, err)
+				return results, err
+			}
+			results = append(results, common.NewResourceRefFromUnstructured(res))
 		}
-		gvr := schema.GroupVersionResource{
-			Group:    ref.Group,
-			Version:  ref.Version,
-			Resource: apiRes.Name,
-		}
-		var resIf dynamic.ResourceInterface
-		if apiRes.Namespaced {
-			resIf = rc.dynamicClient.Resource(gvr).Namespace(ns)
-		} else {
-			resIf = rc.dynamicClient.Resource(gvr)
-		}
-		res, err := resIf.Create(r, metav1.CreateOptions{})
-		if err != nil {
-			log.Errorf("Failed to create resource %s: %s", kvgn, err)
-			return results, err
-		}
-		results = append(results, common.NewResourceRefFromUnstructured(res))
 	}
 	return results, nil
 }
