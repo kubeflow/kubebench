@@ -15,11 +15,14 @@
 package app
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/kubeflow/kubebench/controller/pkg/constants"
 )
 
 type FileOperatorInterface interface {
@@ -50,11 +53,13 @@ func (fo *FileOperator) WriteOutputs(outputsMap map[string][]byte) error {
 }
 
 func (fo *FileOperator) InitExperiment(experimentID string, outputsMap map[string][]byte) error {
-	expRoot := os.Getenv("KUBEBENCH_EXP_ROOT")
-	expConfigDir := path.Join(expRoot, experimentID, "config")
-	expOutputDir := path.Join(expRoot, experimentID, "output")
-	expResultDir := path.Join(expRoot, experimentID, "result")
-	for _, dir := range [...]string{expConfigDir, expOutputDir, expResultDir} {
+	expID := os.Getenv(constants.ExpIDEnvName)
+	expConfigDir := fmt.Sprintf(constants.ExpConfigPathFmt, expID)
+	expOutputDir := fmt.Sprintf(constants.ExpOutputPathFmt, expID)
+	expResultDir := fmt.Sprintf(constants.ExpResultPathFmt, expID)
+	wfExpDir := fmt.Sprintf(constants.WorkflowExpPathFmt, expID)
+	dirsToCreate := [...]string{expConfigDir, expOutputDir, expResultDir, wfExpDir}
+	for _, dir := range dirsToCreate {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			return err
 		}

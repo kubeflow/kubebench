@@ -1,5 +1,3 @@
-// Copyright 2018 Cisco Systems, Inc.
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -12,37 +10,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package manifestgen
 
 import (
-	"flag"
-	"os"
-
-	log "github.com/sirupsen/logrus"
-
-	"github.com/kubeflow/kubebench/controller/cmd/configurator/app"
+	"io/ioutil"
 )
 
-func run(opt *app.AppOption) error {
-
-	configurator := app.NewConfigurator(&app.FileOperator{})
-
-	if err := configurator.Run(opt); err != nil {
-		log.Errorf("Configurator failed to run: %s", err)
-		return err
-	}
-
-	return nil
+type PathManifestGenerator struct {
+	spec *string
 }
 
-func main() {
-	opt := app.NewAppOption()
-	opt.AddFlags(flag.CommandLine)
-
-	flag.Parse()
-
-	if err := run(opt); err != nil {
-		log.Errorf("%s", err)
-		os.Exit(1)
+func NewPathManifestGenerator(spec interface{}) ManifestGeneratorInterface {
+	pathSpec := spec.(*string)
+	generator := &PathManifestGenerator{
+		spec: pathSpec,
 	}
+	return generator
+}
+
+func (mg *PathManifestGenerator) GenerateManifest() ([]byte, error) {
+	path := mg.spec
+	data, err := ioutil.ReadFile(string(*path))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

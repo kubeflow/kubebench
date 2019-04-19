@@ -1,4 +1,4 @@
-// Copyright 2018 Cisco Systems, Inc.
+// Copyright 2019 The Kubeflow Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package app
+package constants
 
-import (
-	"flag"
+const (
+	ExpRootPath         = "/kubebench/experiments"
+	ExpPathFmt          = ExpRootPath + "/%s"
+	ExpConfigPathFmt    = ExpPathFmt + "/config"
+	ExpOutputPathFmt    = ExpPathFmt + "/output"
+	ExpResultPathFmt    = ExpPathFmt + "/result"
+	WorkflowRootPath    = "/kubebench/workflow"
+	WorkflowExpRootPath = WorkflowRootPath + "/experiments"
+	WorkflowExpPathFmt  = WorkflowExpRootPath + "/%s"
+
+	NamespaceFile = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
 )
-
-type AppOption struct {
-	InputParams string
-	OutputFile  string
-}
-
-func NewAppOption() *AppOption {
-	opt := AppOption{}
-	return &opt
-}
-
-func (opt *AppOption) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&opt.InputParams, "input-params", "", "Structured spec for the configurator.")
-	fs.StringVar(&opt.OutputFile, "output-file", "", "Path to the output file.")
-}
