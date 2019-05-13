@@ -29,6 +29,8 @@ export GO111MODULE=on
 mkdir -p ${BUILD_DIR}/dashboard/
 cp -r ${SRC_DIR}/dashboard/kubebench-dashboard ${BUILD_DIR}/dashboard
 cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
+cp  ${SRC_DIR}/go.mod ${BUILD_DIR}/go.mod 
+cp  ${SRC_DIR}/go.sum ${BUILD_DIR}/go.sum
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 
 echo "Change working directory to ${BUILD_DIR}"

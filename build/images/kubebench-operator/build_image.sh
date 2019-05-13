@@ -27,7 +27,8 @@ echo "Copy source and Dockerfile to build directory"
 export GO111MODULE=on
 cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
-
+cp  ${SRC_DIR}/go.mod ${BUILD_DIR}/go.mod 
+cp  ${SRC_DIR}/go.sum ${BUILD_DIR}/go.sum
 echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
