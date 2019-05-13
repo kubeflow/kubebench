@@ -2,7 +2,7 @@ package util
 
 import (
 	kubebenchjobclientset "github.com/kubeflow/kubebench/controller/pkg/client/clientset/versioned"
-	kubebenchjobinformer_v1 "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/kubebenchjob/v1"
+	kubebenchjobinformer_v1alpha1 "github.com/kubeflow/kubebench/controller/pkg/client/informers/externalversions/kubebenchjob/v1alpha1"
 	log "github.com/sirupsen/logrus"
 	api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,7 +67,7 @@ func AddPodsEventHandler(inf cache.SharedInformer, queue workqueue.RateLimitingI
 }
 
 func GetTeamsSharedIndexInformer(client kubernetes.Interface, kubebenchjobclient kubebenchjobclientset.Interface) cache.SharedIndexInformer {
-	return kubebenchjobinformer_v1.NewKubebenchJobInformer(
+	return kubebenchjobinformer_v1alpha1.NewKubebenchJobInformer(
 		kubebenchjobclient,
 		meta_v1.NamespaceAll,
 		0,

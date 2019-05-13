@@ -1,0 +1,11 @@
+defaultWorkflowAgent:
+  container:
+    name: kubebench-workflow-agent
+    image: ciscoai/kubebench-workflow-agent:latest
+defaultManagedVolumes:
+  experimentVolume:
+    name: kubebench-experiment-volume
+    emptyDir: {}
+  workflowVolume:
+    name: kubebench-workflow-volume
+    emptyDir: {}

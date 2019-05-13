@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	workflow_v1 "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
-	kubebenchjob "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1"
+	kubebenchjob "github.com/kubeflow/kubebench/controller/pkg/apis/kubebenchjob/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -293,22 +293,22 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 	}
 
 	baseEnvVars := []apiv1.EnvVar{
-		apiv1.EnvVar{
+		{
 			Name:  "KUBEBENCH_CONFIG_ROOT",
 			Value: kubebenchConfigRoot,
 		},
-		apiv1.EnvVar{
+		{
 			Name:  "KUBEBENCH_EXP_ROOT",
 			Value: kubebenchExpRoot,
 		},
-		apiv1.EnvVar{
+		{
 			Name:  "KUBEBENCH_DATA_ROOT",
 			Value: kubebenchDataRoot,
 		},
 	}
 
 	baseVols := []apiv1.Volume{
-		apiv1.Volume{
+		{
 			Name: kubebenchConfigVol,
 			VolumeSource: apiv1.VolumeSource{
 				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
@@ -316,7 +316,7 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 				},
 			},
 		},
-		apiv1.Volume{
+		{
 			Name: kubebenchExpVol,
 			VolumeSource: apiv1.VolumeSource{
 				PersistentVolumeClaim: &apiv1.PersistentVolumeClaimVolumeSource{
@@ -327,11 +327,11 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 	}
 
 	baseVolMnts := []apiv1.VolumeMount{
-		apiv1.VolumeMount{
+		{
 			Name:      kubebenchConfigVol,
 			MountPath: kubebenchConfigRoot,
 		},
-		apiv1.VolumeMount{
+		{
 			Name:      kubebenchExpVol,
 			MountPath: kubebenchExpRoot,
 		},
@@ -367,24 +367,24 @@ func ConvertKubebenchJobToArgoWorkflow(kbJob *kubebenchjob.KubebenchJob) (wkflw 
 			Entrypoint:         "kubebench-workflow",
 			Volumes:            append(baseVols, secretVols...),
 			Templates: []workflow_v1.Template{
-				workflow_v1.Template{
+				{
 					Name: "kubebench-workflow",
 					Steps: [][]workflow_v1.WorkflowStep{
-						[]workflow_v1.WorkflowStep{
+						{
 							BuildStep("run-configurator", "configurator", CreateArgumentsForString([]string{}, []string{})),
 						},
-						[]workflow_v1.WorkflowStep{
+						{
 							BuildStep("launch-main-job", "main-job", CreateArgumentsForString(
 								[]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
 						},
-						[]workflow_v1.WorkflowStep{
+						{
 							BuildStep("wait-for-main-job",
 								"main-job-monitor", CreateArgumentsForString([]string{"kf-job-manifest"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}"})),
 						},
-						[]workflow_v1.WorkflowStep{
+						{
 							BuildStep("run-post-job", "post-job", CreateArgumentsForString([]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
 						},
-						[]workflow_v1.WorkflowStep{
+						{
 							BuildStep("run-reporter", "reporter", CreateArgumentsForString([]string{"kf-job-manifest", "experiment-id"}, []string{"{{steps.run-configurator.outputs.parameters.kf-job-manifest}}", "{{steps.run-configurator.outputs.parameters.experiment-id}}"})),
 						},
 					},
@@ -525,7 +525,7 @@ func GenerateJobFromParameters(parameters map[string]string) (job *kubebenchjob.
 	// assume they always exist
 	if parameters["reportType"] != "" {
 		report.CSV = []map[string]string{
-			map[string]string{
+			{
 				"inputPath":  parameters["csvReporterInput"],
 				"outputPath": parameters["csvReporterOutput"],
 			},

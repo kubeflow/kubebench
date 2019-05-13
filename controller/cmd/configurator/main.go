@@ -25,11 +25,7 @@ import (
 
 func run(opt *app.AppOption) error {
 
-	configurator := app.Configurator{
-		FileOperator:      &(app.FileOperator{}),
-		ManifestGenerator: &(app.ManifestGenerator{}),
-		ManifestModifier:  &(app.ManifestModifier{}),
-	}
+	configurator := app.NewConfigurator(&app.FileOperator{})
 
 	if err := configurator.Run(opt); err != nil {
 		log.Errorf("Configurator failed to run: %s", err)

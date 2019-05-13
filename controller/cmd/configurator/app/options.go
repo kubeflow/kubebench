@@ -19,15 +19,8 @@ import (
 )
 
 type AppOption struct {
-	TemplateRef        string
-	Config             string
-	Namespace          string
-	OwnerReferences    string
-	Volumes            string
-	VolumeMounts       string
-	EnvVars            string
-	ManifestOutput     string
-	ExperimentIDOutput string
+	InputParams string
+	OutputFile  string
 }
 
 func NewAppOption() *AppOption {
@@ -36,15 +29,6 @@ func NewAppOption() *AppOption {
 }
 
 func (opt *AppOption) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&opt.TemplateRef, "template-ref", "", "Reference to the job template.")
-	fs.StringVar(&opt.Config, "config", "", "The parameter configuration file.")
-	fs.StringVar(&opt.Namespace, "namespace", "default", "The namespace of the job.")
-	fs.StringVar(&opt.OwnerReferences, "owner-references", "[]", "The owner reference objects.")
-	fs.StringVar(&opt.Volumes, "volumes", "[]", "The volume objects.")
-	fs.StringVar(&opt.VolumeMounts, "volume-mounts", "[]", "The volume mount objects.")
-	fs.StringVar(&opt.EnvVars, "env-vars", "[]", "The environment variables.")
-	fs.StringVar(&opt.ManifestOutput, "manifest-output", "kf-job-manifest.yaml",
-		"The output manifest file.")
-	fs.StringVar(&opt.ExperimentIDOutput, "experiment-id-output", "experiment-id",
-		"The output experiment id file.")
+	fs.StringVar(&opt.InputParams, "input-params", "", "Structured spec for the configurator.")
+	fs.StringVar(&opt.OutputFile, "output-file", "", "Path to the output file.")
 }

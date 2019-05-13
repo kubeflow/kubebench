@@ -10,6 +10,7 @@ import (
 
 	"github.com/argoproj/argo/errors"
 	wfv1 "github.com/argoproj/argo/pkg/apis/workflow/v1alpha1"
+	"github.com/argoproj/argo/workflow/artifacts/hdfs"
 	"github.com/argoproj/argo/workflow/common"
 	"github.com/valyala/fasttemplate"
 	apivalidation "k8s.io/apimachinery/pkg/util/validation"
@@ -132,6 +133,12 @@ func (ctx *wfValidationCtx) validateTemplate(tmpl *wfv1.Template, args wfv1.Argu
 	if err != nil {
 		return err
 	}
+	if tmpl.ArchiveLocation != nil {
+		err = validateArtifactLocation("templates.archiveLocation", *tmpl.ArchiveLocation)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -183,7 +190,7 @@ func validateInputs(tmpl *wfv1.Template) (map[string]interface{}, error) {
 			return nil, errors.Errorf(errors.CodeBadRequest, "templates.%s.%s.from not valid in inputs", tmpl.Name, artRef)
 		}
 		errPrefix := fmt.Sprintf("templates.%s.%s", tmpl.Name, artRef)
-		err = validateArtifactLocation(errPrefix, art)
+		err = validateArtifactLocation(errPrefix, art.ArtifactLocation)
 		if err != nil {
 			return nil, err
 		}
@@ -191,10 +198,16 @@ func validateInputs(tmpl *wfv1.Template) (map[string]interface{}, error) {
 	return scope, nil
 }
 
-func validateArtifactLocation(errPrefix string, art wfv1.Artifact) error {
+func validateArtifactLocation(errPrefix string, art wfv1.ArtifactLocation) error {
 	if art.Git != nil {
 		if art.Git.Repo == "" {
 			return errors.Errorf(errors.CodeBadRequest, "%s.git.repo is required", errPrefix)
+		}
+	}
+	if art.HDFS != nil {
+		err := hdfs.ValidateArtifact(fmt.Sprintf("%s.hdfs", errPrefix), art.HDFS)
+		if err != nil {
+			return err
 		}
 	}
 	// TODO: validate other artifact locations
@@ -464,7 +477,7 @@ func validateOutputs(scope map[string]interface{}, tmpl *wfv1.Template) error {
 			}
 		}
 		if art.GlobalName != "" && !isParameter(art.GlobalName) {
-			errs := isValidWorkflowFieldName(art.GlobalName)
+			errs := isValidParamOrArtifactName(art.GlobalName)
 			if len(errs) > 0 {
 				return errors.Errorf(errors.CodeBadRequest, "templates.%s.%s.globalName: %s", tmpl.Name, artRef, errs[0])
 			}
@@ -492,7 +505,7 @@ func validateOutputs(scope map[string]interface{}, tmpl *wfv1.Template) error {
 			}
 		}
 		if param.GlobalName != "" && !isParameter(param.GlobalName) {
-			errs := isValidWorkflowFieldName(param.GlobalName)
+			errs := isValidParamOrArtifactName(param.GlobalName)
 			if len(errs) > 0 {
 				return errors.Errorf(errors.CodeBadRequest, "%s.globalName: %s", paramRef, errs[0])
 			}
@@ -556,7 +569,14 @@ func validateWorkflowFieldNames(slice interface{}) error {
 		if name == "" {
 			return errors.Errorf(errors.CodeBadRequest, "[%d].name is required", i)
 		}
-		if errs := isValidWorkflowFieldName(name); len(errs) != 0 {
+		var errs []string
+		t := reflect.TypeOf(item)
+		if t == reflect.TypeOf(wfv1.Parameter{}) || t == reflect.TypeOf(wfv1.Artifact{}) {
+			errs = isValidParamOrArtifactName(name)
+		} else {
+			errs = isValidWorkflowFieldName(name)
+		}
+		if len(errs) != 0 {
 			return errors.Errorf(errors.CodeBadRequest, "[%d].name: '%s' is invalid: %s", i, name, strings.Join(errs, ";"))
 		}
 		_, ok := names[name]
@@ -715,11 +735,20 @@ func verifyNoCycles(tmpl *wfv1.Template, nameToTask map[string]wfv1.DAGTask) err
 
 var (
 	// paramRegex matches a parameter. e.g. {{inputs.parameters.blah}}
-	paramRegex = regexp.MustCompile(`{{[-a-zA-Z0-9]+(\.[-a-zA-Z0-9]+)*}}`)
+	paramRegex               = regexp.MustCompile(`{{[-a-zA-Z0-9]+(\.[-a-zA-Z0-9_]+)*}}`)
+	paramOrArtifactNameRegex = regexp.MustCompile(`^[-a-zA-Z0-9_]+[-a-zA-Z0-9_]*$`)
 )
 
 func isParameter(p string) bool {
 	return paramRegex.MatchString(p)
+}
+
+func isValidParamOrArtifactName(p string) []string {
+	var errs []string
+	if !paramOrArtifactNameRegex.MatchString(p) {
+		return append(errs, "Parameter/Artifact name must consist of alpha-numeric characters, '_' or '-' e.g. my_param_1, MY-PARAM-1")
+	}
+	return errs
 }
 
 const (

@@ -28,7 +28,7 @@ func (woc *wfOperationCtx) executeSteps(nodeName string, tmpl *wfv1.Template, bo
 	}
 	defer func() {
 		if woc.wf.Status.Nodes[node.ID].Completed() {
-			_ = woc.killDeamonedChildren(node.ID)
+			_ = woc.killDaemonedChildren(node.ID)
 		}
 	}()
 	stepsCtx := stepsContext{
@@ -174,6 +174,7 @@ func (woc *wfOperationCtx) executeStepGroup(stepGroup []wfv1.WorkflowStep, sgNod
 		// Check the step's when clause to decide if it should execute
 		proceed, err := shouldExecute(step.When)
 		if err != nil {
+			woc.initializeNode(childNodeName, wfv1.NodeTypeSkipped, "", stepsCtx.boundaryID, wfv1.NodeError, err.Error())
 			woc.addChildNode(sgNodeName, childNodeName)
 			woc.markNodeError(childNodeName, err)
 			return woc.markNodeError(sgNodeName, err)
@@ -202,9 +203,6 @@ func (woc *wfOperationCtx) executeStepGroup(stepGroup []wfv1.WorkflowStep, sgNod
 		}
 		if childNode != nil {
 			woc.addChildNode(sgNodeName, childNodeName)
-			if childNode.Completed() && !childNode.Successful() {
-				break
-			}
 		}
 	}
 
