@@ -1,4 +1,4 @@
-module github.com/Akado2009/kubebench
+module github.com/kubeflow/kubebench
 
 require (
 	github.com/PuerkitoBio/purell v1.1.1
