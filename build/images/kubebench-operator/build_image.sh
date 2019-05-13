@@ -22,7 +22,6 @@ mkdir -p ${GOPATH}/src/github.com/kubeflow/kubebench
 BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 
 echo "Copy source and Dockerfile to build directory"
-#cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
 # need to download all packages into gopath (this options allows go build to download all data) 
 export GO111MODULE=on
 cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller

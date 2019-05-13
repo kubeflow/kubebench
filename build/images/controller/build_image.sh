@@ -25,7 +25,6 @@ BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 export GO111MODULE=on
 
 echo "Copy source and Dockerfile to build directory"
-#cp -r ${SRC_DIR}/vendor ${BUILD_DIR}/vendor
 cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 cp  ${SRC_DIR}/go.mod ${BUILD_DIR}/go.mod
