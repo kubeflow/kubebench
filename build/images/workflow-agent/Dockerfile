@@ -24,7 +24,6 @@ ENV PATH="/app:${PATH}"
 #copy built binaries from the builder to the image 
 COPY configurator /app/configurator
 COPY resource-manager /app/resource-manager
-COPY reporter /app/reporter
 
 ## setup a fake kube config for ks init
 COPY controller/misc/fake_kubeconfig /app/kubeconfig
