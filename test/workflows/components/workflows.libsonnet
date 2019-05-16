@@ -225,10 +225,6 @@
                     template: "build-kubebench-examples",
                   },
                   {
-                    name: "build-kubebench-operator",
-                    template: "build-kubebench-operator",
-                  },
-                  {
                     name: "build-kubebench-dashboard",
                     template: "build-kubebench-dashboard",
                   },
