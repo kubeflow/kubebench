@@ -24,7 +24,6 @@ BUILD_DIR=${GOPATH}/src/github.com/kubeflow/kubebench
 echo "Copy source and Dockerfile to build directory"
 # need to download all packages into gopath (this options allows go build to download all data) 
 export GO111MODULE=on
-
 cp -r ${SRC_DIR}/controller ${BUILD_DIR}/controller
 cp ${DOCKERFILE} ${BUILD_DIR}/Dockerfile
 cp  ${SRC_DIR}/go.mod ${BUILD_DIR}/go.mod 
@@ -33,9 +32,7 @@ echo "Change working directory to ${BUILD_DIR}"
 cd ${BUILD_DIR}
 
 echo "Build go binaries"
-GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/configurator
-GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/resource-manager
-GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/reporter
+GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/operator/kubebench-operator-v1alpha2
 
 echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}

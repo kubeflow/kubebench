@@ -209,16 +209,20 @@
                 ],
                 [
                   {
-                    name: "build-kubebench-controller",
-                    template: "build-kubebench-controller",
+                    name: "build-kubebench-operator-v1alpha1",
+                    template: "build-kubebench-operator-v1alpha1",
+                  },
+                  {
+                    name: "build-kubebench-operator-v1alpha2",
+                    template: "build-kubebench-operator-v1alpha2",
+                  },
+                  {
+                    name: "build-workflow-agent",
+                    template: "build-workflow-agent",
                   },
                   {
                     name: "build-kubebench-examples",
                     template: "build-kubebench-examples",
-                  },
-                  {
-                    name: "build-kubebench-operator",
-                    template: "build-kubebench-operator",
                   },
                   {
                     name: "build-kubebench-dashboard",
@@ -320,16 +324,38 @@
               srcDir + "/test/scripts/delete_cluster.sh",
             ]),  // teardown cluster
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
-              "build-kubebench-controller",
+              "build-kubebench-operator-v1alpha1",
               [
-                srcDir + "/build/images/controller/build_image.sh",
+                srcDir + "/build/images/kubebench-operator-v1alpha1/build_image.sh",
                 srcDir,
-                srcDir + "/build/images/controller/Dockerfile",
-                "kubebench-controller",
+                srcDir + "/build/images/kubebench-operator-v1alpha1/Dockerfile",
+                "kubebench-operator-v1alpha1",
                 versionTag,
               ],
               workingDir=srcDir,
-            ),  // build-kubebench-controller
+            ),  // build-kubebench-operator-v1alpha1
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
+              "build-kubebench-operator-v1alpha2",
+              [
+                srcDir + "/build/images/kubebench-operator-v1alpha2/build_image.sh",
+                srcDir,
+                srcDir + "/build/images/kubebench-operator-v1alpha2/Dockerfile",
+                "kubebench-operator-v1alpha2",
+                versionTag,
+              ],
+              workingDir=srcDir,
+            ),  // build-kubebench-operator-v1alpha2
+            $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
+              "build-workflow-agent",
+              [
+                srcDir + "/build/images/workflow-agent/build_image.sh",
+                srcDir,
+                srcDir + "/build/images/workflow-agent/Dockerfile",
+                "workflow-agent",
+                versionTag,
+              ],
+              workingDir=srcDir,
+            ),  // build-workflow-agent
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
               "build-kubebench-operator",
               [
