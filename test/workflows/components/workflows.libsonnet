@@ -355,7 +355,7 @@
                 versionTag,
               ],
               workingDir=srcDir,
-            ),  // build-kubebench-controller
+            ),  // build-workflow-agent
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate(
               "build-kubebench-operator",
               [
