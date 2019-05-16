@@ -35,6 +35,7 @@ cd ${BUILD_DIR}
 echo "Build go binaries"
 GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/configurator
 GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/resource-manager
+GOOS=linux CGO_ENABLED=0 go build github.com/kubeflow/kubebench/controller/cmd/reporter
 
 echo "Authenticate gcloud account"
 gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
