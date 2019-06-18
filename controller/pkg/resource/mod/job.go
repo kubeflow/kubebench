@@ -59,7 +59,16 @@ func (m *MPIJobV1alpha2Modifier) ModifyResource(
 	modSpec *ResourceModSpec) (*unstructured.Unstructured, error) {
 
 	job := &mpijob.MPIJob{}
-	newRes := &unstructured.Unstructured{}
+	converter := runtime.DefaultUnstructuredConverter
+	if err := converter.FromUnstructured(res.Object, job); err != nil {
+		return nil, err
+	}
+
+	newResObj, err := converter.ToUnstructured(job)
+	if err != nil {
+		return nil, err
+	}
+	newRes := &unstructured.Unstructured{Object: newResObj}
 	return newRes, nil
 
 }
