@@ -20,8 +20,15 @@ import (
 
 type JobV1Modifier struct{}
 
+type MPIJobV1alpha2Modifier struct{}
+
 func NewJobV1Modifier() ResourceModifierInterface {
 	modifier := &JobV1Modifier{}
+	return modifier
+}
+
+func NewMPIJobV1alpha2Modifier() ResourceModifierInterface {
+	modifier := &MPIJobV1alpha2Modifier{}
 	return modifier
 }
 
@@ -44,4 +51,14 @@ func (m *JobV1Modifier) ModifyResource(
 	newRes := &unstructured.Unstructured{Object: newResObj}
 
 	return newRes, nil
+}
+
+func (m *MPIJobV1alpha2Modifier) ModifyResource(
+	res *unstructured.Unstructured,
+	modSpec *ResourceModSpec) (*unstructured.Unstructured, error) {
+
+	// job := &mpijob.MPIJob{}
+	newRes := &unstructured.Unstructured{}
+	return newRes, nil
+
 }

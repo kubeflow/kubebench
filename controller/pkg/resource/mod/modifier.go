@@ -20,6 +20,7 @@ import (
 
 var newResourceModFuncs = map[string]func() ResourceModifierInterface{
 	"Job.v1.batch":                  NewJobV1Modifier,
+	"MPIJob.v1alpha2":               NewMPIJobV1alpha2Modifier,
 	"Deployment.v1beta1.extensions": NewDeploymentV1beta1Modifier,
 }
 
