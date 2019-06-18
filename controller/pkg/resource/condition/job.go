@@ -15,6 +15,8 @@ package condition
 import (
 	"encoding/json"
 
+	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha2"
+
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -23,9 +25,15 @@ import (
 // JobV1Condition is a condition checker for jobs in batch/v1
 type JobV1Condition struct{}
 
+type MPIJobV1alpha2Condition struct{}
+
 // NewJobV1Condition creates a new JobV1Condition
 func NewJobV1Condition() *JobV1Condition {
 	return &JobV1Condition{}
+}
+
+func NewMPIJobV1alpha2Condition() *MPIJobV1alpha2Condition {
+	return &MPIJobV1alpha2Condition{}
 }
 
 // CheckCondition checks the status of a given job.
@@ -53,5 +61,30 @@ func (c *JobV1Condition) CheckCondition(resource *unstructured.Unstructured) (Re
 		}
 	}
 
+	return result, nil
+}
+
+func (c *MPIJobV1alpha2Condition) CheckCondition(resource *unstructured.Unstructured) (ResourceConditionStatus, error) {
+	var job mpijob.MPIJob{}
+
+	resStr, err := json.Marshal(resource)
+	if err != nil {
+		return ResourceConditionUnknown, err
+	}
+
+	err = json.Unmarshal(resStr, &job)
+	if err != nil {
+		return ResourceConditionUnknown, err
+	}
+	var result ResourceConditionStatus
+	for _, cond := range job.Status.Conditions {
+		if cond.Type == mpijob.JobFailed && cond.Status == corev1.ConditionTrue {
+			result = ResourceConditionFailure
+			break
+		} else if cond.Type == mpijob.JobSucceeded && cond.Status == corev1.ConditionTrue {
+			result = ResourceConditionSuccess
+			break
+		}
+	}
 	return result, nil
 }

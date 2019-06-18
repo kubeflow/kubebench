@@ -13,6 +13,7 @@
 package mod
 
 import (
+	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha2"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -57,7 +58,7 @@ func (m *MPIJobV1alpha2Modifier) ModifyResource(
 	res *unstructured.Unstructured,
 	modSpec *ResourceModSpec) (*unstructured.Unstructured, error) {
 
-	// job := &mpijob.MPIJob{}
+	job := &mpijob.MPIJob{}
 	newRes := &unstructured.Unstructured{}
 	return newRes, nil
 
