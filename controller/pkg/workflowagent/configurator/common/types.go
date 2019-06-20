@@ -22,8 +22,8 @@ import (
 
 // ConfiguratorInput is the specification of configurator input
 type ConfiguratorInput struct {
-	*ManifestGenSpec `json:"gen,inline"`
-	*ManifestModSpec `json:"mod,inline"`
+	*ManifestGenSpec `json:",inline"`
+	*ManifestModSpec `json:",inline"`
 }
 
 // ManifestGenSpec is the spec for a manifest generation
