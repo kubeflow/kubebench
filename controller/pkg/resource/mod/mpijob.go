@@ -13,35 +13,44 @@
 package mod
 
 import (
-	batchv1 "k8s.io/api/batch/v1"
+	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha2"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type JobV1Modifier struct{}
+type MPIJobV1alpha2Modifier struct{}
 
-func NewJobV1Modifier() ResourceModifierInterface {
-	modifier := &JobV1Modifier{}
+func NewMPIJobV1alpha2Modifier() ResourceModifierInterface {
+	modifier := &MPIJobV1alpha2Modifier{}
 	return modifier
 }
 
-func (m *JobV1Modifier) ModifyResource(
+func (m *MPIJobV1alpha2Modifier) ModifyResource(
 	res *unstructured.Unstructured,
 	modSpec *ResourceModSpec) (*unstructured.Unstructured, error) {
 
-	job := &batchv1.Job{}
+	job := &mpijob.MPIJob{}
 	converter := runtime.DefaultUnstructuredConverter
 	if err := converter.FromUnstructured(res.Object, job); err != nil {
 		return nil, err
 	}
 
-	job.Spec.Template = ModifyPodTemplateV1(job.Spec.Template, modSpec)
-
+	job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeLauncher] = ModifyMPIJobV1alpha2ReplicaSpecs(job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeLauncher], modSpec)
+	job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeWorker] = ModifyMPIJobV1alpha2ReplicaSpecs(job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeWorker], modSpec)
 	newResObj, err := converter.ToUnstructured(job)
 	if err != nil {
 		return nil, err
 	}
 	newRes := &unstructured.Unstructured{Object: newResObj}
-
 	return newRes, nil
+
+}
+func ModifyMPIJobV1alpha2ReplicaSpecs(template *mpijob.ReplicaSpec, modSpec *ResourceModSpec) *mpijob.ReplicaSpec {
+	newTemplate := template
+	newTemplate.Template.Spec.Volumes = append(template.Template.Spec.Volumes, modSpec.Volumes...)
+	for i, container := range newTemplate.Template.Spec.Containers {
+		newContainer := ModifyContainerV1(container, modSpec)
+		newTemplate.Template.Spec.Containers[i] = newContainer
+	}
+	return newTemplate
 }

@@ -22,7 +22,7 @@ import (
 // ResourceModSpec is the spec of a resource modification
 type ResourceModSpec struct {
 	Namespace       string                  `json:"namespace"`
-	OwnerReferences []metav1.OwnerReference `json:"ownerReferences"`
+	OwnerReferences []metav1.OwnerReference `json:"ownerReferences,omitempty"`
 	Labels          map[string]string       `json:"labels,omitempty"`
 	Volumes         []corev1.Volume         `json:"volumes,omitempty"`
 	VolumeMounts    []corev1.VolumeMount    `json:"volumeMounts,omitempty"`

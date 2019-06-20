@@ -1,0 +1,7 @@
+namespace: kubebench
+volumes:
+  - name: efs
+    nfs:
+      server: fs-ab134502.efs.us-west-2.amazonaws.com
+      path: /
+      readOnly: true
