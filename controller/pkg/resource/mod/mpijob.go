@@ -13,19 +13,19 @@
 package mod
 
 import (
-	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha2"
+	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type MPIJobV1alpha2Modifier struct{}
+type MPIJobV1alpha1Modifier struct{}
 
-func NewMPIJobV1alpha2Modifier() ResourceModifierInterface {
-	modifier := &MPIJobV1alpha2Modifier{}
+func NewMPIJobV1alpha1Modifier() ResourceModifierInterface {
+	modifier := &MPIJobV1alpha1Modifier{}
 	return modifier
 }
 
-func (m *MPIJobV1alpha2Modifier) ModifyResource(
+func (m *MPIJobV1alpha1Modifier) ModifyResource(
 	res *unstructured.Unstructured,
 	modSpec *ResourceModSpec) (*unstructured.Unstructured, error) {
 
@@ -35,8 +35,7 @@ func (m *MPIJobV1alpha2Modifier) ModifyResource(
 		return nil, err
 	}
 
-	job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeLauncher] = ModifyMPIJobV1alpha2ReplicaSpecs(job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeLauncher], modSpec)
-	job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeWorker] = ModifyMPIJobV1alpha2ReplicaSpecs(job.Spec.MPIReplicaSpecs[mpijob.MPIReplicaTypeWorker], modSpec)
+	job.Spec.Template = ModifyPodTemplateV1(job.Spec.Template, modSpec)
 	newResObj, err := converter.ToUnstructured(job)
 	if err != nil {
 		return nil, err
@@ -44,13 +43,4 @@ func (m *MPIJobV1alpha2Modifier) ModifyResource(
 	newRes := &unstructured.Unstructured{Object: newResObj}
 	return newRes, nil
 
-}
-func ModifyMPIJobV1alpha2ReplicaSpecs(template *mpijob.ReplicaSpec, modSpec *ResourceModSpec) *mpijob.ReplicaSpec {
-	newTemplate := template
-	newTemplate.Template.Spec.Volumes = append(template.Template.Spec.Volumes, modSpec.Volumes...)
-	for i, container := range newTemplate.Template.Spec.Containers {
-		newContainer := ModifyContainerV1(container, modSpec)
-		newTemplate.Template.Spec.Containers[i] = newContainer
-	}
-	return newTemplate
 }

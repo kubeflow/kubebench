@@ -1,0 +1,21 @@
+apiVersion: kubeflow.org/v1alpha1
+kind: MPIJob
+metadata:
+  creationTimestamp: null
+  name: training-imagenet
+  namespace: kubebench
+spec:
+  replicas: 3
+  template:
+    metadata:
+      creationTimestamp: null
+    spec:
+      containers:
+      - image: docker.io/akado2009/kirill-mlperf-training:latest
+        name: training-imagenet
+        resources:
+          limits:
+            nvidia.com/gpu: "1"
+      volumes:
+      - name: example
+status: {}

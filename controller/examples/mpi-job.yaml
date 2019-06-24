@@ -1,22 +1,16 @@
-apiVersion: kubeflow.org/v1alpha2
+# This file shows how to run multi-node training benchmarks using an MPIJob,
+# specifying GPUs explicitly per replica.
+apiVersion: kubeflow.org/v1alpha1
 kind: MPIJob
 metadata:
-  name: tensorflow-benchmarks-16
+  name: training-imagenet
 spec:
-  slotsPerWorker: 1
-  mpiReplicaSpecs:
-    Launcher:
-      replicas: 1
-      template:
-         spec:
-           containers:
-           - image: mpioperator/tensorflow-benchmarks:latest
-             name: tensorflow-benchmarks
-    Worker:
-      replicas: 2
-      template:
-        spec:
-          containers:
-          - image: mpioperator/tensorflow-benchmarks:latest
-            name: tensorflow-benchmarks
-
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - image: docker.io/akado2009/kirill-mlperf-training:latest
+        name: training-imagenet
+        resources:
+          limits:
+            nvidia.com/gpu: 1

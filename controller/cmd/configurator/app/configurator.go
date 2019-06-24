@@ -45,6 +45,7 @@ func (c *Configurator) Run(opt *AppOption) error {
 		log.Errorf("Cannot unmarshal config spec: %s", opt.InputParams)
 		return err
 	}
+	log.Printf("%+v", configSpec)
 
 	// Generate manifest from the manifest source
 	genSpec := configSpec.ManifestGenSpec
@@ -59,6 +60,7 @@ func (c *Configurator) Run(opt *AppOption) error {
 	// If the namespace in the ManifestModSpec is empty valued, replace it with
 	// configurator's own namespace which is same as the workflow. This is for
 	// cases when the ManifestModSpec is created before namespace is set.
+
 	if err := replaceEmptyNamespace(modSpec); err != nil {
 		log.Errorf("Failed to replace empty namespace: %s", err)
 		return err

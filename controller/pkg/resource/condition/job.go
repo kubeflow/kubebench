@@ -15,7 +15,7 @@ package condition
 import (
 	"encoding/json"
 
-	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha2"
+	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha1"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -25,15 +25,15 @@ import (
 // JobV1Condition is a condition checker for jobs in batch/v1
 type JobV1Condition struct{}
 
-type MPIJobV1alpha2Condition struct{}
+type MPIJobV1alpha1Condition struct{}
 
 // NewJobV1Condition creates a new JobV1Condition
 func NewJobV1Condition() *JobV1Condition {
 	return &JobV1Condition{}
 }
 
-func NewMPIJobV1alpha2Condition() *MPIJobV1alpha2Condition {
-	return &MPIJobV1alpha2Condition{}
+func NewMPIJobV1alpha1Condition() *MPIJobV1alpha1Condition {
+	return &MPIJobV1alpha1Condition{}
 }
 
 // CheckCondition checks the status of a given job.
@@ -64,7 +64,7 @@ func (c *JobV1Condition) CheckCondition(resource *unstructured.Unstructured) (Re
 	return result, nil
 }
 
-func (c *MPIJobV1alpha2Condition) CheckCondition(resource *unstructured.Unstructured) (ResourceConditionStatus, error) {
+func (c *MPIJobV1alpha1Condition) CheckCondition(resource *unstructured.Unstructured) (ResourceConditionStatus, error) {
 	var job mpijob.MPIJob{}
 
 	resStr, err := json.Marshal(resource)
