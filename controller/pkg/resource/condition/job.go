@@ -65,7 +65,7 @@ func (c *JobV1Condition) CheckCondition(resource *unstructured.Unstructured) (Re
 }
 
 func (c *MPIJobV1alpha1Condition) CheckCondition(resource *unstructured.Unstructured) (ResourceConditionStatus, error) {
-	var job mpijob.MPIJob{}
+	var job mpijob.MPIJob
 
 	resStr, err := json.Marshal(resource)
 	if err != nil {
@@ -77,14 +77,11 @@ func (c *MPIJobV1alpha1Condition) CheckCondition(resource *unstructured.Unstruct
 		return ResourceConditionUnknown, err
 	}
 	var result ResourceConditionStatus
-	for _, cond := range job.Status.Conditions {
-		if cond.Type == mpijob.JobFailed && cond.Status == corev1.ConditionTrue {
-			result = ResourceConditionFailure
-			break
-		} else if cond.Type == mpijob.JobSucceeded && cond.Status == corev1.ConditionTrue {
-			result = ResourceConditionSuccess
-			break
-		}
+	if job.Status.LauncherStatus == mpijob.LauncherFailed {
+		result = ResourceConditionFailure
+	} else if job.Status.LauncherStatus == mpijob.LauncherSucceeded {
+		result = ResourceConditionSuccess
 	}
+
 	return result, nil
 }
