@@ -45,7 +45,6 @@ func (c *Configurator) Run(opt *AppOption) error {
 		log.Errorf("Cannot unmarshal config spec: %s", opt.InputParams)
 		return err
 	}
-	log.Printf("%+v", configSpec)
 
 	// Generate manifest from the manifest source
 	genSpec := configSpec.ManifestGenSpec
@@ -57,6 +56,7 @@ func (c *Configurator) Run(opt *AppOption) error {
 
 	// Modify the manifest as specified by the kubebench job
 	modSpec := configSpec.ManifestModSpec
+	
 	// If the namespace in the ManifestModSpec is empty valued, replace it with
 	// configurator's own namespace which is same as the workflow. This is for
 	// cases when the ManifestModSpec is created before namespace is set.
@@ -65,6 +65,7 @@ func (c *Configurator) Run(opt *AppOption) error {
 		log.Errorf("Failed to replace empty namespace: %s", err)
 		return err
 	}
+
 	modifiedManifest, err := manifestmod.NewManifestModifier(modSpec).ModifyManifest(manifest)
 	if err != nil {
 		log.Errorf("Failed to modify manifest: %s", err)
