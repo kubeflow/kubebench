@@ -14,14 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+export GO111MODULE=on
+
 SCRIPT_DIR=$(dirname $0)
 ROOT_PKG="github.com/kubeflow/kubebench"
-CODEGEN_PATH="$GOPATH/src/$ROOT_PKG/vendor/k8s.io/code-generator"
+CODEGEN_PKG="k8s.io/code-generator"
+CODEGEN_VERSION=$(awk '/k8s.io\/code-generator/ {print $2}' $GOPATH/src/$ROOT_PKG/go.mod)
+CODEGEN_PATH="$GOPATH/pkg/mod/$CODEGEN_PKG@$CODEGEN_VERSION"
 CRD_NAME="kubebenchjob"
 CRD_VERSIONS="v1alpha1,v1alpha2"
 
-$CODEGEN_PATH/generate-groups.sh all \
+TMP_DIR=$(mktemp -d)
+echo "Creating temporary directory $TMP_DIR"
+
+mkdir -p $TMP_DIR/$CODEGEN_PKG
+cp -r $CODEGEN_PATH/* $TMP_DIR/$CODEGEN_PKG/
+chmod -R +w $TMP_DIR/$CODEGEN_PKG
+
+bash $TMP_DIR/$CODEGEN_PKG/generate-groups.sh all \
   "$ROOT_PKG/controller/pkg/client" \
   "$ROOT_PKG/controller/pkg/apis" \
   "$CRD_NAME:$CRD_VERSIONS" \
   --go-header-file "$SCRIPT_DIR/boilerplate/boilerplate.go.txt"
+
+echo "Deleting temporary directory $TMP_DIR"
+rm -rf $TMP_DIR
