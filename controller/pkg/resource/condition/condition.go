@@ -20,6 +20,7 @@ import (
 
 var supportedResourceConditions = map[string]ResourceConditionInterface{
 	"Job.v1.batch":                  NewJobV1Condition(),
+	"MPIJob.v1alpha1.kubeflow.org":  NewMPIJobV1alpha1Condition(),
 	"Deployment.v1beta1.extensions": NewDeploymentV1beta1Condition(),
 }
 
