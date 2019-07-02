@@ -1,0 +1,16 @@
+# This file shows how to run multi-node training benchmarks using an MPIJob,
+# specifying GPUs explicitly per replica.
+apiVersion: kubeflow.org/v1alpha1
+kind: MPIJob
+metadata:
+  name: training-imagenet
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - image: docker.io/akado2009/kirill-mlperf-training:latest
+        name: training-imagenet
+        resources:
+          limits:
+            nvidia.com/gpu: 1
