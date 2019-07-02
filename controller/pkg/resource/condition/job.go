@@ -15,10 +15,10 @@ package condition
 import (
 	"encoding/json"
 
+	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	mpijob "github.com/kubeflow/mpi-operator/pkg/apis/kubeflow/v1alpha1"
 )
 
 // JobV1Condition is a condition checker for jobs in batch/v1
