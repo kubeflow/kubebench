@@ -12,6 +12,7 @@
 
 import json
 import os
+import sys
 
 
 def run():
@@ -30,8 +31,11 @@ def run():
     'Optimizer',
     'Variables',
     'Sync']
-  output_dir = os.environ.get("KUBEBENCH_EXP_OUTPUT_PATH")
-  result_dir = os.environ.get("KUBEBENCH_EXP_RESULT_PATH")
+
+  args = sys.argv[1:]
+  output_dir = args[0]
+  result_dir = args[1]
+
   result_file = os.path.join(result_dir, "result.json")
   if not os.path.exists(result_dir):
     os.makedirs(result_dir)

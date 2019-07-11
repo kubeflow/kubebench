@@ -10,20 +10,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM tensorflow/tensorflow:1.8.0-gpu
+FROM tensorflow/tensorflow:1.13.2-gpu
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     build-essential \
     git
 
-RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
-ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:${LD_LIBRARY_PATH}
 RUN mkdir -p /opt
-RUN mkdir -p /kubebench/experiments
 
-RUN git clone -n https://github.com/tensorflow/benchmarks.git /opt/tf-benchmarks
-RUN cd /opt/tf-benchmarks; git checkout 3b90c14fb2bf02ca5d27c188aee878663229a0a7
+RUN git clone --branch=cnn_tf_v1.13_compatible --depth=1 \
+    https://github.com/tensorflow/benchmarks.git /opt/tf-benchmarks
 
 COPY examples/src/tf-cnn/runner.py /opt
 RUN chmod u+x /opt/*
