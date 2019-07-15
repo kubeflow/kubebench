@@ -62,7 +62,7 @@
       // The name of test cluster
       local clusterName = "kubebench-e2e-" + std.substr(name, std.length(name) - 4, 4);
       // The Kubernetes version of test cluster
-      local clusterVersion = "1.11";
+      local clusterVersion = "1.12";
       // Container build information
       local registry = params.registry;
       local versionTag = if params.versionTag != null then
@@ -277,7 +277,7 @@
               ["/usr/local/bin/checkout.sh", srcRootDir],
               envVars=[{
                 name: "EXTRA_REPOS",
-                value: "kubeflow/kubeflow@HEAD",
+                value: "kubeflow/manifests@HEAD;kubeflow/kubeflow@HEAD",
               }],
             ),  // checkout
             $.parts(namespace, name, overrides).e2e(prow_env, bucket).buildTemplate("create-pr-symlink", [

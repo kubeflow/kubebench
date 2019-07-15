@@ -1,5 +1,6 @@
 import argparse
 import logging
+from os import path
 
 from kubebench.test import deploy_utils
 from kubeflow.testing import test_helper
@@ -38,30 +39,21 @@ def parse_args():
   args, _ = parser.parse_known_args()
   return args
 
-def deploy_kubeflow(test_case):
+def deploy_kubeflow(test_case): # pylint: disable=unused-argument
   """Deploy Kubeflow."""
   args = parse_args()
-  test_dir = test_case.test_suite.test_dir
   src_root_dir = args.src_root_dir
   namespace = args.namespace
   api_client = deploy_utils.create_k8s_client()
-  app_dir = deploy_utils.setup_ks_app(
-      test_dir, src_root_dir, namespace, args.github_token, api_client)
 
-  # Deploy Kubeflow
-  util.run(["ks", "generate", "tf-job-operator", "tf-job-operator"],
-           cwd=app_dir)
-  util.run(["ks", "generate", "argo", "kubeflow-argo", "--name=kubeflow-argo"],
-           cwd=app_dir)
-  cmd = "ks param set tf-job-operator namespace " + namespace
-  util.run(cmd.split(), cwd=app_dir)
-  # cmd = "ks param set tf-job-operator tfJobImage \
-  #         gcr.io/kubeflow-images-public/tf_operator:v20180522-77375baf"
-  # util.run(cmd.split(), cwd=app_dir)
-  cmd = "ks param set kubeflow-argo namespace " + namespace
-  util.run(cmd.split(), cwd=app_dir)
-  apply_command = ["ks", "apply", "default",
-                   "-c", "tf-job-operator", "-c", "kubeflow-argo"]
+  manifest_repo_dir = path.join(src_root_dir, "kubeflow", "manifests")
+  argo_manifest_dir = path.join(manifest_repo_dir, "argo", "base")
+  tfoperator_manifest_dir = path.join(manifest_repo_dir, "tf-training",
+      "tf-job-operator", "base")
+
+  deploy_utils.setup_test(api_client, namespace)
+
+  apply_args = "-f -"
   if args.as_gcloud_user:
     account = deploy_utils.get_gcp_identity()
     logging.info("Impersonate %s", account)
@@ -69,8 +61,21 @@ def deploy_kubeflow(test_case):
     # observe RBAC errors when doing certain operations. The problem appears
     # to be that we end up using the in cluster config (e.g. pod service account)
     # and not the GCP service account which has more privileges.
-    apply_command.append("--as=" + account)
-  util.run(apply_command, cwd=app_dir)
+    apply_args = " ".join(["--as=" + account, apply_args])
+
+  # Deploy argo
+  logging.info("Deploying argo")
+  util.run(["kustomize", "edit", "set", "namespace", namespace],
+           cwd=argo_manifest_dir)
+  util.run(["sh", "-c", "kustomize build | kubectl apply " + apply_args],
+           cwd=argo_manifest_dir)
+
+  # Deploy tf-job-operator
+  logging.info("Deploying tf-job-operator")
+  util.run(["kustomize", "edit", "set", "namespace", namespace],
+           cwd=tfoperator_manifest_dir)
+  util.run(["sh", "-c", "kustomize build | kubectl apply " + apply_args],
+           cwd=tfoperator_manifest_dir)
 
   # Verify that the TfJob operator is actually deployed.
   tf_job_deployment_name = "tf-job-operator"
@@ -81,9 +86,6 @@ def deploy_kubeflow(test_case):
   argo_deployment_name = "workflow-controller"
   logging.info("Verifying Argo controller started.")
   util.wait_for_deployment(api_client, namespace, argo_deployment_name)
-
-  # change the namespace to default to set up nfs-volume and nfs-server
-  namespace = "default"
 
   deploy_utils.set_clusterrole(namespace)
 
