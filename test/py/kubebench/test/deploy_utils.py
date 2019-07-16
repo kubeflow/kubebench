@@ -39,7 +39,7 @@ def create_k8s_client():
 
   return api_client
 
-def _setup_test(api_client, run_label):
+def setup_test(api_client, run_label):
   """Create the namespace for the test.
 
   Returns:
@@ -75,7 +75,7 @@ def setup_ks_app(test_dir, src_root_dir, namespace, github_token, api_client):
 
   namespace_name = namespace
 
-  namespace = _setup_test(api_client, namespace_name)
+  namespace = setup_test(api_client, namespace_name)
   logging.info("Using namespace: %s", namespace)
   if github_token:
     logging.info("Setting GITHUB_TOKEN to %s.", github_token)
