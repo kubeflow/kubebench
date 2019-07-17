@@ -63,18 +63,23 @@ func BuildWorkflow(
 	for _, task := range tasks {
 		if task.Container != nil {
 			wfTemplate := buildContainerTemplate(
-				task.Name, task.Container, wfInfo, argov1alpha1.Inputs{}, argov1alpha1.Outputs{})
+				task.Name, task.Container, wfInfo, task.Inputs, task.Outputs)
 			workflowTemplates = append(workflowTemplates, wfTemplate)
 			wfTask := buildDAGTask(
-				wfTemplate.Name, argov1alpha1.Arguments{}, task.Dependencies)
+				wfTemplate.Name, task.Dependencies, kbjob.Spec.Arguments,
+				task.Inputs, task.Outputs)
 			dagTasks = append(dagTasks, wfTask)
 			depMap[task.Name] = wfTask.Name
 		} else if task.Resource != nil {
+			// For resource typed tasks, the inputs are passed to configurator.
+			// This makes it easy to use inputs for configuration sources.
 			configTemplate := buildResourceConfigTemplate(
-				task.Name, kbjob.Spec.WorkflowAgent.Container, task.Resource, wfInfo)
+				task.Name, kbjob.Spec.WorkflowAgent.Container, task.Resource,
+				wfInfo, task.Inputs)
 			workflowTemplates = append(workflowTemplates, configTemplate)
 			configTask := buildDAGTask(
-				configTemplate.Name, argov1alpha1.Arguments{}, task.Dependencies)
+				configTemplate.Name, task.Dependencies, kbjob.Spec.Arguments,
+				task.Inputs, argov1alpha1.Outputs{})
 			dagTasks = append(dagTasks, configTask)
 			lastTask := configTask.Name
 
@@ -82,7 +87,8 @@ func BuildWorkflow(
 				task.Name, kbjob.Spec.WorkflowAgent.Container, task.Resource, wfInfo)
 			workflowTemplates = append(workflowTemplates, createTemplate)
 			createTask := buildDAGTask(
-				createTemplate.Name, argov1alpha1.Arguments{}, []string{configTask.Name})
+				createTemplate.Name, []string{configTask.Name}, kbjob.Spec.Arguments,
+				argov1alpha1.Inputs{}, argov1alpha1.Outputs{})
 			dagTasks = append(dagTasks, createTask)
 			lastTask = createTask.Name
 
@@ -91,9 +97,23 @@ func BuildWorkflow(
 					task.Name, kbjob.Spec.WorkflowAgent.Container, task.Resource, wfInfo)
 				workflowTemplates = append(workflowTemplates, autoWatchTemplate)
 				autoWatchTask := buildDAGTask(
-					autoWatchTemplate.Name, argov1alpha1.Arguments{}, []string{createTask.Name})
+					autoWatchTemplate.Name, []string{createTask.Name}, kbjob.Spec.Arguments,
+					argov1alpha1.Inputs{}, argov1alpha1.Outputs{})
 				dagTasks = append(dagTasks, autoWatchTask)
 				lastTask = autoWatchTask.Name
+			}
+
+			// Create a separate DAG task to handle outputs
+			if task.Outputs.Parameters != nil || task.Outputs.Artifacts != nil {
+				wfTemplate := buildIOTemplate(
+					task.Name, kbjob.Spec.WorkflowAgent.Container, wfInfo,
+					argov1alpha1.Inputs{}, task.Outputs)
+				workflowTemplates = append(workflowTemplates, wfTemplate)
+				outputTask := buildDAGTask(
+					wfTemplate.Name, []string{lastTask}, kbjob.Spec.Arguments,
+					argov1alpha1.Inputs{}, task.Outputs)
+				dagTasks = append(dagTasks, outputTask)
+				lastTask = outputTask.Name
 			}
 
 			depMap[task.Name] = lastTask
@@ -108,12 +128,8 @@ func BuildWorkflow(
 		}
 	}
 
-	dagTemplate := argov1alpha1.Template{
-		Name: "kubebench-job-workflow-entrypoint",
-		DAG: &argov1alpha1.DAGTemplate{
-			Tasks: dagTasks,
-		},
-	}
+	dagTemplate := buildDAGTemplate(
+		"kubebench-job-workflow-entrypoint", dagTasks, kbjob.Spec.Arguments)
 
 	workflowTemplates = append(workflowTemplates, dagTemplate)
 
@@ -125,6 +141,7 @@ func BuildWorkflow(
 		ObjectMeta: metadata,
 		Spec: argov1alpha1.WorkflowSpec{
 			ServiceAccountName: kbjob.Spec.ServiceAccountName,
+			Arguments:          kbjob.Spec.Arguments,
 			Entrypoint:         "kubebench-job-workflow-entrypoint",
 			Templates:          workflowTemplates,
 			Volumes:            append(wfInfo.volumes, wfInfo.managedVolumes...),

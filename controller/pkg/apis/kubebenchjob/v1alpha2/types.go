@@ -35,11 +35,12 @@ type KubebenchJob struct {
 
 // KubebenchJobSpec is the specification of a KubebenchJob
 type KubebenchJobSpec struct {
-	ServiceAccountName string            `json:"serviceAccountName,omitempty"`
-	Volumes            []corev1.Volume   `json:"volumes,omitempty"`
-	ManagedVolumes     ManagedVolumes    `json:"managedVolumes,omitempty"`
-	WorkflowAgent      WorkflowAgentSpec `json:"workflowAgent,omitempty"`
-	Tasks              []Task            `json:"tasks"`
+	ServiceAccountName string                 `json:"serviceAccountName,omitempty"`
+	Arguments          argov1alpha1.Arguments `json:"arguments,omitempty"`
+	Volumes            []corev1.Volume        `json:"volumes,omitempty"`
+	ManagedVolumes     ManagedVolumes         `json:"managedVolumes,omitempty"`
+	WorkflowAgent      WorkflowAgentSpec      `json:"workflowAgent,omitempty"`
+	Tasks              []Task                 `json:"tasks"`
 }
 
 // ManagedVolumes is the volumes managed by the Kubebench workflow
@@ -55,10 +56,12 @@ type WorkflowAgentSpec struct {
 
 // Task is a task in a Kubebench workflow
 type Task struct {
-	Name         string            `json:"name"`
-	Container    *corev1.Container `json:"container,omitempty"`
-	Resource     *ResourceSpec     `json:"resource,omitempty"`
-	Dependencies []string          `json:"dependencies,omitempty"`
+	Name         string               `json:"name"`
+	Container    *corev1.Container    `json:"container,omitempty"`
+	Resource     *ResourceSpec        `json:"resource,omitempty"`
+	Inputs       argov1alpha1.Inputs  `json:"inputs,omitempty"`
+	Outputs      argov1alpha1.Outputs `json:"outputs,omitempty"`
+	Dependencies []string             `json:"dependencies,omitempty"`
 }
 
 // ResourceSpec is the specification of a resouce-type task in a benchmark workflow

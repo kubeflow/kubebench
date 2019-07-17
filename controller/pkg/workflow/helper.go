@@ -47,16 +47,74 @@ func getName(format string, name string) string {
 
 func buildDAGTask(
 	name string,
-	arguments argov1alpha1.Arguments,
-	dependencies []string) argov1alpha1.DAGTask {
+	dependencies []string,
+	jobArguments argov1alpha1.Arguments,
+	inputs argov1alpha1.Inputs,
+	outputs argov1alpha1.Outputs) argov1alpha1.DAGTask {
 
 	dagTask := argov1alpha1.DAGTask{
 		Name:         name,
 		Template:     name,
-		Arguments:    arguments,
 		Dependencies: dependencies,
 	}
+
+	argParameterNames := map[string]bool{}
+	argArtifactNames := map[string]bool{}
+	for _, p := range jobArguments.Parameters {
+		argParameterNames[p.Name] = true
+	}
+	for _, a := range jobArguments.Artifacts {
+		argArtifactNames[a.Name] = true
+	}
+	// Pass arguments to the DAG task if referenced by its inputs/outputs
+	ioParameters := append(inputs.Parameters, outputs.Parameters...)
+	for _, p := range ioParameters {
+		if _, found := argParameterNames[p.Name]; found {
+			value := fmt.Sprintf("{{inputs.parameters.%s}}", p.Name)
+			dagTask.Arguments.Parameters = append(
+				dagTask.Arguments.Parameters, argov1alpha1.Parameter{
+					Name:  p.Name,
+					Value: &value,
+				})
+		}
+	}
+	ioArtifacts := append(inputs.Artifacts, outputs.Artifacts...)
+	for _, a := range ioArtifacts {
+		if _, found := argArtifactNames[a.Name]; found {
+			dagTask.Arguments.Artifacts = append(
+				dagTask.Arguments.Artifacts, argov1alpha1.Artifact{
+					Name: a.Name,
+					From: fmt.Sprintf("{{inputs.artifacts.%s}}", a.Name),
+				})
+		}
+	}
+
 	return dagTask
+}
+
+func buildDAGTemplate(
+	name string,
+	dagTasks []argov1alpha1.DAGTask,
+	jobArguments argov1alpha1.Arguments) argov1alpha1.Template {
+
+	// Pass all arguments as inputs to the DAG template.
+	inputs := argov1alpha1.Inputs{}
+	for _, p := range jobArguments.Parameters {
+		inputs.Parameters = append(inputs.Parameters, argov1alpha1.Parameter{Name: p.Name})
+	}
+	for _, a := range jobArguments.Artifacts {
+		inputs.Artifacts = append(inputs.Artifacts, argov1alpha1.Artifact{Name: a.Name})
+	}
+
+	template := argov1alpha1.Template{
+		Name: "kubebench-job-workflow-entrypoint",
+		DAG: &argov1alpha1.DAGTemplate{
+			Tasks: dagTasks,
+		},
+		Inputs: inputs,
+	}
+
+	return template
 }
 
 func buildContainerTemplate(
@@ -83,11 +141,25 @@ func buildContainerTemplate(
 	return template
 }
 
+// The "IO" template is useful for inputs/outputs that do not require additional operations.
+func buildIOTemplate(
+	name string,
+	wfaContainer *corev1.Container,
+	wfInfo *workflowInfo,
+	inputs argov1alpha1.Inputs,
+	outputs argov1alpha1.Outputs) argov1alpha1.Template {
+
+	wfaContainer.Command = []string{"sleep", "1"}
+	template := buildContainerTemplate(name, wfaContainer, wfInfo, inputs, outputs)
+	return template
+}
+
 func buildResourceConfigTemplate(
 	name string,
 	wfaContainer *corev1.Container,
 	resSpec *kbjobv1alpha2.ResourceSpec,
-	wfInfo *workflowInfo) argov1alpha1.Template {
+	wfInfo *workflowInfo,
+	inputs argov1alpha1.Inputs) argov1alpha1.Template {
 
 	templateName := getName(configuratorTemplateNameFmt, name)
 	outputName := getName(configuratorOutputNameFmt, name)
@@ -101,7 +173,6 @@ func buildResourceConfigTemplate(
 		"--output-file", outputFile,
 	}
 
-	inputs := argov1alpha1.Inputs{}
 	outputs := argov1alpha1.Outputs{
 		Parameters: []argov1alpha1.Parameter{
 			{
