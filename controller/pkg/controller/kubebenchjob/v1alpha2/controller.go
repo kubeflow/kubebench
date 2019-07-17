@@ -97,6 +97,7 @@ func NewKubebenchJobController(
 			workqueue.DefaultControllerRateLimiter(), "kubebenchjob"),
 		recorder: record.NewBroadcaster().NewRecorder(
 			scheme.Scheme, corev1.EventSource{Component: "kubebenchjob-controller"}),
+		config: config,
 	}
 
 	kbJobInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
