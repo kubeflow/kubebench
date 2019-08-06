@@ -61,9 +61,14 @@ func newWorkflowInfo(kbjob *kbjobv1alpha2.KubebenchJob) *workflowInfo {
 
 	envVars := []corev1.EnvVar{
 		{
-			Name:  constants.WorkflowRootEnvName,
-			Value: constants.WorkflowRootPath,
+			Name:  constants.ExpIDEnvName,
+			Value: experimentID,
 		},
+		// NOTE: WorkflowRootPath is not available to use. Mount point at WorkflowExpRootPath.
+		// {
+		// 	Name:  constants.WorkflowRootEnvName,
+		// 	Value: constants.WorkflowRootPath,
+		// },
 		{
 			Name:  constants.WorkflowExpRootEnvName,
 			Value: constants.WorkflowExpRootPath,
