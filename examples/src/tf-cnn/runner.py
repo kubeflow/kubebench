@@ -10,10 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import logging
 import json
 import os
-import shutil
 import subprocess
 import sys
 
@@ -45,26 +45,27 @@ def run_and_stream(cmd):
     raise ValueError("cmd: {0} exited with code {1}".format(
       " ".join(cmd), process.returncode))
 
-if __name__ == "__main__":
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--output_dir", type=str)
+  # split args for runner process and benchmark subprocess
+  runner_args, benchmark_args = parser.parse_known_args(sys.argv[1:])
+
   tf_config = os.environ.get("TF_CONFIG", '{}')
   tf_config_json = json.loads(tf_config)
   cluster = tf_config_json.get("cluster", {})
   job_name = tf_config_json.get("task", {}).get("type", "")
   task_index = tf_config_json.get("task", {}).get("index", "")
 
-  kubebench_exp_output_dir = os.environ.get("KUBEBENCH_EXP_OUTPUT_PATH")
-  if not os.path.exists(kubebench_exp_output_dir):
-    os.makedirs(kubebench_exp_output_dir)
-
-  log_dir = "/tmp/logs"
-  if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
+  output_dir = runner_args.output_dir
+  if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
   jn = job_name if job_name != "" else "worker"
   ti = str(task_index) if task_index != "" else "0"
-  log_file = os.path.join(log_dir, jn + ti + ".log")
+  output_file = os.path.join(output_dir, jn + ti + ".log")
 
-  args = sys.argv[1:]
-  command = ["python", "tf_cnn_benchmarks.py"] + args
+  command = ["python", "tf_cnn_benchmarks.py"] + benchmark_args
   ps_hosts = ",".join(cluster.get("ps", []))
   worker_hosts = ",".join(cluster.get("worker", []))
   if cluster.get("ps", []) or len(cluster.get("worker", [])) > 1:
@@ -75,7 +76,7 @@ if __name__ == "__main__":
 
   logging.getLogger().setLevel(logging.INFO)
   logging.basicConfig(level=logging.INFO,
-                      filename=log_file,
+                      filename=output_file,
                       filemode='w',
                       format=('%(levelname)s|%(asctime)s'
                               '|%(pathname)s|%(lineno)d| %(message)s'),
@@ -87,4 +88,6 @@ if __name__ == "__main__":
   run_and_stream(command)
   logging.info("Finished: %s", " ".join(command))
 
-  shutil.copy(log_file, kubebench_exp_output_dir)
+
+if __name__ == "__main__":
+  main()
