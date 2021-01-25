@@ -42,7 +42,7 @@ This tutorial will show an example to launching OpenMPI benchmark job on [Kubefl
   ks param set mpi-operator image seedjeffwan/mpi-operator:latest
   
   # Deploy required components
-  Ks apply default
+  ks apply default
   ```
   > Note: Default mpi-operator image doesn't have latest [change](https://github.com/kubeflow/mpi-operator/pull/89). That's why we use self built image instead.
 
