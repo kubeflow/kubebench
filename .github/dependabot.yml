@@ -1,0 +1,156 @@
+updates:
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: build/images/examples/tf-cnn
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: build/images/examples/mpi
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: build/images/kubebench-operator-v1alpha2
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: build/images/controller
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: build/images/dashboard
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: build/images/workflow-agent
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: build/images/kubebench-operator-v1alpha1
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: controller
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: dashboard/kubebench-dashboard
+  open-pull-requests-limit: 10
+  package-ecosystem: docker
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: dashboard/kubebench-dashboard/frontend
+  open-pull-requests-limit: 10
+  package-ecosystem: npm
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+- assignees:
+  - ddutta
+  - gaocegege
+  - swiftdiaries
+  - xyhuang
+  directory: .
+  open-pull-requests-limit: 10
+  package-ecosystem: gomod
+  reviewers:
+  - akado2009
+  - andreyvelich
+  - ramdootp
+  schedule:
+    interval: daily
+version: 2
